@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Book, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ModeToggle } from "./mode-toggle";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,12 +16,12 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="shadow-[0_2px_4px_0_var(--shadow-color)] bg-background text-foreground">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="text-2xl font-bold hover:text-green-600 ">
+            <Link href="/" className="text-2xl font-bold hover:text-primary ">
               <div className="flex items-center">
                 <img src="img/logo.png" alt="" width="35" height="20" />
                 MyNovelList
@@ -34,7 +35,7 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
+                className="hover:text-primary px-3 py-2 rounded-md text-[0.92rem] font-medium"
               >
                 {item.name}
               </Link>
@@ -46,7 +47,8 @@ const Navbar = () => {
             <Button variant="outline" className="mr-2">
               Sign In
             </Button>
-            <Button>Sign Up</Button>
+            <Button className="mr-2">Sign Up</Button>
+            <ModeToggle />
           </div>
 
           {/* Mobile menu button */}
@@ -63,7 +65,7 @@ const Navbar = () => {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+                      className=" hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
                     >
                       {item.name}
                     </Link>
