@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Footer } from "@/components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,27 +15,26 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <>
-      <ClerkProvider
-        appearance={{
-          variables: { colorPrimary: "#16a34a" },
-        }}
-      >
-        <html lang="en" suppressHydrationWarning>
-          <head />
-          <body>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <Navbar />
-              {children}
-            </ThemeProvider>
-          </body>
-        </html>
-      </ClerkProvider>
-    </>
+    <ClerkProvider
+      appearance={{
+        variables: { colorPrimary: "#16a34a" },
+      }}
+    >
+      <html lang="en" suppressHydrationWarning>
+        <head />
+        <body className="flex flex-col min-h-screen">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Navbar />
+            <div className="flex-grow">{children}</div>
+            <Footer />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
