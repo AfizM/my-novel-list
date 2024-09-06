@@ -5,6 +5,7 @@ import { Book, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ModeToggle } from "./mode-toggle";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +49,25 @@ const Navbar = () => {
               Sign In
             </Button>
             <Button className="mr-2">Sign Up</Button>
+            <SignedOut>
+              <SignInButton
+                appearance={{
+                  elements: {
+                    formButtonPrimary: {
+                      fontSize: 14,
+                      textTransform: "none",
+                      backgroundColor: "#611BBD",
+                      "&:hover, &:focus, &:active": {
+                        backgroundColor: "#49247A",
+                      },
+                    },
+                  },
+                }}
+              />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
             <ModeToggle />
           </div>
 

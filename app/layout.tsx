@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,20 +15,26 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <>
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Navbar />
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
+      <ClerkProvider
+        appearance={{
+          variables: { colorPrimary: "#16a34a" },
+        }}
+      >
+        <html lang="en" suppressHydrationWarning>
+          <head />
+          <body>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Navbar />
+              {children}
+            </ThemeProvider>
+          </body>
+        </html>
+      </ClerkProvider>
     </>
   );
 }
