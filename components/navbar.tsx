@@ -5,15 +5,30 @@ import { Book, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ModeToggle } from "./mode-toggle";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
+import { Sign } from "crypto";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
     { name: "Browse", href: "/" },
-    { name: "Social", href: "/social" },
-    { name: "Forum", href: "/forum" },
+    { name: "Social", href: "/" },
+    { name: "Forum", href: "/" },
+  ];
+
+  const signedInNavItems = [
+    { name: "Home", href: "/" },
+    { name: "Profile", href: "/" },
+    { name: "Novel List", href: "/" },
+    { name: "Browse", href: "/" },
+    { name: "Forum", href: "/" },
   ];
 
   return (
@@ -32,41 +47,50 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center justify-center flex-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="hover:text-primary px-3 py-2 rounded-md text-[0.92rem] font-medium"
-              >
-                {item.name}
-              </Link>
-            ))}
+            <SignedOut>
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="hover:text-primary px-4 py-2 rounded-md text-[0.92rem] font-medium"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </SignedOut>
+            <SignedIn>
+              {signedInNavItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="hover:text-primary px-4 py-2 rounded-md text-[0.92rem] font-medium"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </SignedIn>
           </div>
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center">
-            <Button variant="outline" className="mr-2">
-              Sign In
-            </Button>
-            <Button className="mr-2">Sign Up</Button>
             <SignedOut>
-              <SignInButton
+              <SignInButton>
+                <Button variant="outline" className="mr-2">
+                  Sign In
+                </Button>
+              </SignInButton>
+              <SignUpButton>
+                <Button className="mr-2">Sign Up</Button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton
                 appearance={{
                   elements: {
-                    formButtonPrimary: {
-                      fontSize: 14,
-                      textTransform: "none",
-                      backgroundColor: "#611BBD",
-                      "&:hover, &:focus, &:active": {
-                        backgroundColor: "#49247A",
-                      },
-                    },
+                    avatarBox: "h-9 w-9",
                   },
                 }}
               />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
             </SignedIn>
             <ModeToggle />
           </div>
