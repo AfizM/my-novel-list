@@ -1,5 +1,5 @@
 import React from "react";
-import { Star, ChevronDown } from "lucide-react";
+import { Star, ChevronDown, Heart, Flag, SquarePen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function NovelPage() {
   const ratings = 3.94;
@@ -25,19 +27,24 @@ export default function NovelPage() {
     "Adventure",
     "Fantasy",
     "Isekai",
+    "Adventure",
+    "Fantasy",
+    "Isekai",
+    "Adventure",
+    "Fantasy",
   ];
 
   return (
     <div>
       {" "}
-      <div className="w-full max-w-7xl mx-auto my-0 px-9">
-        <div className="flex mt-4 p-4">
+      <div className="w-full max-w-[1090px] mx-auto my-0 px-9">
+        <div className="flex mt-4 p-2  ">
           {/* Image */}
-          <div className=" flex flex-col items-center mr-2">
+          <div className=" flex flex-col items-center mr-2 shrink-0 ">
             <img
               src="img/novel1.jpg"
               alt=""
-              className="w-full max-w-56 object-cover rounded-md"
+              className="w-full max-w-56 object-cover rounded-md mt-2"
             />
             <Button className="mt-2 w-full relative max-w-52">
               Add to list
@@ -86,20 +93,21 @@ export default function NovelPage() {
               </span>
             </div>
 
-            {/* Tags */}
-            <div className="flex-wrap flex  ">
-              <div className="mr-2">
-                <span className="font-semibold text-sm">Tags:</span>{" "}
-              </div>
-              {tags.map((tag, index) => (
-                <Badge className="mr-2 mb-2 cursor-pointer " key={index}>
-                  {tag}
-                </Badge>
-              ))}
+            <div>
+              <span className="font-semibold text-sm">Country:</span>{" "}
+              <span className="text-primary underline cursor-pointer text-sm">
+                {" "}
+                South Korea
+              </span>
+            </div>
+
+            <div>
+              <span className="font-semibold text-sm">Chapters:</span>{" "}
+              <span className="text-primary cursor-pointer text-sm"> 23</span>
             </div>
 
             {/* Genres */}
-            <div className="flex-wrap flex ">
+            <div className="flex-wrap flex  ">
               <div className="mr-2">
                 <span className="font-semibold text-sm">Genres:</span>{" "}
               </div>
@@ -109,13 +117,56 @@ export default function NovelPage() {
                 </Badge>
               ))}
             </div>
+
+            {/* Tags */}
+            <div className="flex-wrap flex ">
+              <div className="mr-2">
+                <span className="font-semibold text-sm">Tags:</span>{" "}
+              </div>
+              {tags.map((tag, index) => (
+                <Badge className="mr-2 mb-2 cursor-pointer " key={index}>
+                  {tag}
+                </Badge>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="text-3xl mt-6 font-bold">Reviews</div>
-        <Card className="mt-2 max-w-[1000px]">
+        <div className="flex justify-between items-end max-w-[1080px] mt-16">
+          <div className="text-3xl font-bold">Reviews</div>
+          <Button className="relative w-full max-w-40 flex ">
+            <SquarePen className="mr-2" size={20} /> Write a Review
+          </Button>
+        </div>
+
+        <Card className="mt-6 max-w-[1080px]">
           <CardHeader>
-            <CardTitle>Card Title</CardTitle>
-            <CardDescription>Card Description</CardDescription>
+            <div className="flex justify-between">
+              <div className="flex">
+                <Avatar>
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col ml-2">
+                  <div className="ml-1 font-semibold ">shadowtale123</div>
+                  <div className="flex ml-1">
+                    {[...Array(5)].map((_, index) => (
+                      <Star
+                        size={18}
+                        key={index}
+                        fill="orange"
+                        strokeWidth={0}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                Status: <span className="font-semibold"> c96 </span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <p>
@@ -127,12 +178,42 @@ export default function NovelPage() {
               I mean each strike, followed by effects like boom or whoosh
               lastly, the biggest gripe I have with this is that for some
             </p>
+            <div className="flex space-x-2 justify-end">
+              <Heart className="cursor-pointer" size={20} />
+              <Flag className="cursor-pointer" size={20} />
+            </div>
           </CardContent>
         </Card>
-        <Card className="mt-2">
+
+        <Card className="mt-6 max-w-[1080px]">
           <CardHeader>
-            <CardTitle>Card Title</CardTitle>
-            <CardDescription>Card Description</CardDescription>
+            <div className="flex justify-between">
+              <div className="flex">
+                <Avatar>
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col ml-2">
+                  <div className="ml-1 font-semibold ">shadowtale123</div>
+                  <div className="flex ml-1">
+                    {[...Array(5)].map((_, index) => (
+                      <Star
+                        size={18}
+                        key={index}
+                        fill="orange"
+                        strokeWidth={0}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                Status: <span className="font-semibold"> c96 </span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <p>
@@ -143,21 +224,43 @@ export default function NovelPage() {
               author would call it, calling out attack moves of a 20+ combo. And
               I mean each strike, followed by effects like boom or whoosh
               lastly, the biggest gripe I have with this is that for some
-              reason, even with the knowledge that he is WAAAAAY far off from
-              ending his regressions, he still gets attached and creates
-              emotional connections to others. This is the same as stabbing
-              yourself to feel something, the worst part is that the author
-              claims, he acknowledges this, the character itself doesn't. By the
-              same vein as immortality, continuous regressors tend to cut
-              themselves off from others emotionally as in the end only the
-              regressor will hold the memory of what happened.
             </p>
+            <div className="flex space-x-2 justify-end">
+              <Heart className="cursor-pointer" size={20} />
+              <Flag className="cursor-pointer" size={20} />
+            </div>
           </CardContent>
         </Card>
-        <Card className="mt-2 ">
+
+        <Card className="mt-6 max-w-[1080px]">
           <CardHeader>
-            <CardTitle>Card Title</CardTitle>
-            <CardDescription>Card Description</CardDescription>
+            <div className="flex justify-between">
+              <div className="flex">
+                <Avatar>
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col ml-2">
+                  <div className="ml-1 font-semibold ">shadowtale123</div>
+                  <div className="flex ml-1">
+                    {[...Array(5)].map((_, index) => (
+                      <Star
+                        size={18}
+                        key={index}
+                        fill="orange"
+                        strokeWidth={0}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                Status: <span className="font-semibold"> c96 </span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <p>
@@ -168,15 +271,11 @@ export default function NovelPage() {
               author would call it, calling out attack moves of a 20+ combo. And
               I mean each strike, followed by effects like boom or whoosh
               lastly, the biggest gripe I have with this is that for some
-              reason, even with the knowledge that he is WAAAAAY far off from
-              ending his regressions, he still gets attached and creates
-              emotional connections to others. This is the same as stabbing
-              yourself to feel something, the worst part is that the author
-              claims, he acknowledges this, the character itself doesn't. By the
-              same vein as immortality, continuous regressors tend to cut
-              themselves off from others emotionally as in the end only the
-              regressor will hold the memory of what happened.
             </p>
+            <div className="flex space-x-2 justify-end">
+              <Heart className="cursor-pointer" size={20} />
+              <Flag className="cursor-pointer" size={20} />
+            </div>
           </CardContent>
         </Card>
       </div>
