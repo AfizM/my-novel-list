@@ -26,7 +26,7 @@ const Navbar = () => {
   const signedInNavItems = [
     { name: "Home", href: "/" },
     { name: "Profile", href: "/profile" },
-    { name: "Novel List", href: "/" },
+    { name: "Novel List", href: "/novellist" },
     { name: "Browse", href: "/" },
     { name: "Forum", href: "/" },
   ];
