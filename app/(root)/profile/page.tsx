@@ -21,7 +21,7 @@ export default function ProfilePage() {
               </div>
               <Card className="pt-4 ">
                 <CardContent>
-                  <p>
+                  <p className="text-[0.9rem]">
                     Avid web novel reader and aspiring writer. I love exploring
                     new worlds through the pages of a good story. Always on the
                     lookout for the next epic adventure or heartwarming tale.

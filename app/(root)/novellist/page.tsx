@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
 import { MoreHorizontal } from "lucide-react";
-import ProfileLayout from "../ProfileLayout";
+import ProfileLayout from "../profilelayout";
 
 const novels = [
   {
