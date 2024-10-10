@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
 import { MoreHorizontal } from "lucide-react";
+import ProfileLayout from "../ProfileLayout";
 
 const novels = [
   {
@@ -69,15 +70,6 @@ const novels = [
 ];
 
 export default function ProfilePage() {
-  const navItems = [
-    { name: "Overview", href: "/profile" },
-    { name: "Novel List", href: "/novellist" },
-    { name: "Favourites", href: "/" },
-    { name: "Reviews", href: "/" },
-    { name: "Social", href: "/" },
-  ];
-  const userBannerUrl = "/img/default_banner.png";
-
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [selectedNovel, setSelectedNovel] = useState<(typeof novels)[0] | null>(
     null,
@@ -156,41 +148,7 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="w-full -mt-[1.30rem] mx-auto my-0">
-      <div className="relative w-full h-72">
-        <Image
-          src={userBannerUrl}
-          alt="Profile banner"
-          fill
-          style={{ objectFit: "cover" }}
-          priority
-        />
-        <div className="flex absolute ml-40 bottom-8 space-x-4">
-          <Avatar className="w-24 h-24">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col space-y-3">
-            <div className="text-white text-2xl font-semibold">
-              shadowtale123
-            </div>
-            <Button className="max-w-28">Edit</Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-center space-x-4 border-b-2">
-        {navItems.map((item) => (
-          <Link
-            key={item.name}
-            href={item.href}
-            className="hover:text-primary px-4 py-4 rounded-md text-[0.92rem] font-medium"
-          >
-            {item.name}
-          </Link>
-        ))}
-      </div>
-
+    <ProfileLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="flex flex-col md:flex-row gap-12">
           {/* Filters */}
@@ -260,6 +218,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </div>
+    </ProfileLayout>
   );
 }

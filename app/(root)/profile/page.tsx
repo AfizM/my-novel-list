@@ -6,66 +6,11 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Star, Heart, MessageCircle, Flag } from "lucide-react";
 import { Input } from "@/components/ui/input";
-
-function ActivityItem({ type, content, novel, timestamp }) {
-  return (
-    <div className="mb-4">
-      <p className="text-sm text-gray-500">{timestamp}</p>
-      <p className="text-sm">
-        <span className="font-semibold">shadowtale123</span>{" "}
-        {type === "update" ? `updated ${novel}` : "posted"}
-      </p>
-      <p className="text-sm mt-1">{content}</p>
-    </div>
-  );
-}
+import ProfileLayout from "../profilelayout";
 
 export default function ProfilePage() {
-  const navItems = [
-    { name: "Overview", href: "/profile" },
-    { name: "Novel List", href: "/novellist" },
-    { name: "Favourites", href: "/" },
-    { name: "Reviews", href: "/" },
-    { name: "Social", href: "/" },
-  ];
-  const userBannerUrl = "/img/default_banner.png";
-
   return (
-    <div className="w-full -mt-[1.30rem] mx-auto my-0">
-      <div className="relative w-full h-72">
-        <Image
-          src={userBannerUrl}
-          alt="Profile banner"
-          fill
-          style={{ objectFit: "cover" }}
-          priority
-        />
-        <div className="flex absolute ml-40 bottom-8 space-x-4">
-          <Avatar className="w-24 h-24">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col space-y-3">
-            <div className="text-white text-2xl font-semibold">
-              shadowtale123
-            </div>
-            <Button className="max-w-28">Edit</Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-center space-x-4 border-b-2">
-        {navItems.map((item) => (
-          <Link
-            key={item.name}
-            href={item.href}
-            className="hover:text-primary px-4 py-4 rounded-md text-[0.92rem] font-medium"
-          >
-            {item.name}
-          </Link>
-        ))}
-      </div>
-
+    <ProfileLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 ">
           <div className="lg:col-span-2">
@@ -215,7 +160,7 @@ export default function ProfilePage() {
                   <img
                     src="/img/novel1.jpg"
                     alt="Novel 1"
-                    className="w-20 rounded-md "
+                    className="w-20 rounded-md   "
                   />
                   <p className="text-[0.9rem] ">
                     Completed Regressors Tale of Cultivation
@@ -239,6 +184,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </div>
+    </ProfileLayout>
   );
 }
