@@ -37,10 +37,10 @@ export default function NovelPage() {
   return (
     <div>
       {" "}
-      <div className="w-full max-w-[1090px] mx-auto my-0 px-9">
-        <div className="flex mt-4 p-2  ">
+      <div className="w-full max-w-[1100px] mx-auto my-0 px-9">
+        <div className="flex mt-4 p-4  ">
           {/* Image */}
-          <div className=" flex flex-col items-center mr-2 shrink-0 ">
+          <div className=" flex flex-col items-center mr-2 shrink-0  ">
             <img
               src="img/novel1.jpg"
               alt=""
@@ -54,7 +54,7 @@ export default function NovelPage() {
 
           <div className="flex-col ml-4 space-y-3 max-w-[800px] p-2">
             {/* Title */}
-            <div className="text-3xl font-bold">
+            <div className="text-[1.6rem] font-bold">
               Regressor's tale of Cultivation
             </div>
             <div>
@@ -69,7 +69,7 @@ export default function NovelPage() {
               </div>
             </div>
             {/* Description */}
-            <div className="w-full max-w-[800px]">
+            <div className="w-full max-w-[800px] text-[0.95rem] ">
               On the way to a company workshop, we fell into a world of immortal
               cultivators while still in the car. Those with spiritual roots and
               unique abilities were all called to join cultivation sects, living
@@ -132,7 +132,7 @@ export default function NovelPage() {
           </div>
         </div>
         <div className="flex justify-between items-end max-w-[1080px] mt-16">
-          <div className="text-3xl font-bold">Reviews</div>
+          <div className="text-3xl font-bold text-[1.24rem]">Reviews</div>
           <Button className="relative w-full max-w-40 flex ">
             <SquarePen className="mr-2" size={20} /> Write a Review
           </Button>
