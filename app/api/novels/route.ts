@@ -7,8 +7,12 @@ export async function GET(request: Request) {
   const status = searchParams.get("status");
   const genre = searchParams.get("genre");
   const search = searchParams.get("search");
+  const offset = parseInt(searchParams.get("offset") || "0");
+  const limit = parseInt(searchParams.get("limit") || "20");
 
-  let query = supabase.from("novels").select("*");
+  console.log(offset, limit);
+
+  let query = supabase.from("novels").select("*", { count: "exact" });
 
   if (status && status !== "Any") {
     query = query.eq("status", status);
@@ -38,11 +42,13 @@ export async function GET(request: Request) {
     }
   }
 
-  const { data, error } = await query;
+  query = query.range(offset, offset + limit - 1);
+
+  const { data, count, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json({ data, count });
 }
