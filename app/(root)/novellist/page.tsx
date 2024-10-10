@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { NovelModal } from "@/components/novelmodal";
 
 const novels = [
   {
@@ -66,6 +74,13 @@ export default function ProfilePage() {
   ];
   const userBannerUrl = "/img/default_banner.png";
 
+  const [selectedFilter, setSelectedFilter] = useState("All");
+
+  const [selectedNovel, setSelectedNovel] = useState<(typeof novels)[0] | null>(
+    null,
+  );
+  const [hoveredNovelId, setHoveredNovelId] = useState<number | null>(null);
+
   return (
     <div className="w-full -mt-[1.30rem] mx-auto my-0">
       <div className="relative w-full h-72">
@@ -110,18 +125,16 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <Input type="search" placeholder="Search novels..." />
               <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  All
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Planning
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Reading
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Completed
-                </Button>
+                {["All", "Planning", "Reading", "Completed"].map((filter) => (
+                  <Button
+                    key={filter}
+                    variant={selectedFilter === filter ? "default" : "outline"}
+                    className="w-full justify-start"
+                    onClick={() => setSelectedFilter(filter)}
+                  >
+                    {filter}
+                  </Button>
+                ))}
               </div>
               <Select>
                 <SelectTrigger>
@@ -151,16 +164,32 @@ export default function ProfilePage() {
               </TableHeader>
               <TableBody>
                 {novels.map((novel) => (
-                  <TableRow key={novel.id}>
+                  <TableRow
+                    key={novel.id}
+                    onMouseEnter={() => setHoveredNovelId(novel.id)}
+                    onMouseLeave={() => setHoveredNovelId(null)}
+                    className="relative"
+                  >
                     <TableCell>
                       <div className="flex items-center space-x-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage
-                            src="https://github.com/shadcn.png"
-                            alt="@shadcn"
-                          />
-                          <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
+                        <div
+                          className="relative cursor-pointer"
+                          onMouseEnter={() => setHoveredNovelId(novel.id)}
+                          onMouseLeave={() => setHoveredNovelId(null)}
+                          onClick={() => setSelectedNovel(novel)}
+                        >
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={novel.image} alt={novel.title} />
+                            <AvatarFallback>
+                              {novel.title.substring(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          {hoveredNovelId === novel.id && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs">View</span>
+                            </div>
+                          )}
+                        </div>
                         <span>{novel.title}</span>
                       </div>
                     </TableCell>
@@ -175,6 +204,18 @@ export default function ProfilePage() {
                 ))}
               </TableBody>
             </Table>
+
+            <Dialog
+              open={selectedNovel !== null}
+              onOpenChange={() => setSelectedNovel(null)}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{selectedNovel?.title}</DialogTitle>
+                </DialogHeader>
+                <NovelModal novel={selectedNovel} />
+              </DialogContent>
+            </Dialog>
 
             <h2 className="text-[1.24rem] font-semibold mb-4 mt-6 ">
               Planning
