@@ -36,7 +36,7 @@ export default function ProfileLayout({
           </Avatar>
           <div className="flex flex-col space-y-3">
             <div className="text-white text-2xl font-semibold">
-              shadowtale123
+              pineapple123
             </div>
             <Button className="max-w-28">Edit</Button>
           </div>

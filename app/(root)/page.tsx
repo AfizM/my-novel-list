@@ -192,7 +192,7 @@ export default function Home() {
                 </div>
               ))}
         </div>
-        {error && <div className="text-red-500 text-center mt-4">{error}</div>}
+        {/* {error && <div className="text-red-500 text-center mt-4">{error}</div>} */}
         {!loading && !error && hasMore && (
           <div ref={ref} className="h-10" /> // Invisible element for intersection observer
         )}
