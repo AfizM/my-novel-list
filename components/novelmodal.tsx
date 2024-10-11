@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star } from "lucide-react";
+import { Star, StarHalf } from "lucide-react"; // Add StarHalf import
 import { Button } from "@/components/ui/button";
 
 type NovelModalProps = {
@@ -29,6 +29,7 @@ export function NovelModal({ novel }: NovelModalProps) {
     novel?.chapterProgress || 0,
   );
   const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [notes, setNotes] = useState("");
 
   if (!novel) return null;
@@ -38,11 +39,49 @@ export function NovelModal({ novel }: NovelModalProps) {
     console.log({ status, chapterProgress, rating, notes });
   };
 
+  const handleRatingHover = (star: number, isHalf: boolean) => {
+    setHoverRating(isHalf ? star - 0.5 : star);
+  };
+
+  const handleRatingClick = (star: number, isHalf: boolean) => {
+    setRating(isHalf ? star - 0.5 : star);
+  };
+
+  const renderStars = () => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      const starValue = hoverRating || rating;
+      stars.push(
+        <div key={i} className="relative inline-block">
+          <Star
+            className={`cursor-pointer ${
+              starValue >= i
+                ? "text-yellow-400 fill-yellow-400"
+                : "text-gray-300"
+            }`}
+            onMouseEnter={() => handleRatingHover(i, false)}
+            onMouseLeave={() => setHoverRating(0)}
+            onClick={() => handleRatingClick(i, false)}
+          />
+          {starValue > i - 1 && starValue < i && (
+            <StarHalf
+              className="cursor-pointer text-yellow-400 fill-yellow-400 absolute top-0 left-0"
+              onMouseEnter={() => handleRatingHover(i, true)}
+              onMouseLeave={() => setHoverRating(0)}
+              onClick={() => handleRatingClick(i, true)}
+            />
+          )}
+        </div>,
+      );
+    }
+    return stars;
+  };
+
   return (
     <div className="flex flex-col space-y-6 pt-4">
       <div className="flex space-x-6">
         <div className="w-1/3">
-          <Image
+          <img
             src={novel.image}
             alt={novel.title}
             width={200}
@@ -79,19 +118,9 @@ export function NovelModal({ novel }: NovelModalProps) {
           <div className="flex items-center">
             <label className="w-1/3 text-sm font-medium">Overall rating:</label>
             <div className="flex items-center w-2/3">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`cursor-pointer ${
-                    star <= rating / 2
-                      ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-300"
-                  }`}
-                  onClick={() => setRating(star * 2)}
-                />
-              ))}
+              {renderStars()}
               <span className="ml-2 text-sm">
-                {rating > 0 ? `${rating}/10` : "Not rated"}
+                {rating > 0 ? `${rating}/5` : "Not rated"}
               </span>
             </div>
           </div>
