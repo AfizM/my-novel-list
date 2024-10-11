@@ -66,6 +66,10 @@ export default function Home() {
   const fetchNovels = async (currentOffset: number) => {
     setLoading(true);
     setError(null);
+
+    if (currentOffset === 0) {
+      setHasMore(true);
+    }
     const params = new URLSearchParams({
       sort,
       status,
@@ -79,7 +83,7 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to fetch novels");
       const { data, count } = await response.json();
       setNovels((prev) => (currentOffset === 0 ? data : [...prev, ...data]));
-      setHasMore(novels.length + data.length < count);
+      setHasMore(currentOffset + data.length < count);
     } catch (err) {
       setError("An error occurred while fetching novels. Please try again.");
     } finally {
