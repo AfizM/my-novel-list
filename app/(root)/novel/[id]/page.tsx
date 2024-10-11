@@ -1,33 +1,57 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import { Star, ChevronDown, Heart, Flag, SquarePen, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { supabase } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { NovelModal } from "@/components/novelmodal";
 
 async function getNovel(id: string) {
-  const { data, error } = await supabase
-    .from("novels")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    console.error("Error fetching novel:", error);
-    return null;
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/novels/${id}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch novel");
   }
-
-  return data;
+  return res.json();
 }
 
-export default async function NovelPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const novel = await getNovel(params.id);
+export default function NovelPage({ params }: { params: { id: string } }) {
+  const [novel, setNovel] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    async function fetchNovel() {
+      try {
+        const fetchedNovel = await getNovel(params.id);
+        setNovel(fetchedNovel);
+      } catch (err) {
+        setError("Failed to fetch novel");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchNovel();
+  }, [params.id]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   if (!novel) {
     notFound();
@@ -44,7 +68,10 @@ export default async function NovelPage({
               alt={novel.title}
               className="w-full max-w-56 object-cover rounded-md mt-2"
             />
-            <Button className="mt-2 w-full relative max-w-52">
+            <Button
+              className="mt-2 w-full relative max-w-44"
+              onClick={() => setIsModalOpen(true)}
+            >
               Add to list
               <ChevronDown className="absolute right-2" />
             </Button>
@@ -190,6 +217,23 @@ export default async function NovelPage({
           </CardContent>
         </Card>
       </div>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{novel.title}</DialogTitle>
+          </DialogHeader>
+          <NovelModal
+            novel={{
+              id: novel.id,
+              title: novel.title,
+              image: novel.image || "/img/novel1.jpg",
+              score: novel.ratings,
+              chapterProgress: 0,
+              country: novel.country,
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
