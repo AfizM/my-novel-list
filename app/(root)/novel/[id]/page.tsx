@@ -13,11 +13,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
+import WriteReviewDialog from "@/components/write-a-review-dialog";
 
 async function getNovel(id: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/novels/${id}`,
-    { cache: "no-store" },
+    { cache: "no-store" }
   );
   if (!res.ok) {
     throw new Error("Failed to fetch novel");
@@ -30,6 +31,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
 
   useEffect(() => {
     async function fetchNovel() {
@@ -162,10 +164,13 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Reviews section remains the same */}
+        {/* Reviews section */}
         <div className="flex justify-between items-end max-w-[1080px] mt-16">
           <div className="text-3xl font-bold text-[1.24rem]">Reviews</div>
-          <Button className="relative w-full max-w-40 flex ">
+          <Button
+            className="relative w-full max-w-40 flex"
+            onClick={() => setIsReviewDialogOpen(true)}
+          >
             <SquarePen className="mr-2" size={20} /> Write a Review
           </Button>
         </div>
@@ -234,6 +239,12 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Write a review dialog */}
+      <WriteReviewDialog
+        open={isReviewDialogOpen}
+        onOpenChange={setIsReviewDialogOpen}
+      />
     </div>
   );
 }

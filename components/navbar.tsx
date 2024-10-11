@@ -19,7 +19,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Browse", href: "/" },
-    { name: "Social", href: "/profile" },
+    { name: "Social", href: "/" },
     { name: "Forum", href: "/" },
   ];
 

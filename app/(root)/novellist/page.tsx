@@ -60,7 +60,7 @@ const novels = [
   },
   {
     id: 4,
-    title: "The Legendary Moonlight Sculptor",
+    title: "Moonlight Sculptor",
     image: "/placeholder.svg",
     score: 8.5,
     chapterProgress: 100,

@@ -56,7 +56,7 @@ export function NovelModal({ novel }: NovelModalProps) {
           <Star
             className={`cursor-pointer ${
               starValue >= i
-                ? "text-yellow-400 fill-yellow-400"
+                ? "text-[var(--orange-rating)] fill-[var(--orange-rating)]"
                 : "text-gray-300"
             }`}
             onMouseEnter={() => handleRatingHover(i, false)}
@@ -65,7 +65,7 @@ export function NovelModal({ novel }: NovelModalProps) {
           />
           {starValue > i - 1 && starValue < i && (
             <StarHalf
-              className="cursor-pointer text-yellow-400 fill-yellow-400 absolute top-0 left-0"
+              className="cursor-pointer text-[var(--orange-rating)] fill-[var(--orange-rating)] absolute top-0 left-0"
               onMouseEnter={() => handleRatingHover(i, true)}
               onMouseLeave={() => setHoverRating(0)}
               onClick={() => handleRatingClick(i, true)}
