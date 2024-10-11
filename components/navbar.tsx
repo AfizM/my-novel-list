@@ -40,34 +40,38 @@ const Navbar = () => {
             <Link href="/" className="text-2xl font-bold hover:text-primary ">
               <div className="flex items-center">
                 <img src="img/logo.png" alt="" width="35" height="20" />
-                MyNovelList
+                <div className="ml-[2px]">MyNovelList</div>
               </div>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center justify-center flex-1 mr-[87px] ">
+          <div className="hidden md:flex items-center justify-center flex-1  ">
             <SignedOut>
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="hover:text-primary px-4 py-2 rounded-md text-[0.92rem] font-medium"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              <div className="flex ml-[57px]">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="hover:text-primary px-4 py-2 rounded-md text-[0.92rem] font-medium"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
             </SignedOut>
             <SignedIn>
-              {signedInNavItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="hover:text-primary px-4 py-2 rounded-md text-[0.92rem] font-medium"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              <div className="flex mr-[87px]">
+                {signedInNavItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="hover:text-primary px-4 py-2 rounded-md text-[0.92rem] font-medium"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
             </SignedIn>
           </div>
 
