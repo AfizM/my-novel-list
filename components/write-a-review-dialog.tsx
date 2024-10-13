@@ -12,15 +12,18 @@ import {
 import { Star } from "lucide-react";
 
 import { Textarea } from "./ui/textarea";
+import { useUser } from "@clerk/nextjs";
 
 type RatingCategory = "plot" | "characters" | "worldBuilding" | "writingStyle";
 
 export default function WriteReviewDialog({
   open,
   onOpenChange,
+  novelId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  novelId: number;
 }) {
   const totalStars = 5;
   const [ratings, setRatings] = useState<Record<RatingCategory, number>>({
@@ -67,10 +70,32 @@ export default function WriteReviewDialog({
     setIsFormValid(allRatingsProvided && reviewText.length >= 20);
   }, [ratings, reviewText]);
 
-  const handleSubmitReview = () => {
-    // Implement your review submission logic here
-    console.log("Submitting review:", { ratings, reviewText });
-    onOpenChange(false); // Close the dialog after submission
+  const handleSubmitReview = async () => {
+    try {
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          novel_id: novelId,
+          rating: totalScore,
+          review_description: reviewText,
+          chapter_status: 4,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit review");
+      }
+
+      const data = await response.json();
+      console.log("Review submitted successfully:", data);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      // Handle error (e.g., show error message to user)
+    }
   };
 
   return (

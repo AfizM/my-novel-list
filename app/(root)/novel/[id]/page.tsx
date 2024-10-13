@@ -18,7 +18,7 @@ import WriteReviewDialog from "@/components/write-a-review-dialog";
 async function getNovel(id: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/novels/${id}`,
-    { cache: "no-store" }
+    { cache: "no-store" },
   );
   if (!res.ok) {
     throw new Error("Failed to fetch novel");
@@ -175,6 +175,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           </Button>
         </div>
 
+        {/* Reviews */}
         <Card className="mt-6 max-w-[1080px]">
           <CardHeader>
             <div className="flex justify-between">
@@ -242,6 +243,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
       {/* Write a review dialog */}
       <WriteReviewDialog
+        novelId={novel.id}
         open={isReviewDialogOpen}
         onOpenChange={setIsReviewDialogOpen}
       />
