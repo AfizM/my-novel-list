@@ -6,32 +6,29 @@ export async function POST(request: Request) {
   const { userId } = auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    console.log("User", userId);
   }
 
   try {
-    const { novel_id, rating, review_description, chapter_status } =
-      await request.json();
+    const { review_id, comment } = await request.json();
 
-    const { data, error } = await supabase
-      .from("reviews")
-      .insert({
-        user_id: userId,
-        novel_id,
-        rating,
-        review_description,
-        chapter_status,
-      })
-      .select();
+    const { data, error } = await supabase.from("review_comments").insert({
+      review_id,
+      user_id: userId,
+      comment,
+    }).select(`
+        id,
+        comment,
+        created_at,
+        users!inner (image_url, first_name, last_name)
+      `);
 
     if (error) throw error;
 
     return NextResponse.json(data[0]);
   } catch (error) {
-    console.error("Error submitting review:", error);
+    console.error("Error posting comment:", error);
     return NextResponse.json(
-      { error: "Failed to submit review" },
+      { error: "Failed to post comment" },
       { status: 500 },
     );
   }

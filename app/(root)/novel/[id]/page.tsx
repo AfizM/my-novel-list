@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
 import WriteReviewDialog from "@/components/write-a-review-dialog";
+import { useUser } from "@clerk/nextjs";
+import { ReviewCard } from "@/components/ReviewCard";
 
 async function getNovel(id: string) {
   const res = await fetch(
@@ -27,11 +29,15 @@ async function getNovel(id: string) {
 }
 
 export default function NovelPage({ params }: { params: { id: string } }) {
+  const { user } = useUser();
   const [novel, setNovel] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     async function fetchNovel() {
@@ -47,8 +53,61 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     fetchNovel();
   }, [params.id]);
 
+  useEffect(() => {
+    setReviews([]); // Clear existing reviews
+    setPage(1); // Reset page to 1
+    fetchReviews();
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [page]);
+
+  const fetchReviews = async () => {
+    try {
+      console.log("fetching reviews", parseInt(params.id));
+      console.log("novel id", params.id);
+      const response = await fetch(
+        `/api/reviews/${parseInt(params.id)}?page=${page}&limit=10`,
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch reviews");
+      }
+      const data = await response.json();
+      setReviews(data.reviews);
+      setHasMore(data.reviews.length === 10);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const handleLike = (reviewId: number, newLikes: number) => {
+    setReviews((prevReviews) =>
+      prevReviews.map((review) =>
+        review.id === reviewId ? { ...review, likes: newLikes } : review,
+      ),
+    );
+  };
+
+  const handleComment = (reviewId: number, newComment: any) => {
+    setReviews((prevReviews) =>
+      prevReviews.map((review) =>
+        review.id === reviewId
+          ? {
+              ...review,
+              review_comments: [...review.review_comments, newComment],
+            }
+          : review,
+      ),
+    );
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (!isLoading) {
+    console.log(user);
   }
 
   if (error) {
@@ -176,52 +235,22 @@ export default function NovelPage({ params }: { params: { id: string } }) {
         </div>
 
         {/* Reviews */}
-        <Card className="mt-6 max-w-[1080px]">
-          <CardHeader>
-            <div className="flex justify-between">
-              <div className="flex">
-                <Avatar>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col ml-2">
-                  <div className="ml-1 font-semibold ">shadowtale123</div>
-                  <div className="flex ml-1">
-                    {[...Array(5)].map((_, index) => (
-                      <Star
-                        size={18}
-                        key={index}
-                        fill="orange"
-                        strokeWidth={0}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="text-[0.9rem]">
-                Status: <span className="font-semibold"> c96 </span>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-[0.94rem]">
-              a great premise with poor execution first off As stated by a
-              previous reviewer, his regressions are also super formulaic. He
-              gets depressed, gets a eureka moment before dying, regress, gets
-              hopeful and repeat. secondly, the wordcount extendinator or as the
-              author would call it, calling out attack moves of a 20+ combo. And
-              I mean each strike, followed by effects like boom or whoosh
-              lastly, the biggest gripe I have with this is that for some
-            </p>
-            <div className="flex space-x-2 justify-end">
-              <Heart className="cursor-pointer" size={20} />
-              <Flag className="cursor-pointer" size={20} />
-            </div>
-          </CardContent>
-        </Card>
+        <div>
+          {reviews.map((review) => (
+            <ReviewCard
+              key={review.id}
+              review={review}
+              currentUser={user}
+              onLike={handleLike}
+              onComment={handleComment}
+            />
+          ))}
+          {hasMore && (
+            <Button onClick={() => setPage((prevPage) => prevPage + 1)}>
+              Load More Reviews
+            </Button>
+          )}
+        </div>
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
@@ -243,9 +272,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
       {/* Write a review dialog */}
       <WriteReviewDialog
-        novelId={novel.id}
         open={isReviewDialogOpen}
         onOpenChange={setIsReviewDialogOpen}
+        novelId={parseInt(params.id)}
       />
     </div>
   );
