@@ -30,17 +30,47 @@ import { NovelModal } from "@/components/novelmodal";
 import { MoreHorizontal } from "lucide-react";
 import ProfileLayout from "../profilelayout";
 
-export default function ProfilePage() {
+const NovelItem = ({ novel, onSelect }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TableRow>
+      <TableCell>
+        <div className="flex items-center space-x-3">
+          <div
+            className="relative cursor-pointer"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onClick={() => onSelect(novel)}
+          >
+            <Avatar className="w-10 h-10">
+              <AvatarImage src={novel.image} alt={novel.title} />
+              <AvatarFallback>{novel.title.substring(0, 2)}</AvatarFallback>
+            </Avatar>
+            {isHovered && (
+              <div className="absolute inset-0 bg-gray-500 rounded-full flex items-center justify-center">
+                <MoreHorizontal className="text-white" size={16} />
+              </div>
+            )}
+          </div>
+          <span>{novel.title}</span>
+        </div>
+      </TableCell>
+      <TableCell>{novel.rating}</TableCell>
+      <TableCell>
+        <span className="text-sm text-gray-500">{novel.chapter_progress}</span>
+      </TableCell>
+      <TableCell>{novel.country}</TableCell>
+    </TableRow>
+  );
+};
+
+export default function NovelListPage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [selectedNovel, setSelectedNovel] = useState(null);
-  const [hoveredNovelId, setHoveredNovelId] = useState(null);
   const [novels, setNovels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchNovels();
-  }, []);
 
   const fetchNovels = async () => {
     setIsLoading(true);
@@ -60,6 +90,11 @@ export default function ProfilePage() {
     }
   };
 
+  useEffect(() => {
+    console.log("fetching novels");
+    fetchNovels();
+  }, []);
+
   const filteredNovels =
     selectedFilter === "All"
       ? {
@@ -73,7 +108,7 @@ export default function ProfilePage() {
           ),
         };
 
-  const NovelTable = ({ novels, title }) => (
+  const NovelTable = ({ novels, title, onSelectNovel }) => (
     <>
       <h2 className="text-[1.24rem] font-semibold mb-4 mt-8">{title}</h2>
       <Table>
@@ -87,38 +122,7 @@ export default function ProfilePage() {
         </TableHeader>
         <TableBody>
           {novels.map((novel) => (
-            <TableRow key={novel.id}>
-              <TableCell>
-                <div className="flex items-center space-x-3">
-                  <div
-                    className="relative cursor-pointer"
-                    onMouseEnter={() => setHoveredNovelId(novel.id)}
-                    onMouseLeave={() => setHoveredNovelId(null)}
-                    onClick={() => setSelectedNovel(novel)}
-                  >
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={novel.image} alt={novel.title} />
-                      <AvatarFallback>
-                        {novel.title.substring(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {hoveredNovelId === novel.id && (
-                      <div className="absolute inset-0 bg-gray-500 rounded-full flex items-center justify-center">
-                        <MoreHorizontal className="text-white" size={16} />
-                      </div>
-                    )}
-                  </div>
-                  <span>{novel.title}</span>
-                </div>
-              </TableCell>
-              <TableCell>{novel.rating}</TableCell>
-              <TableCell>
-                <span className="text-sm text-gray-500">
-                  {novel.chapter_progress}
-                </span>
-              </TableCell>
-              <TableCell>{novel.country}</TableCell>
-            </TableRow>
+            <NovelItem key={novel.id} novel={novel} onSelect={onSelectNovel} />
           ))}
         </TableBody>
       </Table>
@@ -172,11 +176,20 @@ export default function ProfilePage() {
           <div className="w-full md:w-3/4 flex flex-col">
             {selectedFilter === "All" ? (
               <>
-                <NovelTable novels={filteredNovels.reading} title="Reading" />
-                <NovelTable novels={filteredNovels.planning} title="Planning" />
+                <NovelTable
+                  novels={filteredNovels.reading}
+                  title="Reading"
+                  onSelectNovel={setSelectedNovel}
+                />
+                <NovelTable
+                  novels={filteredNovels.planning}
+                  title="Planning"
+                  onSelectNovel={setSelectedNovel}
+                />
                 <NovelTable
                   novels={filteredNovels.completed}
                   title="Completed"
+                  onSelectNovel={setSelectedNovel}
                 />
               </>
             ) : (
@@ -187,6 +200,7 @@ export default function ProfilePage() {
                   ]
                 }
                 title={selectedFilter}
+                onSelectNovel={setSelectedNovel}
               />
             )}
 
@@ -202,8 +216,6 @@ export default function ProfilePage() {
                   novel={selectedNovel}
                   onClose={() => {
                     setSelectedNovel(null);
-                    setHoveredNovelId(null);
-                    fetchNovels();
                   }}
                 />
               </DialogContent>
