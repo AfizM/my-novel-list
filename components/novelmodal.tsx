@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Select,
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, StarHalf } from "lucide-react"; // Add StarHalf import
+import { Star, StarHalf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type NovelModalProps = {
@@ -21,22 +21,72 @@ type NovelModalProps = {
     chapterProgress: number;
     country: string;
   } | null;
+  onClose: () => void;
 };
 
-export function NovelModal({ novel }: NovelModalProps) {
+export function NovelModal({ novel, onClose }: NovelModalProps) {
   const [status, setStatus] = useState("reading");
-  const [chapterProgress, setChapterProgress] = useState(
-    novel?.chapterProgress || 0,
-  );
+  const [chapterProgress, setChapterProgress] = useState<string>("");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [notes, setNotes] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchNovelListData = async () => {
+      try {
+        const response = await fetch(`/api/novel-list/${novel.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setStatus(data.status);
+          setChapterProgress(data.chapter_progress?.toString() || "");
+          setRating(data.rating);
+          setNotes(data.notes);
+        }
+      } catch (error) {
+        console.error("Error fetching novel list data:", error);
+      }
+    };
+
+    if (novel) {
+      fetchNovelListData();
+    }
+  }, [novel]);
 
   if (!novel) return null;
 
-  const handleSave = () => {
-    // Handle submit logic here
-    console.log({ status, chapterProgress, rating, notes });
+  const handleSave = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/novel-list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          novel_id: novel.id,
+          status,
+          chapter_progress:
+            chapterProgress === "" ? null : parseInt(chapterProgress, 10),
+          rating,
+          notes,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save novel to list");
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("Error saving novel to list:", error);
+      setError("Failed to save novel to list. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRatingHover = (star: number, isHalf: boolean) => {
@@ -110,7 +160,7 @@ export function NovelModal({ novel }: NovelModalProps) {
               type="number"
               placeholder="Chapter progress"
               value={chapterProgress}
-              onChange={(e) => setChapterProgress(Number(e.target.value))}
+              onChange={(e) => setChapterProgress(e.target.value)}
               className="w-2/3"
             />
           </div>
@@ -137,8 +187,11 @@ export function NovelModal({ novel }: NovelModalProps) {
         </div>
       </div>
       <div className="flex justify-end">
-        <Button onClick={handleSave}>Save</Button>
+        <Button onClick={handleSave} disabled={isLoading}>
+          {isLoading ? "Saving..." : "Save"}
+        </Button>
       </div>
+      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 }

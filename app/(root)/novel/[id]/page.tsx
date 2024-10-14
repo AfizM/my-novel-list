@@ -263,9 +263,10 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               title: novel.title,
               image: novel.image || "/img/novel1.jpg",
               score: novel.ratings,
-              chapterProgress: 0,
+              chapterProgress: novel.chapter_progress || 0,
               country: novel.country,
             }}
+            onClose={() => setIsModalOpen(false)}
           />
         </DialogContent>
       </Dialog>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,51 +30,35 @@ import { NovelModal } from "@/components/novelmodal";
 import { MoreHorizontal } from "lucide-react";
 import ProfileLayout from "../profilelayout";
 
-const novels = [
-  {
-    id: 1,
-    title: "The Wandering Inn",
-    image: "/img/novel1.jpg",
-    score: 9.5,
-    chapterProgress: 80,
-    country: "CN",
-    status: "reading",
-  },
-  {
-    id: 2,
-    title: "Mother of Learning",
-    image: "/placeholder.svg",
-    score: 9.2,
-    chapterProgress: 100,
-    country: "KR",
-    status: "completed",
-  },
-  {
-    id: 3,
-    title: "Worm",
-    image: "/placeholder.svg",
-    score: 8.8,
-    chapterProgress: 60,
-    country: "CN",
-    status: "reading",
-  },
-  {
-    id: 4,
-    title: "Moonlight Sculptor",
-    image: "/placeholder.svg",
-    score: 8.5,
-    chapterProgress: 100,
-    country: "JP",
-    status: "planning",
-  },
-];
-
 export default function ProfilePage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const [selectedNovel, setSelectedNovel] = useState<(typeof novels)[0] | null>(
-    null,
-  );
-  const [hoveredNovelId, setHoveredNovelId] = useState<number | null>(null);
+  const [selectedNovel, setSelectedNovel] = useState(null);
+  const [hoveredNovelId, setHoveredNovelId] = useState(null);
+  const [novels, setNovels] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchNovels();
+  }, []);
+
+  const fetchNovels = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/novel-list");
+      if (!response.ok) {
+        throw new Error("Failed to fetch novels");
+      }
+      const data = await response.json();
+      setNovels(data);
+    } catch (error) {
+      console.error("Error fetching novels:", error);
+      setError("Failed to load novels. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredNovels =
     selectedFilter === "All"
@@ -89,13 +73,7 @@ export default function ProfilePage() {
           ),
         };
 
-  const NovelTable = ({
-    novels,
-    title,
-  }: {
-    novels: typeof filteredNovels.reading;
-    title: string;
-  }) => (
+  const NovelTable = ({ novels, title }) => (
     <>
       <h2 className="text-[1.24rem] font-semibold mb-4 mt-8">{title}</h2>
       <Table>
@@ -133,10 +111,10 @@ export default function ProfilePage() {
                   <span>{novel.title}</span>
                 </div>
               </TableCell>
-              <TableCell>{novel.score}</TableCell>
+              <TableCell>{novel.rating}</TableCell>
               <TableCell>
                 <span className="text-sm text-gray-500">
-                  {novel.chapterProgress}
+                  {novel.chapter_progress}
                 </span>
               </TableCell>
               <TableCell>{novel.country}</TableCell>
@@ -146,6 +124,14 @@ export default function ProfilePage() {
       </Table>
     </>
   );
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <ProfileLayout>
@@ -212,7 +198,14 @@ export default function ProfilePage() {
                 <DialogHeader>
                   <DialogTitle>{selectedNovel?.title}</DialogTitle>
                 </DialogHeader>
-                <NovelModal novel={selectedNovel} />
+                <NovelModal
+                  novel={selectedNovel}
+                  onClose={() => {
+                    setSelectedNovel(null);
+                    setHoveredNovelId(null);
+                    fetchNovels();
+                  }}
+                />
               </DialogContent>
             </Dialog>
           </div>
