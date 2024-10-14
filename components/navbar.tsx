@@ -18,7 +18,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { name: "Browse", href: "/" },
+    { name: "Browse", href: "/browse" },
     { name: "Social", href: "/" },
     { name: "Forum", href: "/" },
   ];
@@ -27,7 +27,7 @@ const Navbar = () => {
     { name: "Home", href: "/" },
     { name: "Profile", href: "/profile" },
     { name: "Novel List", href: "/novellist" },
-    { name: "Browse", href: "/" },
+    { name: "Browse", href: "/browse" },
     { name: "Forum", href: "/" },
   ];
 
