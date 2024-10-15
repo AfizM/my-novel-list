@@ -16,7 +16,31 @@ const dummyPost = {
     last_name: "Doe",
     image_url: "https://example.com/jane-doe-avatar.jpg",
   },
-  comments: [],
+  comments: [
+    {
+      id: 101,
+      users: {
+        first_name: "John",
+        last_name: "Smith",
+        image_url: "https://example.com/john-smith-avatar.jpg",
+      },
+      comment: "Sounds intriguing! I'll add it to my reading list.",
+      time_ago: "1 hour ago",
+      likes: 3,
+    },
+    {
+      id: 102,
+      users: {
+        first_name: "Emily",
+        last_name: "Johnson",
+        image_url: "https://example.com/emily-johnson-avatar.jpg",
+      },
+      comment:
+        "I loved that book too! The concept of parallel lives was fascinating.",
+      time_ago: "30 minutes ago",
+      likes: 5,
+    },
+  ],
 };
 
 const handleLike = () => {
