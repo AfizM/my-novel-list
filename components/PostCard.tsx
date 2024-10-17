@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { Textarea } from "./ui/textarea";
+import { formatRelativeTime } from "@/lib/formatRelativeTime";
 
 interface Post {
   id: string;
@@ -85,8 +86,7 @@ export function PostCard({
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
+    return formatRelativeTime(dateString);
   };
 
   return (
@@ -201,7 +201,7 @@ function CommentCard({
           </div>
         </div>
         <div className="text-gray-500" style={{ fontSize: "0.75rem" }}>
-          {new Date(comment.created_at).toLocaleString()}
+          {formatRelativeTime(comment.created_at)}
         </div>
       </div>
       <div className="mb-1 whitespace-pre-wrap break-words">
