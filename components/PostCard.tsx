@@ -187,6 +187,12 @@ function CommentCard({
     }
   }, 300);
 
+  // Memoize the formatted time for comments
+  const formattedCommentTime = useMemo(
+    () => formatRelativeTime(comment.created_at),
+    [comment.created_at],
+  );
+
   return (
     <div
       className="border rounded-md p-2 w-11/12 mx-auto"
@@ -203,7 +209,7 @@ function CommentCard({
           </div>
         </div>
         <div className="text-gray-500" style={{ fontSize: "0.75rem" }}>
-          {formatRelativeTime(comment.created_at)}
+          {formattedCommentTime}
         </div>
       </div>
       <div className="mb-1 whitespace-pre-wrap break-words">
