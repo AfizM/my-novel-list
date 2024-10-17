@@ -1,12 +1,119 @@
-import React from "react";
-import Image from "next/image";
+"use client";
+import React, { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { PostCard } from "@/components/PostCard";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import ProfileLayout from "../profilelayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Star, Heart, MessageCircle, Flag } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import ProfileLayout from "../profilelayout";
+import Image from "next/image";
 
 export default function ProfilePage() {
+  const { user } = useUser();
+  const [posts, setPosts] = useState([]);
+  const [newPostContent, setNewPostContent] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      fetchUserPosts();
+    }
+  }, [user]);
+
+  const fetchUserPosts = async () => {
+    try {
+      const response = await fetch(`/api/users/${user.id}/posts`);
+      if (!response.ok) throw new Error("Failed to fetch posts");
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    }
+  };
+
+  const handleCreatePost = async () => {
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newPostContent }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create post");
+      const newPost = await response.json();
+
+      setPosts([newPost, ...posts]);
+      setNewPostContent("");
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
+  };
+
+  const handleLike = async (
+    postId: string,
+    isLiked: boolean,
+    newLikeCount: number,
+  ) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              likes: newLikeCount,
+              is_liked: isLiked,
+            }
+          : post,
+      ),
+    );
+  };
+
+  const handleComment = async (postId: string, comment: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: comment }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add comment");
+      const newComment = await response.json();
+
+      setPosts(
+        posts.map((post) =>
+          post.id === postId
+            ? { ...post, post_comments: [...post.post_comments, newComment] }
+            : post,
+        ),
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const handleCommentLike = async (
+    postId: string,
+    commentId: string,
+    isLiked: boolean,
+    newLikeCount: number,
+  ) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              post_comments: post.post_comments.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, likes: newLikeCount, is_liked: isLiked }
+                  : comment,
+              ),
+            }
+          : post,
+      ),
+    );
+  };
+
   return (
     <ProfileLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
@@ -103,85 +210,43 @@ export default function ProfilePage() {
 
           {/* Activity section */}
           <div className="lg:col-span-2 flex flex-col space-y-4">
-            <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
+            <div className="text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
               Activity
             </div>
-            <Input type="search" placeholder="Write a status..." />
+            <div className="flex flex-col space-y-4">
+              <Input
+                placeholder="Write a status..."
+                value={newPostContent}
+                onChange={(e) => setNewPostContent(e.target.value)}
+              />
+              <div className="flex justify-end space-x-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  style={{ fontSize: "0.8rem" }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleCreatePost}
+                  disabled={!newPostContent.trim()}
+                  style={{ fontSize: "0.8rem" }}
+                >
+                  Post
+                </Button>
+              </div>
+            </div>
 
-            {/* Post Card */}
-            <Card className="mt-6 ">
-              <CardContent className="pt-3 pb-3 ">
-                {/* Top row */}
-                <div className="flex justify-between items-center relative mb-2">
-                  <div className="flex items-center">
-                    <Avatar>
-                      <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="@shadcn"
-                      />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col ml-2 items">
-                      <div className="ml-1 font-semibold text-[0.9rem] ">
-                        pineapple123
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute right-0 top-0">
-                    <span className="font-semibold text-[0.8rem]">
-                      {" "}
-                      2 mins ago{" "}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-[0.9rem]">
-                  a great premise with poor execution first off As stated by a
-                  previous reviewer, his regressions are also super formulaic.
-                  He gets depressed, gets a eureka moment before dying, regress,
-                  gets hopeful and repeat. secondly, the wordcount extendinator
-                </p>
-                <div className="flex space-x-4 justify-end mt-2">
-                  <div className="flex items-center">
-                    <div className="mr-1 text-[0.9rem]">2</div>
-                    <MessageCircle className="cursor-pointer" size={16} />
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-1 text-[0.9rem]">2</div>
-                    <Heart className="cursor-pointer" size={16} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className=" ">
-              <CardContent className="pt-0 pb-0 pl-0 ">
-                {/* Top row */}
-                <div className="flex items-center space-x-6 relative">
-                  <img
-                    src="/img/novel1.jpg"
-                    alt="Novel 1"
-                    className="w-20 rounded-md   "
-                  />
-                  <p className="text-[0.9rem] ">
-                    Completed Regressors Tale of Cultivation
-                  </p>
-                  <div className="ml-1 font-semibold text-[0.8rem] absolute right-0 top-3 ">
-                    2 mins ago
-                  </div>
-                  <div className="flex space-x-4 justify-end mt-2 absolute bottom-3 right-0">
-                    <div className="flex items-center">
-                      <div className="mr-1 text-[0.9rem]">2</div>
-                      <MessageCircle className="cursor-pointer" size={16} />
-                    </div>
-                    <div className="flex items-center">
-                      <div className="mr-1 text-[0.9rem]">2</div>
-                      <Heart className="cursor-pointer" size={16} />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onLike={handleLike}
+                onComment={handleComment}
+                onCommentLike={handleCommentLike}
+              />
+            ))}
           </div>
         </div>
       </div>
