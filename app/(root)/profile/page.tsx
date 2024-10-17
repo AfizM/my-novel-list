@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const { user } = useUser();
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -46,6 +47,7 @@ export default function ProfilePage() {
 
       setPosts([newPost, ...posts]);
       setNewPostContent("");
+      setIsInputFocused(false);
     } catch (error) {
       console.error("Error creating post:", error);
     }
@@ -218,24 +220,29 @@ export default function ProfilePage() {
                 placeholder="Write a status..."
                 value={newPostContent}
                 onChange={(e) => setNewPostContent(e.target.value)}
+                onFocus={() => setIsInputFocused(true)}
               />
-              <div className="flex justify-end space-x-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  style={{ fontSize: "0.8rem" }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleCreatePost}
-                  disabled={!newPostContent.trim()}
-                  style={{ fontSize: "0.8rem" }}
-                >
-                  Post
-                </Button>
-              </div>
+              {isInputFocused && (
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setIsInputFocused(false);
+                      setNewPostContent("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleCreatePost}
+                    disabled={!newPostContent.trim()}
+                  >
+                    Post
+                  </Button>
+                </div>
+              )}
             </div>
 
             {posts.map((post) => (
