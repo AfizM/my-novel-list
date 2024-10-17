@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle } from "lucide-react";
@@ -56,6 +56,12 @@ export function PostCard({
   const [comment, setComment] = useState("");
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
 
+  // Memoize the formatted time
+  const formattedTime = useMemo(
+    () => formatRelativeTime(post.created_at),
+    [post.created_at],
+  );
+
   const handleComment = useDebouncedCallback(async () => {
     if (comment.trim()) {
       await onComment(post.id, comment);
@@ -85,10 +91,6 @@ export function PostCard({
     await onCommentLike(post.id, commentId, isLiked, likes);
   };
 
-  const formatDate = (dateString: string) => {
-    return formatRelativeTime(dateString);
-  };
-
   return (
     <>
       <div
@@ -106,7 +108,7 @@ export function PostCard({
             </div>
           </div>
           <div className="text-gray-500" style={{ fontSize: "0.8rem" }}>
-            {formatDate(post.created_at)}
+            {formattedTime}
           </div>
         </div>
         <div className="mb-3 whitespace-pre-wrap break-words">
