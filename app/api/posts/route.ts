@@ -68,8 +68,11 @@ export async function GET(request: Request) {
         users!inner (first_name, last_name, image_url),
         post_comments (
           id,
+          post_id,
           content,
           created_at,
+          likes,
+          liked_by,
           users!inner (first_name, last_name, image_url)
         )
       `,

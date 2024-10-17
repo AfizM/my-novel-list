@@ -21,8 +21,11 @@ interface Post {
 
 interface Comment {
   id: string;
+  post_id: string;
   content: string;
   created_at: string;
+  likes: number;
+  is_liked: boolean;
   users: {
     first_name: string;
     last_name: string;
@@ -34,9 +37,20 @@ interface PostCardProps {
   post: Post;
   onLike: (postId: string, isLiked: boolean, likes: number) => Promise<void>;
   onComment: (postId: string, comment: string) => Promise<void>;
+  onCommentLike: (
+    postId: string,
+    commentId: string,
+    isLiked: boolean,
+    likes: number,
+  ) => Promise<void>;
 }
 
-export function PostCard({ post, onLike, onComment }: PostCardProps) {
+export function PostCard({
+  post,
+  onLike,
+  onComment,
+  onCommentLike,
+}: PostCardProps) {
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
@@ -61,6 +75,14 @@ export function PostCard({ post, onLike, onComment }: PostCardProps) {
       console.error("Error liking post:", error);
     }
   }, 300);
+
+  const handleCommentLike = async (
+    commentId: string,
+    isLiked: boolean,
+    likes: number,
+  ) => {
+    await onCommentLike(post.id, commentId, isLiked, likes);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -120,7 +142,11 @@ export function PostCard({ post, onLike, onComment }: PostCardProps) {
         <div className="mt-4 flex flex-col space-y-3">
           {post.post_comments && post.post_comments.length > 0 ? (
             post.post_comments.map((comment) => (
-              <CommentCard key={comment.id} comment={comment} />
+              <CommentCard
+                key={comment.id}
+                comment={comment}
+                onLike={handleCommentLike}
+              />
             ))
           ) : (
             <p className="text-gray-500 text-sm">No comments yet.</p>
@@ -136,7 +162,29 @@ export function PostCard({ post, onLike, onComment }: PostCardProps) {
   );
 }
 
-function CommentCard({ comment }: { comment: Comment }) {
+function CommentCard({
+  comment,
+  onLike,
+}: {
+  comment: Comment;
+  onLike: (commentId: string, isLiked: boolean, likes: number) => Promise<void>;
+}) {
+  const handleLike = useDebouncedCallback(async () => {
+    try {
+      const response = await fetch(
+        `/api/posts/${comment.post_id}/comments/${comment.id}/like`,
+        {
+          method: "POST",
+        },
+      );
+      if (!response.ok) throw new Error("Failed to like comment");
+      const { likes, action } = await response.json();
+      await onLike(comment.id, action === "liked", likes);
+    } catch (error) {
+      console.error("Error liking comment:", error);
+    }
+  }, 300);
+
   return (
     <div
       className="border rounded-md p-2 w-11/12 mx-auto"
@@ -158,6 +206,21 @@ function CommentCard({ comment }: { comment: Comment }) {
       </div>
       <div className="mb-1 whitespace-pre-wrap break-words">
         {comment.content}
+        <div className="flex justify-end items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={comment.is_liked ? "text-red-500" : ""}
+            style={{ fontSize: "0.8rem" }}
+            onClick={handleLike}
+          >
+            <Heart
+              className="w-4 h-4 mr-1"
+              fill={comment.is_liked ? "currentColor" : "none"}
+            />
+            <span>{comment.likes}</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -118,6 +118,28 @@ export default function Home() {
     }
   };
 
+  const handleCommentLike = async (
+    postId: string,
+    commentId: string,
+    isLiked: boolean,
+    newLikeCount: number,
+  ) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              post_comments: post.post_comments.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, likes: newLikeCount, is_liked: isLiked }
+                  : comment,
+              ),
+            }
+          : post,
+      ),
+    );
+  };
+
   return (
     <div className="min-h-screen">
       <div className="w-full max-w-7xl mx-auto my-0 px-9 flex justify-center">
@@ -149,6 +171,7 @@ export default function Home() {
               post={post}
               onLike={handleLike}
               onComment={handleComment}
+              onCommentLike={handleCommentLike}
             />
           ))}
         </div>
