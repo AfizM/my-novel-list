@@ -68,7 +68,7 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to create post");
 
       const newPost: Post = await response.json();
-      setPosts([newPost, ...posts]);
+      setPosts([{ ...newPost, post_comments: [] }, ...posts]);
       setNewPostContent("");
     } catch (error) {
       console.error("Error creating post:", error);
