@@ -3,9 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+
 import ProfileLayout from "../profilelayout";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Star, Heart, MessageCircle, Flag } from "lucide-react";
 import { Input } from "@/components/ui/input";
