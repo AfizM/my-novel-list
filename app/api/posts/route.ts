@@ -29,8 +29,7 @@ export async function POST(request: Request) {
           image
         ),
         users (
-          first_name,
-          last_name,
+          username,
           image_url
         )
       `,
@@ -72,8 +71,7 @@ export async function GET() {
           image
         ),
         users (
-          first_name,
-          last_name,
+          username,
           image_url
         ),
         post_comments (
@@ -83,8 +81,7 @@ export async function GET() {
           liked_by,
           created_at,
           users (
-            first_name,
-            last_name,
+           username,
             image_url
           )
         )

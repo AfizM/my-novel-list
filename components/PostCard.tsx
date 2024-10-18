@@ -19,8 +19,7 @@ interface Post {
     image: string;
   };
   users: {
-    first_name: string;
-    last_name: string;
+    username: string;
     image_url: string;
   };
   post_comments: Comment[];
@@ -33,8 +32,7 @@ interface Comment {
   likes: number;
   is_liked: boolean;
   users: {
-    first_name: string;
-    last_name: string;
+    username: string;
     image_url: string;
   };
 }
@@ -109,10 +107,10 @@ export function PostCard({
               <div className="flex items-center">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={post.users.image_url} alt="User avatar" />
-                  <AvatarFallback>{`${post.users.first_name[0]}${post.users.last_name[0]}`}</AvatarFallback>
+                  <AvatarFallback>{post.users.username[0]}</AvatarFallback>
                 </Avatar>
                 <div className="ml-2">
-                  <div className="font-semibold">{`${post.users.first_name} ${post.users.last_name}`}</div>
+                  <div className="font-semibold">{post.users.username}</div>
                 </div>
               </div>
               <div className="text-gray-500" style={{ fontSize: "0.8rem" }}>
@@ -214,10 +212,10 @@ function CommentCard({
         <div className="flex items-center">
           <Avatar className="w-7 h-7">
             <AvatarImage src={comment.users.image_url} alt="User avatar" />
-            <AvatarFallback>{`${comment.users.first_name[0]}${comment.users.last_name[0]}`}</AvatarFallback>
+            <AvatarFallback>{comment.users.username[0]}</AvatarFallback>
           </Avatar>
           <div className="ml-2">
-            <div className="font-semibold">{`${comment.users.first_name} ${comment.users.last_name}`}</div>
+            <div className="font-semibold">{comment.users.username}</div>
           </div>
         </div>
         <div className="text-gray-500" style={{ fontSize: "0.75rem" }}>

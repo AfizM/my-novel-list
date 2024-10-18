@@ -31,7 +31,7 @@ export async function POST(
         id,
         content,
         created_at,
-        users!inner (first_name, last_name, image_url)
+        users!inner (username, image_url)
       `,
       )
       .single();

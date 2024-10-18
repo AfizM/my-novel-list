@@ -28,7 +28,7 @@ export async function GET(
       .select(
         `
         *,
-        users!inner (first_name, last_name, image_url),
+        users!inner (username, image_url),
         novels (
           id,
           title,
@@ -40,7 +40,7 @@ export async function GET(
           created_at,
           likes,
           liked_by,
-          users!inner (first_name, last_name, image_url)
+          users!inner (username, image_url)
         )
       `,
       )

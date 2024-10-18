@@ -19,8 +19,7 @@ interface Post {
     image: string;
   };
   users: {
-    first_name: string;
-    last_name: string;
+    username: string;
     image_url: string;
   };
   post_comments: Comment[];
@@ -33,8 +32,7 @@ interface Comment {
   likes: number;
   is_liked: boolean;
   users: {
-    first_name: string;
-    last_name: string;
+    username: string;
     image_url: string;
   };
 }
