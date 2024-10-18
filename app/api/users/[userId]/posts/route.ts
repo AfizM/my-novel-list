@@ -20,6 +20,11 @@ export async function GET(
         `
         *,
         users!inner (first_name, last_name, image_url),
+        novels (
+          id,
+          title,
+          image
+        ),
         post_comments (
           id,
           content,
