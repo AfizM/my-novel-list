@@ -240,7 +240,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 )}
             </Card>
           </div>
-          <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
+          <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-4">
             Novel Stats
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

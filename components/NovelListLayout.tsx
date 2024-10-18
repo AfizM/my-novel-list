@@ -224,9 +224,6 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
             onOpenChange={() => setSelectedNovel(null)}
           >
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{selectedNovel?.title}</DialogTitle>
-              </DialogHeader>
               <NovelModal
                 novel={selectedNovel}
                 onClose={() => {

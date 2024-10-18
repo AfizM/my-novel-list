@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, StarHalf } from "lucide-react";
+import { Star, StarHalf, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type NovelModalProps = {
@@ -30,6 +30,7 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [notes, setNotes] = useState("");
+  const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,6 +44,7 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
           setChapterProgress(data.chapter_progress?.toString() || "");
           setRating(data.rating);
           setNotes(data.notes);
+          setIsFavorite(data.is_favorite);
         }
       } catch (error) {
         console.error("Error fetching novel list data:", error);
@@ -73,6 +75,7 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
             chapterProgress === "" ? null : parseInt(chapterProgress, 10),
           rating,
           notes,
+          is_favorite: isFavorite,
         }),
       });
 
@@ -162,8 +165,22 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
     }
   };
 
+  const toggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+  };
+
   return (
     <div className="flex flex-col space-y-6 pt-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">{novel.title}</h2>
+        <button onClick={toggleFavorite} className="focus:outline-none">
+          {isFavorite ? (
+            <Heart className="h-6 w-6 text-red-500 fill-current" />
+          ) : (
+            <Heart className="h-6 w-6 text-gray-400" />
+          )}
+        </button>
+      </div>
       <div className="flex space-x-6">
         <div className="w-1/3">
           <img

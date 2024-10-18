@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { novel_id, status, chapter_progress, rating, notes } =
+  const { novel_id, status, chapter_progress, rating, notes, is_favorite } =
     await request.json();
 
   try {
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
         chapter_progress,
         rating,
         notes,
+        is_favorite,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id, novel_id" },
