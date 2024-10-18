@@ -136,7 +136,9 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
             </div>
-
+            <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
+              Novel Stats
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -147,9 +149,6 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-xl font-bold">34</div>
-                  <p className="text-xs text-muted-foreground">
-                    +10 this month
-                  </p>
                 </CardContent>
               </Card>
               <Card>
@@ -161,9 +160,6 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-xl font-bold">4.6</div>
-                  <p className="text-xs text-muted-foreground">
-                    Out of 5 stars
-                  </p>
                 </CardContent>
               </Card>
               <Card>
@@ -175,9 +171,6 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-xl font-bold">Fantasy</div>
-                  <p className="text-xs text-muted-foreground">
-                    Based on ratings
-                  </p>
                 </CardContent>
               </Card>
             </div>
