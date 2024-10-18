@@ -5,9 +5,10 @@ import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Star, Heart, MessageCircle, Flag } from "lucide-react";
+import { BookOpen, Star, Heart, MessageCircle, Flag, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea";
 
 interface User {
   id: string;
@@ -15,6 +16,7 @@ interface User {
   firstName: string;
   lastName: string;
   imageUrl: string;
+  about_me: string | null;
 }
 
 interface ProfileContentProps {
@@ -25,6 +27,10 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [aboutMe, setAboutMe] = useState(user.about_me || "");
+  const [isEditing, setIsEditing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const { user: currentUser } = useUser();
 
   useEffect(() => {
     console.log("USER " + user.id);
@@ -126,23 +132,81 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     );
   };
 
+  const handleUpdateAboutMe = async () => {
+    try {
+      const response = await fetch(`/api/users/${user.username}/about-me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ about_me: aboutMe }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update about me");
+      }
+
+      // Update the user object with the new about_me
+      user.about_me = aboutMe;
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating about me:", error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 ">
         <div className="lg:col-span-2">
           {/* About me section */}
           <div className="flex flex-col space-y-2 mb-8">
-            <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
+            <div className="text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
               About me
             </div>
-            <Card className="pt-4 ">
+            <Card
+              className="pt-4 relative"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
               <CardContent>
-                <p className="text-[0.9rem]">
-                  Avid web novel reader and aspiring writer. I love exploring
-                  new worlds through the pages of a good story. Always on the
-                  lookout for the next epic adventure or heartwarming tale.
-                </p>
+                {isEditing ? (
+                  <div className="flex flex-col space-y-2">
+                    <Textarea
+                      value={aboutMe}
+                      onChange={(e) => setAboutMe(e.target.value)}
+                      className="min-h-[100px]"
+                    />
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setAboutMe(user.about_me || "");
+                        }}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={handleUpdateAboutMe}>Update</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[0.9rem] whitespace-pre-wrap break-words">
+                    {aboutMe || "No about me information provided."}
+                  </p>
+                )}
               </CardContent>
+              {currentUser?.username === user.username &&
+                isHovered &&
+                !isEditing && (
+                  <Button
+                    className="absolute top-2 right-2 p-2"
+                    variant="ghost"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
             </Card>
           </div>
           <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
