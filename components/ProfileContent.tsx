@@ -23,6 +23,12 @@ interface ProfileContentProps {
   user: User;
 }
 
+interface UserStats {
+  novelsRead: number;
+  avgRating: string;
+  favoriteGenre: string;
+}
+
 export default function ProfileContent({ user }: ProfileContentProps) {
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
@@ -31,6 +37,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { user: currentUser } = useUser();
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
     console.log("USER " + user.id);
@@ -38,6 +45,22 @@ export default function ProfileContent({ user }: ProfileContentProps) {
       fetchUserPosts();
     }
   }, [user]);
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      try {
+        const response = await fetch(`/api/users/${user.user_id}/stats`);
+        if (!response.ok) throw new Error("Failed to fetch user stats");
+        const data = await response.json();
+        setUserStats(data);
+        console.log("User stats:", userStats);
+      } catch (error) {
+        console.error("Error fetching user stats:", error);
+      }
+    };
+
+    fetchUserStats();
+  }, [user.id]);
 
   const fetchUserPosts = async () => {
     try {
@@ -221,7 +244,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 <BookOpen className="h-4 w-4 text-muted-foreground text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold">34</div>
+                <div className="text-xl font-bold">
+                  {userStats?.novelsRead || "N/A"}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -232,7 +257,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 <Star className="h-4 w-4 text-muted-foreground text-yellow-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold">4.6</div>
+                <div className="text-xl font-bold">
+                  {userStats?.avgRating || "N/A"}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -243,7 +270,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 <Heart className="h-4 w-4 text-muted-foreground text-red-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold">Fantasy</div>
+                <div className="text-xl font-bold">
+                  {userStats?.favoriteGenre || "N/A"}
+                </div>
               </CardContent>
             </Card>
           </div>

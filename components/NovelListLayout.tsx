@@ -134,6 +134,17 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
     </>
   );
 
+  const refetchUserStats = async () => {
+    try {
+      const response = await fetch(`/api/users/${user.id}/stats`);
+      if (!response.ok) throw new Error("Failed to fetch user stats");
+      const data = await response.json();
+      // You might need to pass this data up to the parent component or use a global state management solution
+    } catch (error) {
+      console.error("Error refetching user stats:", error);
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -220,6 +231,10 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                 novel={selectedNovel}
                 onClose={() => {
                   setSelectedNovel(null);
+                }}
+                onUpdateStats={() => {
+                  // You can add any additional logic here if needed
+                  console.log("User stats updated");
                 }}
               />
             </DialogContent>
