@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
 import { MoreHorizontal } from "lucide-react";
-import ProfileLayout from "../profilelayout";
+// import ProfileLayout from "../profilelayout";
 
 const NovelItem = ({ novel, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -138,91 +138,89 @@ export default function NovelListPage() {
   }
 
   return (
-    <ProfileLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        <div className="flex flex-col md:flex-row gap-12">
-          {/* Filters */}
-          <div className="w-full md:w-[18%]">
-            <h2 className="text-[1.24rem] font-semibold mb-4">Filters</h2>
-            <div className="space-y-4">
-              <Input type="search" placeholder="Search novels..." />
-              <div className="space-y-2">
-                {["All", "Planning", "Reading", "Completed"].map((filter) => (
-                  <Button
-                    key={filter}
-                    variant={selectedFilter === filter ? "default" : "outline"}
-                    className="w-full justify-start"
-                    onClick={() => setSelectedFilter(filter)}
-                  >
-                    {filter}
-                  </Button>
-                ))}
-              </div>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select genre" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fantasy">Fantasy</SelectItem>
-                  <SelectItem value="scifi">Sci-Fi</SelectItem>
-                  <SelectItem value="romance">Romance</SelectItem>
-                  <SelectItem value="action">Action</SelectItem>
-                </SelectContent>
-              </Select>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <div className="flex flex-col md:flex-row gap-12">
+        {/* Filters */}
+        <div className="w-full md:w-[18%]">
+          <h2 className="text-[1.24rem] font-semibold mb-4">Filters</h2>
+          <div className="space-y-4">
+            <Input type="search" placeholder="Search novels..." />
+            <div className="space-y-2">
+              {["All", "Planning", "Reading", "Completed"].map((filter) => (
+                <Button
+                  key={filter}
+                  variant={selectedFilter === filter ? "default" : "outline"}
+                  className="w-full justify-start"
+                  onClick={() => setSelectedFilter(filter)}
+                >
+                  {filter}
+                </Button>
+              ))}
             </div>
-          </div>
-
-          {/* Novel List */}
-          <div className="w-full md:w-3/4 flex flex-col">
-            {selectedFilter === "All" ? (
-              <>
-                <NovelTable
-                  novels={filteredNovels.reading}
-                  title="Reading"
-                  onSelectNovel={setSelectedNovel}
-                />
-                <NovelTable
-                  novels={filteredNovels.planning}
-                  title="Planning"
-                  onSelectNovel={setSelectedNovel}
-                />
-                <NovelTable
-                  novels={filteredNovels.completed}
-                  title="Completed"
-                  onSelectNovel={setSelectedNovel}
-                />
-              </>
-            ) : (
-              <NovelTable
-                novels={
-                  filteredNovels[
-                    selectedFilter.toLowerCase() as keyof typeof filteredNovels
-                  ]
-                }
-                title={selectedFilter}
-                onSelectNovel={setSelectedNovel}
-              />
-            )}
-
-            <Dialog
-              open={selectedNovel !== null}
-              onOpenChange={() => setSelectedNovel(null)}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{selectedNovel?.title}</DialogTitle>
-                </DialogHeader>
-                <NovelModal
-                  novel={selectedNovel}
-                  onClose={() => {
-                    setSelectedNovel(null);
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select genre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fantasy">Fantasy</SelectItem>
+                <SelectItem value="scifi">Sci-Fi</SelectItem>
+                <SelectItem value="romance">Romance</SelectItem>
+                <SelectItem value="action">Action</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
+
+        {/* Novel List */}
+        <div className="w-full md:w-3/4 flex flex-col">
+          {selectedFilter === "All" ? (
+            <>
+              <NovelTable
+                novels={filteredNovels.reading}
+                title="Reading"
+                onSelectNovel={setSelectedNovel}
+              />
+              <NovelTable
+                novels={filteredNovels.planning}
+                title="Planning"
+                onSelectNovel={setSelectedNovel}
+              />
+              <NovelTable
+                novels={filteredNovels.completed}
+                title="Completed"
+                onSelectNovel={setSelectedNovel}
+              />
+            </>
+          ) : (
+            <NovelTable
+              novels={
+                filteredNovels[
+                  selectedFilter.toLowerCase() as keyof typeof filteredNovels
+                ]
+              }
+              title={selectedFilter}
+              onSelectNovel={setSelectedNovel}
+            />
+          )}
+
+          <Dialog
+            open={selectedNovel !== null}
+            onOpenChange={() => setSelectedNovel(null)}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{selectedNovel?.title}</DialogTitle>
+              </DialogHeader>
+              <NovelModal
+                novel={selectedNovel}
+                onClose={() => {
+                  setSelectedNovel(null);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </ProfileLayout>
+    </div>
   );
 }

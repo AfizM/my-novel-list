@@ -5,6 +5,7 @@ import { Heart, MessageCircle } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { Textarea } from "./ui/textarea";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import Link from "next/link";
 
 interface Post {
   id: string;
@@ -110,7 +111,12 @@ export function PostCard({
                   <AvatarFallback>{post.users.username[0]}</AvatarFallback>
                 </Avatar>
                 <div className="ml-2">
-                  <div className="font-semibold">{post.users.username}</div>
+                  <Link
+                    href={`/profile/${post.users.username}`}
+                    className="font-semibold hover:underline text-primary"
+                  >
+                    {post.users.username}
+                  </Link>
                 </div>
               </div>
               <div className="text-gray-500" style={{ fontSize: "0.8rem" }}>
@@ -215,7 +221,12 @@ function CommentCard({
             <AvatarFallback>{comment.users.username[0]}</AvatarFallback>
           </Avatar>
           <div className="ml-2">
-            <div className="font-semibold">{comment.users.username}</div>
+            <Link
+              href={`/profile/${comment.users.username}`}
+              className="font-semibold hover:underline text-primary"
+            >
+              {comment.users.username}
+            </Link>
           </div>
         </div>
         <div className="text-gray-500" style={{ fontSize: "0.75rem" }}>
