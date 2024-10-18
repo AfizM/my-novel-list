@@ -4,16 +4,25 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } },
+  { params }: { params: { username: string } },
 ) {
   const { userId } = auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const targetUserId = params.userId;
+  const targetUsername = params.userId;
+  console.log("FETCHING POSTS " + targetUsername);
 
   try {
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("user_id")
+      .eq("username", targetUsername)
+      .single();
+
+    if (userError) throw userError;
+
     const { data, error } = await supabase
       .from("posts")
       .select(
@@ -35,7 +44,7 @@ export async function GET(
         )
       `,
       )
-      .eq("user_id", targetUserId)
+      .eq("user_id", userData.user_id)
       .order("created_at", { ascending: false });
 
     if (error) throw error;

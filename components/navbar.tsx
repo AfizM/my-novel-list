@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Book, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ModeToggle } from "./mode-toggle";
@@ -12,10 +12,13 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
-import { Sign } from "crypto";
+import { useUser } from "@clerk/nextjs";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
+
+  console.log("USER " + user?.id);
 
   const navItems = [
     { name: "Browse", href: "/browse" },
@@ -25,7 +28,7 @@ const Navbar = () => {
 
   const signedInNavItems = [
     { name: "Home", href: "/" },
-    { name: "Profile", href: "/profile" },
+    { name: "Profile", href: `/profile/${user?.username}` },
     { name: "Novel List", href: "/novellist" },
     { name: "Browse", href: "/browse" },
     { name: "Forum", href: "/" },
@@ -39,7 +42,7 @@ const Navbar = () => {
           <div className="flex-shrink-0 flex items-center ">
             <Link href="/" className="text-2xl font-bold hover:text-primary ">
               <div className="flex items-center">
-                <img src="img/logo.png" alt="" width="35" height="20" />
+                <img src="/img/logo.png" alt="" width="35" height="20" />
                 <div className="ml-[2px]">MyNovelList</div>
               </div>
             </Link>

@@ -4,20 +4,30 @@ import { useUser } from "@clerk/nextjs";
 import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 
-import ProfileLayout from "../profilelayout";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Star, Heart, MessageCircle, Flag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 
-export default function ProfilePage() {
-  const { user } = useUser();
+interface User {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  imageUrl: string;
+}
+
+interface ProfileContentProps {
+  user: User;
+}
+
+export default function ProfileContent({ user }: ProfileContentProps) {
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
+    console.log("USER " + user.id);
     if (user) {
       fetchUserPosts();
     }
@@ -25,7 +35,7 @@ export default function ProfilePage() {
 
   const fetchUserPosts = async () => {
     try {
-      const response = await fetch(`/api/users/${user.id}/posts`);
+      const response = await fetch(`/api/users/${user.username}/posts`);
       if (!response.ok) throw new Error("Failed to fetch posts");
       const data = await response.json();
       setPosts(data);

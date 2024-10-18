@@ -26,11 +26,15 @@ export default function ProfileLayout({
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    console.log("USER na " + user.username);
+  }, [user]);
+
   return (
     <div className="w-full -mt-[1.30rem] mx-auto my-0">
       <div className="relative w-full h-72">
         <img
-          src={user.bannerUrl || defaultBannerUrl}
+          src={user.banner_url || defaultBannerUrl}
           alt="Profile banner"
           className="w-full h-full object-cover"
           loading="eager"
@@ -38,12 +42,12 @@ export default function ProfileLayout({
         <div className="absolute inset-0 bg-black bg-opacity-30" />
         <div className="flex absolute ml-40 bottom-8 space-x-4 z-10">
           <Avatar className="w-24 h-24">
-            <AvatarImage src={user.imageUrl} alt={user.username || ""} />
+            <AvatarImage src={user.image_url} alt={user.username || ""} />
             <AvatarFallback>{user.username?.[0] || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-3">
             <div className="text-white text-2xl font-semibold">
-              {user.firstName || "Anonymous User"}
+              {user.username || "Anonymous User"}
             </div>
             <Button className="min-w-24" onClick={() => setIsModalOpen(true)}>
               Edit Banner
