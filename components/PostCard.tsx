@@ -12,6 +12,12 @@ interface Post {
   likes: number;
   is_liked: boolean;
   created_at: string;
+  novel_id?: number;
+  novels?: {
+    id: number;
+    title: string;
+    image: string;
+  };
   users: {
     first_name: string;
     last_name: string;
@@ -22,7 +28,6 @@ interface Post {
 
 interface Comment {
   id: string;
-  post_id: string;
   content: string;
   created_at: string;
   likes: number;
@@ -56,7 +61,6 @@ export function PostCard({
   const [comment, setComment] = useState("");
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
 
-  // Memoize the formatted time
   const formattedTime = useMemo(
     () => formatRelativeTime(post.created_at),
     [post.created_at],
@@ -83,60 +87,66 @@ export function PostCard({
     }
   }, 300);
 
-  const handleCommentLike = async (
-    commentId: string,
-    isLiked: boolean,
-    likes: number,
-  ) => {
-    await onCommentLike(post.id, commentId, isLiked, likes);
-  };
-
   return (
     <>
       <div
         className="mt-3 border rounded-md p-3 mb-3"
         style={{ fontSize: "0.9rem" }}
       >
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={post.users.image_url} alt="User avatar" />
-              <AvatarFallback>{`${post.users.first_name[0]}${post.users.last_name[0]}`}</AvatarFallback>
-            </Avatar>
-            <div className="ml-2">
-              <div className="font-semibold">{`${post.users.first_name} ${post.users.last_name}`}</div>
+        <div className="flex">
+          {post.novel_id && post.novels && (
+            <div className="w-1/6 mr-3">
+              <img
+                src={post.novels.image}
+                alt={post.novels.title}
+                className="w-full h-auto object-cover rounded-md"
+                style={{ maxHeight: "110px" }}
+              />
+            </div>
+          )}
+          <div className={post.novel_id ? "w-5/6" : "w-full"}>
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex items-center">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={post.users.image_url} alt="User avatar" />
+                  <AvatarFallback>{`${post.users.first_name[0]}${post.users.last_name[0]}`}</AvatarFallback>
+                </Avatar>
+                <div className="ml-2">
+                  <div className="font-semibold">{`${post.users.first_name} ${post.users.last_name}`}</div>
+                </div>
+              </div>
+              <div className="text-gray-500" style={{ fontSize: "0.8rem" }}>
+                {formattedTime}
+              </div>
+            </div>
+            <div className="mb-3 whitespace-pre-wrap break-words">
+              {post.content}
+            </div>
+            <div className="flex justify-end items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={post.is_liked ? "text-red-500" : ""}
+                style={{ fontSize: "0.8rem" }}
+                onClick={handleLike}
+              >
+                <Heart
+                  className="w-4 h-4 mr-1"
+                  fill={post.is_liked ? "currentColor" : "none"}
+                />
+                <span>{post.likes}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                style={{ fontSize: "0.8rem" }}
+                onClick={() => setShowCommentsAndReply(!showCommentsAndReply)}
+              >
+                <MessageCircle className="w-4 h-4 mr-1" />
+                <span>{post.post_comments?.length || 0}</span>
+              </Button>
             </div>
           </div>
-          <div className="text-gray-500" style={{ fontSize: "0.8rem" }}>
-            {formattedTime}
-          </div>
-        </div>
-        <div className="mb-3 whitespace-pre-wrap break-words">
-          {post.content}
-        </div>
-        <div className="flex justify-end items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={post.is_liked ? "text-red-500" : ""}
-            style={{ fontSize: "0.8rem" }}
-            onClick={handleLike}
-          >
-            <Heart
-              className="w-4 h-4 mr-1"
-              fill={post.is_liked ? "currentColor" : "none"}
-            />
-            <span>{post.likes}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            style={{ fontSize: "0.8rem" }}
-            onClick={() => setShowCommentsAndReply(!showCommentsAndReply)}
-          >
-            <MessageCircle className="w-4 h-4 mr-1" />
-            <span>{post.post_comments?.length || 0}</span>
-          </Button>
         </div>
       </div>
 
@@ -147,7 +157,9 @@ export function PostCard({
               <CommentCard
                 key={comment.id}
                 comment={comment}
-                onLike={handleCommentLike}
+                onLike={(commentId, isLiked, likes) =>
+                  onCommentLike(post.id, commentId, isLiked, likes)
+                }
               />
             ))
           ) : (

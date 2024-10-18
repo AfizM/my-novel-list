@@ -9,25 +9,29 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { content } = await request.json();
-
-    if (!content || content.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Content is required" },
-        { status: 400 },
-      );
-    }
+    const { content, novel_id } = await request.json();
 
     const { data, error } = await supabase
       .from("posts")
-      .insert({ user_id: userId, content })
+      .insert({ user_id: userId, content, novel_id, liked_by: [] })
       .select(
         `
         id,
         content,
         likes,
+        liked_by,
         created_at,
-        users!inner (first_name, last_name, image_url)
+        novel_id,
+        novels (
+          id,
+          title,
+          image
+        ),
+        users (
+          first_name,
+          last_name,
+          image_url
+        )
       `,
       )
       .single();
@@ -44,19 +48,14 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   const { userId } = auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const offset = (page - 1) * limit;
-
   try {
-    const { data, error, count } = await supabase
+    const { data: posts, error } = await supabase
       .from("posts")
       .select(
         `
@@ -65,31 +64,47 @@ export async function GET(request: Request) {
         likes,
         liked_by,
         created_at,
-        users!inner (first_name, last_name, image_url),
+        novel_id,
+        novels (
+          id,
+          title,
+          image
+        ),
+        users (
+          first_name,
+          last_name,
+          image_url
+        ),
         post_comments (
           id,
-          post_id,
           content,
-          created_at,
           likes,
           liked_by,
-          users!inner (first_name, last_name, image_url)
+          created_at,
+          users (
+            first_name,
+            last_name,
+            image_url
+          )
         )
       `,
-        { count: "exact" },
       )
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    const postsWithLikeStatus = data.map((post) => ({
+    const postsWithLikeStatus = posts.map((post) => ({
       ...post,
       is_liked: post.liked_by?.includes(userId) || false,
       liked_by: undefined,
+      post_comments: post.post_comments.map((comment) => ({
+        ...comment,
+        is_liked: comment.liked_by?.includes(userId) || false,
+        liked_by: undefined,
+      })),
     }));
 
-    return NextResponse.json({ posts: postsWithLikeStatus, count });
+    return NextResponse.json(postsWithLikeStatus);
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(

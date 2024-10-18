@@ -80,25 +80,25 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
         throw new Error("Failed to save novel to list");
       }
 
-      // Create activity post
-      let activityContent = "";
+      // Create post
+      let postContent = "";
       if (status === "reading" && chapterProgress) {
-        activityContent = `Read chapter ${chapterProgress} of ${novel.title}`;
+        postContent = `Read chapter ${chapterProgress} of ${novel.title}`;
       } else if (status === "completed") {
-        activityContent = `Completed ${novel.title}`;
+        postContent = `Completed ${novel.title}`;
       } else if (status === "planning") {
-        activityContent = `Plans to read ${novel.title}`;
+        postContent = `Plans to read ${novel.title}`;
       }
 
-      if (activityContent) {
-        await fetch("/api/activity-posts", {
+      if (postContent) {
+        await fetch("/api/posts", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             novel_id: novel.id,
-            content: activityContent,
+            content: postContent,
           }),
         });
       }

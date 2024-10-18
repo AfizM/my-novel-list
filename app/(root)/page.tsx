@@ -5,7 +5,6 @@ import { PostCard } from "@/components/PostCard";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ActivityPostCard } from "@/components/ActivityPostCard";
 
 interface Post {
   id: string;
@@ -13,6 +12,12 @@ interface Post {
   likes: number;
   is_liked: boolean;
   created_at: string;
+  novel_id?: number;
+  novels?: {
+    id: number;
+    title: string;
+    image: string;
+  };
   users: {
     first_name: string;
     last_name: string;
@@ -25,33 +30,8 @@ interface Comment {
   id: string;
   content: string;
   created_at: string;
-  users: {
-    first_name: string;
-    last_name: string;
-    image_url: string;
-  };
-}
-
-interface ActivityPost {
-  id: string;
-  content: string;
   likes: number;
   is_liked: boolean;
-  created_at: string;
-  novels: {
-    id: number;
-    title: string;
-    image: string;
-  };
-  activity_post_comments: ActivityPostComment[];
-}
-
-interface ActivityPostComment {
-  id: string;
-  content: string;
-  likes: number;
-  is_liked: boolean;
-  created_at: string;
   users: {
     first_name: string;
     last_name: string;
@@ -64,14 +44,11 @@ export default function Home() {
     "following",
   );
   const [posts, setPosts] = useState<Post[]>([]);
-  const [activityPosts, setActivityPosts] = useState<ActivityPost[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPosts();
-    fetchActivityPosts();
   }, []);
 
   const fetchPosts = async () => {
@@ -79,20 +56,9 @@ export default function Home() {
       const response = await fetch("/api/posts");
       if (!response.ok) throw new Error("Failed to fetch posts");
       const data = await response.json();
-      setPosts(data.posts);
+      setPosts(data);
     } catch (error) {
       console.error("Error fetching posts:", error);
-    }
-  };
-
-  const fetchActivityPosts = async () => {
-    try {
-      const response = await fetch("/api/activity-posts");
-      if (!response.ok) throw new Error("Failed to fetch activity posts");
-      const data = await response.json();
-      setActivityPosts(data);
-    } catch (error) {
-      console.error("Error fetching activity posts:", error);
     }
   };
 
@@ -110,7 +76,7 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to create post");
 
       const newPost: Post = await response.json();
-      setPosts([{ ...newPost, post_comments: [] }, ...posts]);
+      setPosts([newPost, ...posts]);
       setNewPostContent("");
     } catch (error) {
       console.error("Error creating post:", error);
@@ -182,79 +148,6 @@ export default function Home() {
     );
   };
 
-  const handleActivityPostLike = async (
-    postId: string,
-    isLiked: boolean,
-    likes: number,
-  ) => {
-    setActivityPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              likes,
-              is_liked: isLiked,
-              liked_by: isLiked
-                ? [...(post.liked_by || []), userId]
-                : (post.liked_by || []).filter((id) => id !== userId),
-            }
-          : post,
-      ),
-    );
-  };
-
-  const handleActivityPostComment = async (postId: string, comment: string) => {
-    try {
-      const response = await fetch(`/api/activity-posts/${postId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: comment }),
-      });
-
-      if (!response.ok) throw new Error("Failed to add comment");
-      const newComment = await response.json();
-
-      setActivityPosts(
-        activityPosts.map((post) =>
-          post.id === postId
-            ? {
-                ...post,
-                activity_post_comments: [
-                  ...post.activity_post_comments,
-                  newComment,
-                ],
-              }
-            : post,
-        ),
-      );
-    } catch (error) {
-      console.error("Error adding activity post comment:", error);
-    }
-  };
-
-  const handleActivityPostCommentLike = async (
-    postId: string,
-    commentId: string,
-    isLiked: boolean,
-    likes: number,
-  ) => {
-    setActivityPosts(
-      activityPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              activity_post_comments: post.activity_post_comments.map(
-                (comment) =>
-                  comment.id === commentId
-                    ? { ...comment, likes, is_liked: isLiked }
-                    : comment,
-              ),
-            }
-          : post,
-      ),
-    );
-  };
-
   return (
     <div className="min-h-screen">
       <div className="w-full max-w-7xl mx-auto my-0 px-9 flex justify-center">
@@ -279,16 +172,6 @@ export default function Home() {
               Post
             </Button>
           </div>
-
-          {activityPosts.map((post) => (
-            <ActivityPostCard
-              key={post.id}
-              post={post}
-              onLike={handleActivityPostLike}
-              onComment={handleActivityPostComment}
-              onCommentLike={handleActivityPostCommentLike}
-            />
-          ))}
 
           {posts.map((post) => (
             <PostCard
