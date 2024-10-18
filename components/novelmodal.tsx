@@ -80,10 +80,33 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
         throw new Error("Failed to save novel to list");
       }
 
+      // Create activity post
+      let activityContent = "";
+      if (status === "reading" && chapterProgress) {
+        activityContent = `Read chapter ${chapterProgress} of ${novel.title}`;
+      } else if (status === "completed") {
+        activityContent = `Completed ${novel.title}`;
+      } else if (status === "planning") {
+        activityContent = `Plans to read ${novel.title}`;
+      }
+
+      if (activityContent) {
+        await fetch("/api/activity-posts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            novel_id: novel.id,
+            content: activityContent,
+          }),
+        });
+      }
+
       onClose();
     } catch (error) {
       console.error("Error saving novel to list:", error);
-      setError("Failed to save novel to list. Please try again.");
+      setError("Failed to save. Please try again.");
     } finally {
       setIsLoading(false);
     }

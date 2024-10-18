@@ -254,6 +254,36 @@ export default function ProfilePage() {
                 onCommentLike={handleCommentLike}
               />
             ))}
+
+            {/* Activity Post */}
+            <Card className=" ">
+              <CardContent className="pt-0 pb-0 pl-0 ">
+                {/* Top row */}
+                <div className="flex items-center space-x-6 relative">
+                  <img
+                    src="/img/novel1.jpg"
+                    alt="Novel 1"
+                    className="w-20 rounded-md   "
+                  />
+                  <p className="text-[0.9rem] ">
+                    Completed Regressors Tale of Cultivation
+                  </p>
+                  <div className="ml-1 font-semibold text-[0.8rem] absolute right-0 top-3 ">
+                    2 mins ago
+                  </div>
+                  <div className="flex space-x-4 justify-end mt-2 absolute bottom-3 right-0">
+                    <div className="flex items-center">
+                      <div className="mr-1 text-[0.9rem]">2</div>
+                      <MessageCircle className="cursor-pointer" size={16} />
+                    </div>
+                    <div className="flex items-center">
+                      <div className="mr-1 text-[0.9rem]">2</div>
+                      <Heart className="cursor-pointer" size={16} />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
