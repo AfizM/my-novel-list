@@ -46,6 +46,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { user: currentUser } = useUser();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [favoriteNovels, setFavoriteNovels] = useState([]);
 
   useEffect(() => {
     console.log("USER " + user.id);
@@ -69,6 +70,10 @@ export default function ProfileContent({ user }: ProfileContentProps) {
 
     fetchUserStats();
   }, [user.id]);
+
+  useEffect(() => {
+    fetchFavoriteNovels();
+  }, [user.username]);
 
   const fetchUserPosts = async () => {
     try {
@@ -186,6 +191,21 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     }
   };
 
+  const fetchFavoriteNovels = async () => {
+    try {
+      const response = await fetch(
+        `/api/users/${user.username}/favorite-novels`,
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch favorite novels");
+      }
+      const data = await response.json();
+      setFavoriteNovels(data);
+    } catch (error) {
+      console.error("Error fetching favorite novels:", error);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 ">
@@ -293,17 +313,17 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             <Card>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex flex-col items-center">
-                      <Image
-                        src={`/img/novel1.jpg`}
-                        alt={`Favorite novel ${i}`}
-                        width={100}
-                        height={150}
-                        className="rounded-md shadow-md"
-                      />
-                      <p className="mt-2 text-sm font-medium text-center">
-                        Novel {i}
+                  {favoriteNovels.map((novel) => (
+                    <div key={novel.id} className="flex flex-col items-center">
+                      <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
+                        <img
+                          src={novel.image || "/img/novel-placeholder.jpg"}
+                          alt={novel.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="mt-2 text-sm font-medium text-center line-clamp-2">
+                        {novel.title}
                       </p>
                     </div>
                   ))}

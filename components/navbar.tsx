@@ -18,8 +18,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useUser();
 
-  console.log("USER " + user?.id);
-
   const navItems = [
     { name: "Browse", href: "/browse" },
     { name: "Social", href: "/" },

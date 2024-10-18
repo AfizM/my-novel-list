@@ -21,7 +21,7 @@ export async function GET(
 
     if (novelListError) throw novelListError;
 
-    console.log("Novel List:", JSON.stringify(novelList, null, 2));
+    // console.log("Novel List:", JSON.stringify(novelList, null, 2));
 
     const novelsRead = novelList.filter(
       (item) => item.status === "completed",

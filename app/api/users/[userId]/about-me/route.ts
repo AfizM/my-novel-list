@@ -12,7 +12,7 @@ export async function PUT(
   }
 
   const username = params.userId;
-  console.log("USERNAME IS" + username);
+
   const { about_me } = await request.json();
 
   try {
