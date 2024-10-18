@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, StarHalf, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type NovelModalProps = {
   novel: {
@@ -107,10 +108,13 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
       }
       await refetchUserStats();
 
+      toast.success(`${novel.title} list entry updated`);
+
       onClose();
     } catch (error) {
       console.error("Error saving novel to list:", error);
       setError("Failed to save. Please try again.");
+      toast.error("Failed to update list entry. Please try again.");
     } finally {
       setIsLoading(false);
     }

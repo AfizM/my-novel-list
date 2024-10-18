@@ -5,6 +5,7 @@ import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Footer } from "@/components/footer";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <div className="flex-grow mt-6">{children}</div>
             <Footer />
           </ThemeProvider>
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
