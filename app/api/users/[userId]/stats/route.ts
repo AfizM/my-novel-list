@@ -16,7 +16,7 @@ export async function GET(
   try {
     const { data: novelList, error: novelListError } = await supabase
       .from("novel_list")
-      .select("status, rating, novels(genres)")
+      .select("status, chapter_progress, novels(genres)")
       .eq("user_id", targetUserId);
 
     if (novelListError) throw novelListError;
@@ -27,20 +27,16 @@ export async function GET(
       (item) => item.status === "completed",
     ).length;
 
-    const ratings = novelList
-      .map((item) => item.rating)
-      .filter((rating) => rating !== null);
-    const avgRating =
-      ratings.length > 0
-        ? (
-            ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
-          ).toFixed(1)
-        : "N/A";
+    const chaptersRead = novelList.reduce((sum, item) => {
+      return sum + (item.chapter_progress || 0);
+    }, 0);
 
     const genreCounts = novelList.reduce((acc, item) => {
-      item.novels.genres.forEach((genre) => {
-        acc[genre] = (acc[genre] || 0) + 1;
-      });
+      if (item.novels && Array.isArray(item.novels.genres)) {
+        item.novels.genres.forEach((genre) => {
+          acc[genre] = (acc[genre] || 0) + 1;
+        });
+      }
       return acc;
     }, {});
 
@@ -49,9 +45,11 @@ export async function GET(
         ? Object.entries(genreCounts).reduce((a, b) => (a[1] > b[1] ? a : b))[0]
         : "N/A";
 
+    console.log("Stats:", { novelsRead, chaptersRead, favoriteGenre });
+
     return NextResponse.json({
       novelsRead,
-      avgRating,
+      chaptersRead,
       favoriteGenre,
     });
   } catch (error) {

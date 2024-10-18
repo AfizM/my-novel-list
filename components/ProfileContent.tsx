@@ -5,7 +5,15 @@ import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Star, Heart, MessageCircle, Flag, Edit } from "lucide-react";
+import {
+  BookOpen,
+  Bookmark,
+  Star,
+  Heart,
+  MessageCircle,
+  Flag,
+  Edit,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +33,7 @@ interface ProfileContentProps {
 
 interface UserStats {
   novelsRead: number;
-  avgRating: string;
+  chaptersRead: number;
   favoriteGenre: string;
 }
 
@@ -252,13 +260,13 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Avg. Rating
+                  Chapters Read
                 </CardTitle>
-                <Star className="h-4 w-4 text-muted-foreground text-yellow-400" />
+                <Bookmark className="h-4 w-4 text-muted-foreground text-yellow-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-xl font-bold">
-                  {userStats?.avgRating || "N/A"}
+                  {userStats?.chaptersRead || 0}
                 </div>
               </CardContent>
             </Card>
