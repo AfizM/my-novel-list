@@ -26,24 +26,26 @@ export async function POST(request: Request) {
     const newFavoriteOrder =
       maxOrderData.length > 0 ? maxOrderData[0].favorite_order + 1 : 1;
 
+    // Create the data object to be inserted
+    const novelData = {
+      user_id: userId,
+      novel_id,
+      status,
+      chapter_progress,
+      rating,
+      notes,
+      is_favorite,
+      updated_at: new Date().toISOString(),
+    };
+
     // Add favorite_order to the data object if is_favorite is true
     if (is_favorite) {
-      data.favorite_order = newFavoriteOrder;
+      novelData.favorite_order = newFavoriteOrder;
     }
 
-    const { data, error } = await supabase.from("novel_list").upsert(
-      {
-        user_id: userId,
-        novel_id,
-        status,
-        chapter_progress,
-        rating,
-        notes,
-        is_favorite,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id, novel_id" },
-    );
+    const { data, error } = await supabase
+      .from("novel_list")
+      .upsert(novelData, { onConflict: "user_id, novel_id" });
 
     if (error) throw error;
 

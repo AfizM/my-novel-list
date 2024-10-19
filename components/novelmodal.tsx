@@ -34,6 +34,11 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [initialStatus, setInitialStatus] = useState("");
+  const [initialChapterProgress, setInitialChapterProgress] = useState("");
+  const [initialRating, setInitialRating] = useState(0);
+  const [initialNotes, setInitialNotes] = useState("");
+  const [initialIsFavorite, setInitialIsFavorite] = useState(false);
 
   useEffect(() => {
     const fetchNovelListData = async () => {
@@ -46,6 +51,13 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
           setRating(data.rating);
           setNotes(data.notes);
           setIsFavorite(data.is_favorite);
+
+          // Set initial values
+          setInitialStatus(data.status);
+          setInitialChapterProgress(data.chapter_progress?.toString() || "");
+          setInitialRating(data.rating);
+          setInitialNotes(data.notes);
+          setInitialIsFavorite(data.is_favorite);
         }
       } catch (error) {
         console.error("Error fetching novel list data:", error);
@@ -84,28 +96,40 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
         throw new Error("Failed to save novel to list");
       }
 
-      // Create post
-      let postContent = "";
-      if (status === "reading" && chapterProgress) {
-        postContent = `Read chapter ${chapterProgress} of ${novel.title}`;
-      } else if (status === "completed") {
-        postContent = `Completed ${novel.title}`;
-      } else if (status === "planning") {
-        postContent = `Plans to read ${novel.title}`;
+      // Check for changes
+      const hasStatusChanged = status !== initialStatus;
+      const hasChapterProgressChanged =
+        chapterProgress !== initialChapterProgress;
+      const hasRatingChanged = rating !== initialRating;
+      const hasNotesChanged = notes !== initialNotes;
+      const hasFavoriteChanged = isFavorite !== initialIsFavorite;
+
+      // Create post if there are any changes
+      if (hasStatusChanged || hasChapterProgressChanged) {
+        let postContent = "";
+
+        if (hasStatusChanged) {
+          postContent += `Changed status of ${novel.title} to ${status}. `;
+        }
+
+        if (hasChapterProgressChanged) {
+          postContent += `Updated progress to chapter ${chapterProgress} of ${novel.title}. `;
+        }
+
+        if (postContent) {
+          await fetch("/api/posts", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              novel_id: novel.id,
+              content: postContent.trim(),
+            }),
+          });
+        }
       }
 
-      if (postContent) {
-        await fetch("/api/posts", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            novel_id: novel.id,
-            content: postContent,
-          }),
-        });
-      }
       await refetchUserStats();
 
       toast.success(`${novel.title} list entry updated`);
