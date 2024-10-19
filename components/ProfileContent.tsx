@@ -192,7 +192,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const fetchFavoriteNovels = async () => {
     try {
       const response = await fetch(
-        `/api/users/${user.username}/favorite-novels`,
+        `/api/users/${user.user_id}/favorite-novels`,
       );
       if (!response.ok) {
         throw new Error("Failed to fetch favorite novels");

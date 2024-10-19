@@ -83,7 +83,9 @@ const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Favorite Novels</h2>
+        <h2 className="text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
+          Favorite Novels
+        </h2>
         {isCurrentUser && (
           <Button onClick={isReordering ? handleSaveOrder : handleReorder}>
             {isReordering ? "Save Order" : "Reorder"}
