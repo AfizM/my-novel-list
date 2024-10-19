@@ -1,92 +1,85 @@
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, Flag, MessageCircle, Star } from "lucide-react";
+import { Heart, MessageCircle, Star } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
+import { Textarea } from "./ui/textarea";
+import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import Link from "next/link";
 
-export function ReviewCard({ review, currentUser, onLike, onComment }) {
+interface Review {
+  id: string;
+  rating: number;
+  review_description: string;
+  likes: number;
+  is_liked: boolean;
+  created_at: string;
+  chapter_status: number;
+  users: {
+    username: string;
+    image_url: string;
+  };
+  review_comments: ReviewComment[];
+}
+
+interface ReviewComment {
+  id: string;
+  comment: string;
+  created_at: string;
+  likes: number;
+  is_liked: boolean;
+  users: {
+    username: string;
+    image_url: string;
+  };
+}
+
+interface ReviewCardProps {
+  review: Review;
+  onLike: (reviewId: string, isLiked: boolean, likes: number) => Promise<void>;
+  onComment: (reviewId: string, comment: string) => Promise<void>;
+  onCommentLike: (
+    reviewId: string,
+    commentId: string,
+    isLiked: boolean,
+    likes: number,
+  ) => Promise<void>;
+}
+
+export function ReviewCard({
+  review,
+  onLike,
+  onComment,
+  onCommentLike,
+}: ReviewCardProps) {
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(review.likes);
-  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
 
-  useEffect(() => {
-    // Check if the current user has liked this review
-    const checkLikeStatus = async () => {
-      const response = await fetch(`/api/reviews/${review.id}/like/check`, {
-        method: "GET",
-      });
-      if (response.ok) {
-        const { isLiked } = await response.json();
-        setIsLiked(isLiked);
-      }
-    };
-    checkLikeStatus();
-  }, [review.id, currentUser]);
+  const formattedTime = formatRelativeTime(review.created_at);
 
-  const handleComment = async () => {
-    try {
-      const response = await fetch("/api/reviews/comments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          review_id: review.id,
-          comment: comment,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to post comment");
-      }
-
-      const data = await response.json();
-      onComment(review.id, data);
+  const handleComment = useDebouncedCallback(async () => {
+    if (comment.trim()) {
+      await onComment(review.id, comment);
       setComment("");
       setIsCommenting(false);
-    } catch (error) {
-      console.error("Error posting comment:", error);
     }
-  };
+  }, 300);
 
   const handleLike = useDebouncedCallback(async () => {
-    if (isLikeLoading) return;
-
-    setIsLikeLoading(true);
-    const previousIsLiked = isLiked;
-    const previousLikeCount = likeCount;
-
-    // Optimistically update the UI
-    setIsLiked(!isLiked);
-    setLikeCount((prevCount) => (isLiked ? prevCount - 1 : prevCount + 1));
-
     try {
       const response = await fetch(`/api/reviews/${review.id}/like`, {
         method: "POST",
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to like review");
-      }
-
-      const data = await response.json();
-      // Update with the actual data from the server
-      setLikeCount(data.likes);
-      setIsLiked(data.action === "liked");
-      onLike(review.id, data.likes);
+      if (!response.ok) throw new Error("Failed to like review");
+      const { likes, action } = await response.json();
+      onLike(review.id, action === "liked", likes);
     } catch (error) {
       console.error("Error liking review:", error);
-      // Revert the optimistic update if there's an error
-      setIsLiked(previousIsLiked);
-      setLikeCount(previousLikeCount);
-    } finally {
-      setIsLikeLoading(false);
     }
-  }, 300); // 300ms debounce
+  }, 300);
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
     const stars = [];
@@ -104,7 +97,7 @@ export function ReviewCard({ review, currentUser, onLike, onComment }) {
           <span key={i} className="relative inline-block">
             <Star className="w-4 h-4 text-[var(--orange-rating)]" />
             <Star
-              className="absolute top-0 left-0 w-4 h-4text-[var(--orange-rating)] fill-[var(--orange-rating)]"
+              className="absolute top-0 left-0 w-4 h-4 text-[var(--orange-rating)] fill-[var(--orange-rating)]"
               style={{ clipPath: "inset(0 50% 0 0)" }}
             />
           </span>,
@@ -118,80 +111,204 @@ export function ReviewCard({ review, currentUser, onLike, onComment }) {
   };
 
   return (
-    <div className="mt-4 border rounded-lg p-4 mb-4">
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex items-center">
-          <Avatar>
-            <AvatarImage src={review.users.image_url} alt="User avatar" />
-            <AvatarFallback>{`${review.users.first_name[0]}${review.users.last_name[0]}`}</AvatarFallback>
-          </Avatar>
-          <div className="ml-2">
-            <div className="font-semibold">{`${review.users.first_name} ${review.users.last_name}`}</div>
-            <div className="flex items-center mt-1">
-              {renderStars(review.rating)}
-              <span className="ml-1 text-sm text-gray-600">
-                {review.rating.toFixed(1)}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="text-sm text-gray-500">
-          Chapter: {review.chapter_status}
-        </div>
-      </div>
-      <div className="mb-4 whitespace-pre-wrap break-words">
-        {review.review_description}
-      </div>
-      <div className="flex justify-end items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLike}
-          className={`${isLiked ? "text-red-500" : ""} ${
-            isLikeLoading ? "pointer-events-none" : ""
-          }`}
-          disabled={isLikeLoading}
-        >
-          <Heart className="mr-1" fill={isLiked ? "currentColor" : "none"} />
-          <span className="text-xs">{likeCount}</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsCommenting(!isCommenting)}
-        >
-          <MessageCircle className="mr-1" />
-          <span className="text-xs">{review.review_comments.length}</span>
-        </Button>
-        {/* <Button variant="ghost" size="sm">
-          <Flag className="mr-1" /> Report
-        </Button> */}
-      </div>
-      {isCommenting && (
-        <div className="mt-2">
-          <textarea
-            className="w-full p-2 border rounded"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Write a comment..."
-          />
-          <Button onClick={handleComment}>Post Comment</Button>
-        </div>
-      )}
-      {review.review_comments.map((comment) => (
-        <div key={comment.id} className="mt-2 border-t pt-2">
+    <>
+      <div className="mt-4 border rounded-lg p-4 mb-4">
+        <div className="flex justify-between items-start mb-2">
           <div className="flex items-center">
-            <Avatar>
-              <AvatarImage src={comment.users.image_url} alt="User avatar" />
-              <AvatarFallback>{`${comment.users.first_name[0]}${comment.users.last_name[0]}`}</AvatarFallback>
+            <Avatar className="w-8 h-8">
+              <AvatarImage
+                src={review.users?.image_url || ""}
+                alt="User avatar"
+              />
+              <AvatarFallback>
+                {review.users?.username?.[0] || "U"}
+              </AvatarFallback>
             </Avatar>
             <div className="ml-2">
-              <div className="font-semibold">{`${comment.users.first_name} ${comment.users.last_name}`}</div>
-              <div className="text-sm">{comment.comment}</div>
+              <Link
+                href={`/profile/${review.users?.username || "#"}`}
+                className="font-semibold hover:underline text-primary"
+              >
+                {review.users?.username || "Unknown User"}
+              </Link>
+              <div className="flex items-center mt-1">
+                {renderStars(review.rating)}
+                <span className="ml-1 text-sm text-gray-600">
+                  {review.rating.toFixed(1)}
+                </span>
+              </div>
             </div>
           </div>
+          <div className="text-sm text-gray-500">
+            {/* Chapter: {review.chapter_status} */}
+            <span>{formattedTime}</span>
+          </div>
         </div>
-      ))}
+        <div className="mb-4 whitespace-pre-wrap break-words">
+          {review.review_description}
+        </div>
+        <div className="flex justify-between items-center text-sm text-gray-500">
+          <span></span>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={review.is_liked ? "text-red-500" : ""}
+              onClick={handleLike}
+            >
+              <Heart
+                className="w-4 h-4 mr-1"
+                fill={review.is_liked ? "currentColor" : "none"}
+              />
+              <span>{review.likes}</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCommentsAndReply(!showCommentsAndReply)}
+            >
+              <MessageCircle className="w-4 h-4 mr-1" />
+              <span>{review.review_comments.length}</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {showCommentsAndReply && (
+        <div className="mt-4 flex flex-col space-y-3">
+          {review.review_comments && review.review_comments.length > 0 ? (
+            review.review_comments.map((comment) => (
+              <ReviewCommentCard
+                key={comment.id}
+                comment={comment}
+                onLike={(commentId, isLiked, likes) =>
+                  onCommentLike(review.id, commentId, isLiked, likes)
+                }
+              />
+            ))
+          ) : (
+            <p className="text-gray-500 text-sm">No comments yet.</p>
+          )}
+          <CommentInput
+            comment={comment}
+            setComment={setComment}
+            handleComment={handleComment}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+function ReviewCommentCard({
+  comment,
+  onLike,
+}: {
+  comment: ReviewComment;
+  onLike: (commentId: string, isLiked: boolean, likes: number) => Promise<void>;
+}) {
+  const handleLike = useDebouncedCallback(async () => {
+    try {
+      const response = await fetch(`/api/reviews/comments/${comment.id}/like`, {
+        method: "POST",
+      });
+      if (!response.ok) throw new Error("Failed to like comment");
+      const { likes, action } = await response.json();
+      await onLike(comment.id, action === "liked", likes);
+    } catch (error) {
+      console.error("Error liking comment:", error);
+    }
+  }, 300);
+
+  const formattedCommentTime = formatRelativeTime(comment.created_at);
+
+  return (
+    <div
+      className="border rounded-md p-2 w-11/12 mx-auto"
+      style={{ fontSize: "0.85rem" }}
+    >
+      <div className="flex justify-between items-start mb-1">
+        <div className="flex items-center">
+          <Avatar className="w-7 h-7">
+            <AvatarImage
+              src={comment.users?.image_url || ""}
+              alt="User avatar"
+            />
+            <AvatarFallback>
+              {comment.users?.username?.[0] || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="ml-2">
+            <Link
+              href={`/profile/${comment.users?.username || "#"}`}
+              className="font-semibold hover:underline text-primary"
+            >
+              {comment.users?.username || "Unknown User"}
+            </Link>
+          </div>
+        </div>
+        <div className="text-gray-500" style={{ fontSize: "0.75rem" }}>
+          {formattedCommentTime}
+        </div>
+      </div>
+      <div className="mb-1 whitespace-pre-wrap break-words">
+        {comment.comment}
+        <div className="flex justify-end items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={comment.is_liked ? "text-red-500" : ""}
+            style={{ fontSize: "0.8rem" }}
+            onClick={handleLike}
+          >
+            <Heart
+              className="w-4 h-4 mr-1"
+              fill={comment.is_liked ? "currentColor" : "none"}
+            />
+            <span>{comment.likes}</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CommentInput({
+  comment,
+  setComment,
+  handleComment,
+}: {
+  comment: string;
+  setComment: (comment: string) => void;
+  handleComment: () => void;
+}) {
+  return (
+    <div className="w-11/12 mx-auto rounded" style={{ fontSize: "0.85rem" }}>
+      <Textarea
+        className="w-full p-2 border rounded min-h-[36px]"
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Write a reply..."
+        rows={2}
+      />
+      <div className="flex justify-end mt-2">
+        <Button
+          size="sm"
+          onClick={handleComment}
+          className="mr-2"
+          style={{ fontSize: "0.8rem" }}
+        >
+          Post
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setComment("")}
+          style={{ fontSize: "0.8rem" }}
+        >
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 }

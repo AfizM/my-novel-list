@@ -60,7 +60,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   useEffect(() => {
-    fetchReviews();
+    if (page > 1) {
+      fetchReviews();
+    }
   }, [page]);
 
   const fetchReviews = async () => {
@@ -72,28 +74,71 @@ export default function NovelPage({ params }: { params: { id: string } }) {
         throw new Error("Failed to fetch reviews");
       }
       const data = await response.json();
-      setReviews(data.reviews);
+      setReviews((prevReviews) =>
+        page === 1 ? data.reviews : [...prevReviews, ...data.reviews],
+      );
       setHasMore(data.reviews.length === 10);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
   };
 
-  const handleLike = (reviewId: number, newLikes: number) => {
+  const handleLike = async (
+    reviewId: string,
+    isLiked: boolean,
+    newLikes: number,
+  ) => {
     setReviews((prevReviews) =>
       prevReviews.map((review) =>
-        review.id === reviewId ? { ...review, likes: newLikes } : review,
+        review.id === reviewId
+          ? { ...review, is_liked: isLiked, likes: newLikes }
+          : review,
       ),
     );
   };
 
-  const handleComment = (reviewId: number, newComment: any) => {
+  const handleComment = async (reviewId: string, newComment: string) => {
+    try {
+      const response = await fetch(`/api/reviews/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ review_id: reviewId, comment: newComment }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add comment");
+      const addedComment = await response.json();
+
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                review_comments: [...review.review_comments, addedComment],
+              }
+            : review,
+        ),
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const handleCommentLike = async (
+    reviewId: string,
+    commentId: string,
+    isLiked: boolean,
+    newLikes: number,
+  ) => {
     setReviews((prevReviews) =>
       prevReviews.map((review) =>
         review.id === reviewId
           ? {
               ...review,
-              review_comments: [...review.review_comments, newComment],
+              review_comments: review.review_comments.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, is_liked: isLiked, likes: newLikes }
+                  : comment,
+              ),
             }
           : review,
       ),
@@ -237,9 +282,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <ReviewCard
               key={review.id}
               review={review}
-              currentUser={user}
               onLike={handleLike}
               onComment={handleComment}
+              onCommentLike={handleCommentLike}
             />
           ))}
           {hasMore && (

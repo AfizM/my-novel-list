@@ -4,34 +4,27 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function POST(
   request: Request,
-  { params }: { params: { Id: string } },
+  { params }: { params: { commentId: string } },
 ) {
   const { userId } = auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const reviewId = params.Id;
-
-  if (!reviewId) {
-    return NextResponse.json(
-      { error: "Review ID is required" },
-      { status: 400 },
-    );
-  }
+  const { commentId } = params;
 
   try {
-    // Get the current review data
-    const { data: review, error: reviewError } = await supabase
-      .from("reviews")
+    // Get the current comment data
+    const { data: comment, error: commentError } = await supabase
+      .from("review_comments")
       .select("likes, liked_by")
-      .eq("id", reviewId)
+      .eq("id", commentId)
       .single();
 
-    if (reviewError) throw reviewError;
+    if (commentError) throw commentError;
 
-    let likedBy = review.liked_by || [];
-    let newLikes = review.likes || 0;
+    let likedBy = comment.liked_by || [];
+    let newLikes = comment.likes;
     let action;
 
     if (likedBy.includes(userId)) {
@@ -46,19 +39,19 @@ export async function POST(
       action = "liked";
     }
 
-    // Update the review with new likes count and liked_by array
+    // Update the comment with new likes count and liked_by array
     const { error: updateError } = await supabase
-      .from("reviews")
+      .from("review_comments")
       .update({ likes: newLikes, liked_by: likedBy })
-      .eq("id", reviewId);
+      .eq("id", commentId);
 
     if (updateError) throw updateError;
 
     return NextResponse.json({ likes: newLikes, action });
   } catch (error) {
-    console.error("Error handling like:", error);
+    console.error("Error handling comment like:", error);
     return NextResponse.json(
-      { error: "Failed to handle like" },
+      { error: "Failed to handle comment like" },
       { status: 500 },
     );
   }

@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
   { params }: { params: { Id: string } },
 ) {
+  const { userId } = auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const novelId = parseInt(params.Id);
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
@@ -21,14 +27,15 @@ export async function GET(
       .select(
         `
         *,
-        users!inner (image_url, first_name, last_name),
+        users!inner (username, image_url),
         review_comments (
           id,
           comment,
           created_at,
-          users!inner (image_url, first_name, last_name)
-        ),
-        likes:review_likes(count)
+          likes,
+          liked_by,
+          users!inner (username, image_url)
+        )
       `,
         { count: "exact" },
       )
@@ -38,14 +45,18 @@ export async function GET(
 
     if (error) throw error;
 
-    reviews;
-
-    const reviewsWithLikeCount = reviews.map((review) => ({
+    const reviewsWithLikeStatus = reviews.map((review) => ({
       ...review,
-      likes: review.likes[0].count,
+      is_liked: review.liked_by?.includes(userId) || false,
+      liked_by: undefined,
+      review_comments: review.review_comments.map((comment) => ({
+        ...comment,
+        is_liked: comment.liked_by?.includes(userId) || false,
+        liked_by: undefined,
+      })),
     }));
 
-    return NextResponse.json({ reviews: reviewsWithLikeCount, count });
+    return NextResponse.json({ reviews: reviewsWithLikeStatus, count });
   } catch (error) {
     console.error("Error fetching reviews:", error);
     return NextResponse.json(
