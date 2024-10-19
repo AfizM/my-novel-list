@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import BannerUploadModal from "@/components/BannerUploadModal";
 import { Toaster } from "sonner";
+import { useUser } from "@clerk/nextjs";
 
 const navItems = [
   { name: "Overview", href: "" },
@@ -24,11 +25,41 @@ export default function ProfileLayout({
   children: React.ReactNode;
   user: any; // Replace 'any' with a proper user type
 }) {
+  const { user: currentUser } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    console.log("USER na " + user.username);
-  }, [user]);
+    if (currentUser && user.user_id !== currentUser.id) {
+      checkFollowStatus();
+    }
+  }, [currentUser, user]);
+
+  const checkFollowStatus = async () => {
+    try {
+      const response = await fetch(`/api/users/${user.user_id}/followers`);
+      if (!response.ok) throw new Error("Failed to fetch followers");
+      const followers = await response.json();
+      setIsFollowing(
+        followers.some((follower) => follower.user_id === currentUser.id),
+      );
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    try {
+      const method = isFollowing ? "DELETE" : "POST";
+      const response = await fetch(`/api/users/${user.user_id}/follow`, {
+        method,
+      });
+      if (!response.ok) throw new Error("Failed to toggle follow status");
+      setIsFollowing(!isFollowing);
+    } catch (error) {
+      console.error("Error toggling follow status:", error);
+    }
+  };
 
   return (
     <div className="w-full -mt-[1.30rem] mx-auto my-0">
@@ -49,9 +80,15 @@ export default function ProfileLayout({
             <div className="text-white text-2xl font-semibold">
               {user.username || "Anonymous User"}
             </div>
-            <Button className="min-w-24" onClick={() => setIsModalOpen(true)}>
-              Edit Banner
-            </Button>
+            {currentUser && user.user_id === currentUser.id ? (
+              <Button className="min-w-24" onClick={() => setIsModalOpen(true)}>
+                Edit Banner
+              </Button>
+            ) : (
+              <Button className="min-w-24" onClick={handleFollowToggle}>
+                {isFollowing ? "Unfollow" : "Follow"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
