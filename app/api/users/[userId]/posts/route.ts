@@ -12,7 +12,6 @@ export async function GET(
   }
 
   const targetUsername = params.userId;
-  console.log("FETCHING POSTS " + targetUsername);
 
   try {
     const { data: userData, error: userError } = await supabase

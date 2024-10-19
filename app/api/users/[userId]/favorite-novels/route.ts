@@ -11,18 +11,9 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const targetUsername = params.userId;
-  console.log("FETCHING FAVORITE NOVELS " + targetUsername);
+  const targetUserId = params.userId;
 
   try {
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("user_id")
-      .eq("username", targetUsername)
-      .single();
-
-    if (userError) throw userError;
-
     const { data, error } = await supabase
       .from("novel_list")
       .select(
@@ -35,8 +26,9 @@ export async function GET(
         )
       `,
       )
-      .eq("user_id", userData.user_id)
-      .eq("is_favorite", true);
+      .eq("user_id", targetUserId)
+      .eq("is_favorite", true)
+      .order("favorite_order", { ascending: true });
 
     if (error) throw error;
 
@@ -44,6 +36,7 @@ export async function GET(
       id: item.novel_id,
       title: item.novels.title,
       image: item.novels.image,
+      favoriteOrder: item.favorite_order,
     }));
 
     return NextResponse.json(formattedData);
@@ -51,6 +44,41 @@ export async function GET(
     console.error("Error fetching favorite novels:", error);
     return NextResponse.json(
       { error: "Failed to fetch favorite novels" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: { userId: string } },
+) {
+  const { userId } = auth();
+  if (!userId || userId !== params.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { novels } = await request.json();
+    console.log(novels);
+
+    // Perform updates one by one
+    for (let i = 0; i < novels.length; i++) {
+      const { error } = await supabase
+        .from("novel_list")
+        .update({ favorite_order: i + 1 })
+        .eq("user_id", userId)
+        .eq("novel_id", novels[i].id)
+        .eq("is_favorite", true);
+
+      if (error) throw error;
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error updating favorite novels order:", error);
+    return NextResponse.json(
+      { error: "Failed to update favorite novels order" },
       { status: 500 },
     );
   }

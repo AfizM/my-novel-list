@@ -91,7 +91,6 @@ export default function NovelListPage() {
   };
 
   useEffect(() => {
-    console.log("fetching novels");
     fetchNovels();
   }, []);
 

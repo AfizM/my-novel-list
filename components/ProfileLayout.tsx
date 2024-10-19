@@ -10,7 +10,7 @@ import { Toaster } from "sonner";
 const navItems = [
   { name: "Overview", href: "" },
   { name: "Novel List", href: "novellist" },
-  { name: "Favourites", href: "favourites" },
+  { name: "Favourites", href: "favorites" },
   { name: "Reviews", href: "reviews" },
   { name: "Social", href: "social" },
 ];

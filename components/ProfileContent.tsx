@@ -49,7 +49,6 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [favoriteNovels, setFavoriteNovels] = useState([]);
 
   useEffect(() => {
-    console.log("USER " + user.id);
     if (user) {
       fetchUserPosts();
     }
@@ -62,7 +61,6 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         if (!response.ok) throw new Error("Failed to fetch user stats");
         const data = await response.json();
         setUserStats(data);
-        console.log("User stats:", userStats);
       } catch (error) {
         console.error("Error fetching user stats:", error);
       }

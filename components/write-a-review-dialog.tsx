@@ -90,7 +90,7 @@ export default function WriteReviewDialog({
       }
 
       const data = await response.json();
-      console.log("Review submitted successfully:", data);
+
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting review:", error);

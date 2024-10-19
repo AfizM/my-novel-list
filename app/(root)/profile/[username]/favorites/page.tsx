@@ -1,9 +1,9 @@
 import ProfileLayout from "@/components/ProfileLayout";
-import NovelListLayout from "@/components/NovelListLayout";
+import FavoritesPageContent from "@/components/FavoritesPageContent";
 import { getUserByUsername } from "@/lib/users";
 import { notFound } from "next/navigation";
 
-export default async function UserNovelListPage({
+export default async function FavoritesPage({
   params,
 }: {
   params: { username: string };
@@ -16,7 +16,7 @@ export default async function UserNovelListPage({
 
   return (
     <ProfileLayout user={user}>
-      <NovelListLayout user={user} />
+      <FavoritesPageContent user={user} />
     </ProfileLayout>
   );
 }

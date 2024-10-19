@@ -96,7 +96,6 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
   };
 
   useEffect(() => {
-    console.log("fetching novels");
     fetchNovels();
   }, []);
 

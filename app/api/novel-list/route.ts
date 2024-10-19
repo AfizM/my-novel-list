@@ -12,6 +12,25 @@ export async function POST(request: Request) {
     await request.json();
 
   try {
+    // Get the current max favorite_order for the user
+    const { data: maxOrderData, error: maxOrderError } = await supabase
+      .from("novel_list")
+      .select("favorite_order")
+      .eq("user_id", userId)
+      .eq("is_favorite", true)
+      .order("favorite_order", { ascending: false })
+      .limit(1);
+
+    if (maxOrderError) throw maxOrderError;
+
+    const newFavoriteOrder =
+      maxOrderData.length > 0 ? maxOrderData[0].favorite_order + 1 : 1;
+
+    // Add favorite_order to the data object if is_favorite is true
+    if (is_favorite) {
+      data.favorite_order = newFavoriteOrder;
+    }
+
     const { data, error } = await supabase.from("novel_list").upsert(
       {
         user_id: userId,

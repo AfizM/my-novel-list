@@ -45,8 +45,6 @@ export async function GET(
         ? Object.entries(genreCounts).reduce((a, b) => (a[1] > b[1] ? a : b))[0]
         : "N/A";
 
-    console.log("Stats:", { novelsRead, chaptersRead, favoriteGenre });
-
     return NextResponse.json({
       novelsRead,
       chaptersRead,

@@ -65,8 +65,6 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
   const fetchReviews = async () => {
     try {
-      console.log("fetching reviews", parseInt(params.id));
-      console.log("novel id", params.id);
       const response = await fetch(
         `/api/reviews/${parseInt(params.id)}?page=${page}&limit=10`,
       );
@@ -107,7 +105,6 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   }
 
   if (!isLoading) {
-    console.log(user);
   }
 
   if (error) {

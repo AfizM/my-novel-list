@@ -9,7 +9,6 @@ export default async function UserProfilePage({
   params: { username: string };
 }) {
   const user = await getUserByUsername(params.username);
-  console.log("USER " + params.username);
 
   if (!user) {
     notFound();
