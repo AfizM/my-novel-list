@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Star } from "lucide-react";
+import { Heart, MessageCircle, Star, Edit } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { Textarea } from "./ui/textarea";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
@@ -45,6 +45,8 @@ interface ReviewCardProps {
     likes: number,
   ) => Promise<void>;
   showNovel?: boolean;
+  showEditButton?: boolean;
+  onEdit?: () => void;
 }
 
 export function ReviewCard({
@@ -53,6 +55,8 @@ export function ReviewCard({
   onComment,
   onCommentLike,
   showNovel,
+  showEditButton,
+  onEdit,
 }: ReviewCardProps) {
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
@@ -201,6 +205,12 @@ export function ReviewCard({
               <MessageCircle className="w-4 h-4 mr-1" />
               <span>{review.review_comments.length}</span>
             </Button>
+            {/* {showEditButton && (
+              <Button variant="ghost" size="sm" onClick={onEdit}>
+                <Edit className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
+            )} */}
           </div>
         </div>
       </div>

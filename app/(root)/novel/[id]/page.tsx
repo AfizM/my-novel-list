@@ -39,25 +39,28 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   const [reviews, setReviews] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [userReview, setUserReview] = useState<any>(null);
 
   useEffect(() => {
-    async function fetchNovel() {
+    async function fetchData() {
       try {
         const fetchedNovel = await getNovel(params.id);
         setNovel(fetchedNovel);
+        await fetchUserReview();
       } catch (err) {
         setError("Failed to fetch novel");
       } finally {
         setIsLoading(false);
       }
     }
-    fetchNovel();
+    fetchData();
   }, [params.id]);
 
   useEffect(() => {
-    setReviews([]); // Clear existing reviews
-    setPage(1); // Reset page to 1
+    setReviews([]);
+    setPage(1);
     fetchReviews();
+    fetchUserReview();
   }, [params.id]);
 
   useEffect(() => {
@@ -85,6 +88,18 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     } catch (error) {
       console.error("Error fetching reviews:", error);
       toast.error("Failed to fetch reviews. Please try again.");
+    }
+  };
+
+  const fetchUserReview = async () => {
+    try {
+      const response = await fetch(`/api/novels/${params.id}/user-review`);
+      if (response.ok) {
+        const data = await response.json();
+        setUserReview(data);
+      }
+    } catch (error) {
+      console.error("Error fetching user review:", error);
     }
   };
 
@@ -156,13 +171,15 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     setReviews([]);
     setPage(1);
     await fetchReviews();
+    await fetchUserReview();
+  };
+
+  const handleEditReview = () => {
+    setIsReviewDialogOpen(true);
   };
 
   if (isLoading) {
     return <div>Loading...</div>;
-  }
-
-  if (!isLoading) {
   }
 
   if (error) {
@@ -285,7 +302,8 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             className="relative w-full max-w-40 flex"
             onClick={() => setIsReviewDialogOpen(true)}
           >
-            <SquarePen className="mr-2" size={20} /> Write a Review
+            <SquarePen className="mr-2" size={20} />
+            {userReview ? "Edit Review" : "Write a Review"}
           </Button>
         </div>
 
@@ -298,6 +316,8 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               onLike={handleLike}
               onComment={handleComment}
               onCommentLike={handleCommentLike}
+              showEditButton={review.user_id === user?.id}
+              onEdit={handleEditReview}
             />
           ))}
           {hasMore && (
@@ -329,6 +349,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
         onOpenChange={setIsReviewDialogOpen}
         novelId={parseInt(params.id)}
         onReviewCreated={handleReviewCreated}
+        existingReview={userReview}
       />
     </div>
   );

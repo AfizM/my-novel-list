@@ -4,40 +4,37 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { Id: string } },
+  { params }: { params: { id: string } },
 ) {
-  const { userId } = auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const novelId = parseInt(params.Id);
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
   const offset = (page - 1) * limit;
 
+  // Ensure the id is a valid number
+  const novelId = parseInt(params.id);
+  if (isNaN(novelId)) {
+    return NextResponse.json({ error: "Invalid novel ID" }, { status: 400 });
+  }
+
   try {
-    const {
-      data: reviews,
-      error,
-      count,
-    } = await supabase
+    const { data, error } = await supabase
       .from("reviews")
       .select(
         `
         *,
-        users!inner (username, image_url),
+        users (
+          username,
+          image_url
+        ),
         review_comments (
-          id,
-          comment,
-          created_at,
-          likes,
-          liked_by,
-          users!inner (username, image_url)
+          *,
+          users (
+            username,
+            image_url
+          )
         )
       `,
-        { count: "exact" },
       )
       .eq("novel_id", novelId)
       .order("created_at", { ascending: false })
@@ -45,18 +42,7 @@ export async function GET(
 
     if (error) throw error;
 
-    const reviewsWithLikeStatus = reviews.map((review) => ({
-      ...review,
-      is_liked: review.liked_by?.includes(userId) || false,
-      liked_by: undefined,
-      review_comments: review.review_comments.map((comment) => ({
-        ...comment,
-        is_liked: comment.liked_by?.includes(userId) || false,
-        liked_by: undefined,
-      })),
-    }));
-
-    return NextResponse.json({ reviews: reviewsWithLikeStatus, count });
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching reviews:", error);
     return NextResponse.json(
@@ -68,7 +54,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { Id: string } },
+  { params }: { params: { id: string } },
 ) {
   const { userId } = auth();
   if (!userId) {
@@ -89,7 +75,7 @@ export async function PUT(
     const { data: existingReview, error: existingReviewError } = await supabase
       .from("reviews")
       .select("user_id")
-      .eq("id", params.Id)
+      .eq("id", params.id)
       .single();
 
     if (existingReviewError) throw existingReviewError;
@@ -109,7 +95,7 @@ export async function PUT(
         writing_style_rating,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", params.Id)
+      .eq("id", params.id)
       .select();
 
     if (error) throw error;
