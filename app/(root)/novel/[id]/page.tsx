@@ -16,6 +16,7 @@ import { NovelModal } from "@/components/novelmodal";
 import WriteReviewDialog from "@/components/write-a-review-dialog";
 import { useUser } from "@clerk/nextjs";
 import { ReviewCard } from "@/components/ReviewCard";
+import { toast } from "sonner";
 
 async function getNovel(id: string) {
   const res = await fetch(
@@ -78,8 +79,12 @@ export default function NovelPage({ params }: { params: { id: string } }) {
         page === 1 ? data.reviews : [...prevReviews, ...data.reviews],
       );
       setHasMore(data.reviews.length === 10);
+      if (data.reviews.length === 0 && page > 1) {
+        setHasMore(false);
+      }
     } catch (error) {
       console.error("Error fetching reviews:", error);
+      toast.error("Failed to fetch reviews. Please try again.");
     }
   };
 
@@ -143,6 +148,14 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           : review,
       ),
     );
+  };
+
+  const handleReviewCreated = async () => {
+    toast.success("Review successfully created!");
+    setIsReviewDialogOpen(false);
+    setReviews([]);
+    setPage(1);
+    await fetchReviews();
   };
 
   if (isLoading) {
@@ -318,6 +331,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
         open={isReviewDialogOpen}
         onOpenChange={setIsReviewDialogOpen}
         novelId={parseInt(params.id)}
+        onReviewCreated={handleReviewCreated}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import { Star } from "lucide-react";
 
 import { Textarea } from "./ui/textarea";
 import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 type RatingCategory = "plot" | "characters" | "worldBuilding" | "writingStyle";
 
@@ -20,10 +21,12 @@ export default function WriteReviewDialog({
   open,
   onOpenChange,
   novelId,
+  onReviewCreated,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   novelId: number;
+  onReviewCreated: () => void;
 }) {
   const totalStars = 5;
   const [ratings, setRatings] = useState<Record<RatingCategory, number>>({
@@ -89,12 +92,11 @@ export default function WriteReviewDialog({
         throw new Error("Failed to submit review");
       }
 
-      const data = await response.json();
-
-      onOpenChange(false);
+      await response.json();
+      onReviewCreated();
     } catch (error) {
       console.error("Error submitting review:", error);
-      // Handle error (e.g., show error message to user)
+      toast.error("Failed to submit review. Please try again.");
     }
   };
 
