@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Novel {
   id: number;
@@ -92,54 +93,62 @@ const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
           </Button>
         )}
       </div>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="favorites" direction="horizontal">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
-            >
-              {novels.map((novel, index) => (
-                <Draggable
-                  key={novel.id}
-                  draggableId={novel.id.toString()}
-                  index={index}
-                  isDragDisabled={!isReordering}
+      <Card>
+        <CardContent>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="favorites" direction="horizontal">
+              {(provided) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="flex flex-wrap gap-4 mt-6 space-x-4"
                 >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={`relative ${
-                        snapshot.isDragging ? "z-10" : ""
-                      }`}
+                  {novels.map((novel, index) => (
+                    <Draggable
+                      key={novel.id}
+                      draggableId={novel.id.toString()}
+                      index={index}
+                      isDragDisabled={!isReordering}
                     >
-                      <div className="flex flex-col items-center">
-                        <img
-                          src={novel.image || "/img/novel-placeholder.jpg"}
-                          alt={novel.title}
-                          className="w-full h-auto aspect-[185/278] object-cover rounded-md"
-                        />
-                        <p className="mt-2 text-sm font-medium text-center line-clamp-2">
-                          {novel.title}
-                        </p>
-                        {isReordering && (
-                          <div className="absolute top-0 left-0 bg-black bg-opacity-50 text-white p-1 rounded">
-                            {index + 1}
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`relative ${
+                            snapshot.isDragging ? "z-10" : ""
+                          }`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
+                              <img
+                                src={
+                                  novel.image || "/img/novel-placeholder.jpg"
+                                }
+                                alt={novel.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <p className="mt-2 text-sm font-medium text-center line-clamp-2 w-24">
+                              {novel.title}
+                            </p>
+                            {isReordering && (
+                              <div className="absolute top-0 left-0 bg-black bg-opacity-50 text-white p-1 rounded">
+                                {index + 1}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </CardContent>
+      </Card>
     </div>
   );
 };
