@@ -44,6 +44,7 @@ interface ReviewCardProps {
     isLiked: boolean,
     likes: number,
   ) => Promise<void>;
+  showNovel?: boolean;
 }
 
 export function ReviewCard({
@@ -51,6 +52,7 @@ export function ReviewCard({
   onLike,
   onComment,
   onCommentLike,
+  showNovel,
 }: ReviewCardProps) {
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
@@ -112,6 +114,23 @@ export function ReviewCard({
 
   return (
     <>
+      {/* {showNovel && review.novels && (
+        <div className="flex items-center space-x-3 mb-2">
+          <img
+            src={review.novels.image || "/img/novel-placeholder.jpg"}
+            alt={review.novels.title}
+            className="w-12 h-18 object-cover rounded"
+          />
+          <div>
+            <Link
+              href={`/novel/${review.novels.id}`}
+              className="font-semibold hover:underline"
+            >
+              {review.novels.title}
+            </Link>
+          </div>
+        </div>
+      )} */}
       <div className="mt-4 border rounded-lg p-4 mb-4">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center">
@@ -141,9 +160,21 @@ export function ReviewCard({
           </div>
           <div className="text-sm text-gray-500">
             {/* Chapter: {review.chapter_status} */}
+
             <span>{formattedTime}</span>
+            {showNovel && review.novels && (
+              <div>
+                <Link
+                  href={`/novel/${review.novels.id}`}
+                  className="font-semibold hover:underline text-primary"
+                >
+                  {review.novels.title}
+                </Link>
+              </div>
+            )}
           </div>
         </div>
+
         <div className="mb-4 whitespace-pre-wrap break-words">
           {review.review_description}
         </div>

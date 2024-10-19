@@ -309,9 +309,6 @@ export default function NovelPage({ params }: { params: { id: string } }) {
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{novel.title}</DialogTitle>
-          </DialogHeader>
           <NovelModal
             novel={{
               id: novel.id,
