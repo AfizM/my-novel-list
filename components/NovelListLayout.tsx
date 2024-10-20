@@ -63,10 +63,40 @@ const NovelItem = ({ novel, onSelect }) => {
       </TableCell>
       <TableCell className="text-center">{novel.rating}</TableCell>
       <TableCell className="text-center">
-        <span className="text-sm text-gray-500">{novel.chapter_progress}</span>
+        <span className="text-sm ">{novel.chapter_progress}</span>
       </TableCell>
-      <TableCell className="text-center">{novel.original_language}</TableCell>
+      <TableCell className="text-center">
+        {novel.original_language.charAt(0).toUpperCase() +
+          novel.original_language.slice(1)}
+      </TableCell>
     </TableRow>
+  );
+};
+
+const NovelTable = ({ novels, title, onSelectNovel }) => {
+  if (novels.length === 0) {
+    return null; // Don't render anything if there are no novels
+  }
+
+  return (
+    <>
+      <h2 className="text-[1.24rem] font-semibold mb-4 ">{title}</h2>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="pl-[4.2rem]">Title</TableHead>
+            <TableHead>Score</TableHead>
+            <TableHead>Chapters</TableHead>
+            <TableHead>Country</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {novels.map((novel) => (
+            <NovelItem key={novel.id} novel={novel} onSelect={onSelectNovel} />
+          ))}
+        </TableBody>
+      </Table>
+    </>
   );
 };
 
@@ -111,27 +141,6 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
             (novel) => novel.status === selectedFilter.toLowerCase(),
           ),
         };
-
-  const NovelTable = ({ novels, title, onSelectNovel }) => (
-    <>
-      <h2 className="text-[1.24rem] font-semibold mb-4 ">{title}</h2>
-      <Table>
-        <TableHeader className="">
-          <TableRow>
-            <TableHead className="pl-[4.2rem]">Title</TableHead>
-            <TableHead>Score</TableHead>
-            <TableHead>Chapters</TableHead>
-            <TableHead>Country</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {novels.map((novel) => (
-            <NovelItem key={novel.id} novel={novel} onSelect={onSelectNovel} />
-          ))}
-        </TableBody>
-      </Table>
-    </>
-  );
 
   const refetchUserStats = async () => {
     try {
@@ -189,32 +198,42 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
         <div className="w-full md:w-[85%] flex flex-col">
           {selectedFilter === "All" ? (
             <>
-              <NovelTable
-                novels={filteredNovels.reading}
-                title="Reading"
-                onSelectNovel={setSelectedNovel}
-              />
-              <NovelTable
-                novels={filteredNovels.planning}
-                title="Planning"
-                onSelectNovel={setSelectedNovel}
-              />
-              <NovelTable
-                novels={filteredNovels.completed}
-                title="Completed"
-                onSelectNovel={setSelectedNovel}
-              />
+              {filteredNovels.reading.length > 0 && (
+                <NovelTable
+                  novels={filteredNovels.reading}
+                  title="Reading"
+                  onSelectNovel={setSelectedNovel}
+                />
+              )}
+              {filteredNovels.planning.length > 0 && (
+                <NovelTable
+                  novels={filteredNovels.planning}
+                  title="Planning"
+                  onSelectNovel={setSelectedNovel}
+                />
+              )}
+              {filteredNovels.completed.length > 0 && (
+                <NovelTable
+                  novels={filteredNovels.completed}
+                  title="Completed"
+                  onSelectNovel={setSelectedNovel}
+                />
+              )}
             </>
           ) : (
-            <NovelTable
-              novels={
-                filteredNovels[
-                  selectedFilter.toLowerCase() as keyof typeof filteredNovels
-                ]
-              }
-              title={selectedFilter}
-              onSelectNovel={setSelectedNovel}
-            />
+            filteredNovels[
+              selectedFilter.toLowerCase() as keyof typeof filteredNovels
+            ].length > 0 && (
+              <NovelTable
+                novels={
+                  filteredNovels[
+                    selectedFilter.toLowerCase() as keyof typeof filteredNovels
+                  ]
+                }
+                title={selectedFilter}
+                onSelectNovel={setSelectedNovel}
+              />
+            )
           )}
 
           <Dialog
