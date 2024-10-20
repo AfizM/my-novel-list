@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
 import { ReviewCard } from "@/components/ReviewCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Button } from "@/components/ui/button";
 
 interface Review {
   id: string;
@@ -34,6 +36,8 @@ interface ReviewsPageContentProps {
   };
 }
 
+const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
+
 export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,42 +46,77 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("recent");
   const { ref, inView } = useInView();
+  const [cache, setCache] = useState<{
+    [key: string]: { data: Review[]; timestamp: number };
+  }>({});
+
+  const debouncedLoading = useDebounce(loading, 200);
+
+  const getCacheKey = useCallback(
+    (pageNum: number) => {
+      return `${user.username}-${sort}-${pageNum}`;
+    },
+    [user.username, sort],
+  );
+
+  const fetchReviews = useCallback(
+    async (pageNum = 1) => {
+      const cacheKey = getCacheKey(pageNum);
+      const cachedData = cache[cacheKey];
+
+      if (cachedData && Date.now() - cachedData.timestamp < CACHE_TIME) {
+        setReviews((prevReviews) =>
+          pageNum === 1
+            ? cachedData.data
+            : [...prevReviews, ...cachedData.data],
+        );
+        setHasMore(cachedData.data.length === 10); // Assuming 10 reviews per page
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(
+          `/api/users/${user.username}/reviews?page=${pageNum}&sort=${sort}`,
+        );
+        if (!response.ok) throw new Error("Failed to fetch reviews");
+        const data = await response.json();
+        setReviews((prevReviews) =>
+          pageNum === 1 ? data.reviews : [...prevReviews, ...data.reviews],
+        );
+        setHasMore(data.hasMore);
+        setCache((prevCache) => ({
+          ...prevCache,
+          [cacheKey]: { data: data.reviews, timestamp: Date.now() },
+        }));
+      } catch (err) {
+        setError("An error occurred while fetching reviews. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user.username, sort, cache, getCacheKey],
+  );
 
   useEffect(() => {
-    fetchReviews();
-  }, [user.username, sort]);
+    setPage(1);
+    setReviews([]);
+    fetchReviews(1);
+  }, [user.username, sort, fetchReviews]);
 
   useEffect(() => {
-    if (inView && hasMore) {
+    if (inView && hasMore && !loading) {
       setPage((prevPage) => prevPage + 1);
     }
-  }, [inView, hasMore]);
+  }, [inView, hasMore, loading]);
 
   useEffect(() => {
     if (page > 1) {
       fetchReviews(page);
     }
-  }, [page]);
-
-  const fetchReviews = async (pageNum = 1) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `/api/users/${user.username}/reviews?page=${pageNum}&sort=${sort}`,
-      );
-      if (!response.ok) throw new Error("Failed to fetch reviews");
-      const data = await response.json();
-      setReviews((prevReviews) =>
-        pageNum === 1 ? data.reviews : [...prevReviews, ...data.reviews],
-      );
-      setHasMore(data.hasMore);
-    } catch (err) {
-      setError("An error occurred while fetching reviews. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [page, fetchReviews]);
 
   const handleLike = async (
     reviewId: string,
@@ -91,6 +130,20 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
           : review,
       ),
     );
+    // Update cache
+    Object.keys(cache).forEach((key) => {
+      setCache((prevCache) => ({
+        ...prevCache,
+        [key]: {
+          ...prevCache[key],
+          data: prevCache[key].data.map((review) =>
+            review.id === reviewId
+              ? { ...review, is_liked: isLiked, likes: newLikes }
+              : review,
+          ),
+        },
+      }));
+    });
   };
 
   return (
@@ -125,8 +178,8 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
             showNovel={true}
           />
         ))}
-        {loading &&
-          Array(3)
+        {debouncedLoading &&
+          Array(1)
             .fill(0)
             .map((_, index) => (
               <div key={`skeleton-${index}`} className="space-y-3">
@@ -136,9 +189,16 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
               </div>
             ))}
       </div>
-      {error && <div className="text-red-500 text-center mt-4">{error}</div>}
-      {!loading && !error && hasMore && (
-        <div ref={ref} className="h-10" /> // Invisible element for intersection observer
+      {error && (
+        <div className="text-red-500 text-center mt-4 p-2 bg-red-100 rounded">
+          {error}
+          <Button onClick={() => fetchReviews(page)} className="ml-2">
+            Retry
+          </Button>
+        </div>
+      )}
+      {!debouncedLoading && !error && hasMore && (
+        <div ref={ref} className="h-10" />
       )}
       {!hasMore && (
         <div className="text-center mt-4 text-gray-500">
