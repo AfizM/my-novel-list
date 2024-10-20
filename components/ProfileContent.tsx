@@ -1,9 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BookOpen,
@@ -15,8 +14,9 @@ import {
   Edit,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface User {
   id: string;
@@ -37,6 +37,8 @@ interface UserStats {
   favoriteGenre: string;
 }
 
+const CACHE_TIME = 60000; // 1 minute cache
+
 export default function ProfileContent({ user }: ProfileContentProps) {
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
@@ -47,42 +49,56 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const { user: currentUser } = useUser();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [favoriteNovels, setFavoriteNovels] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      fetchUserPosts();
+  const debouncedLoading = useDebounce(isLoading, 200);
+
+  const fetchData = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastFetchTime < CACHE_TIME) {
+      return; // Use cached data
     }
-  }, [user]);
 
-  useEffect(() => {
-    const fetchUserStats = async () => {
-      try {
-        const response = await fetch(`/api/users/${user.user_id}/stats`);
-        if (!response.ok) throw new Error("Failed to fetch user stats");
-        const data = await response.json();
-        setUserStats(data);
-      } catch (error) {
-        console.error("Error fetching user stats:", error);
-      }
-    };
+    setIsLoading(true);
+    setError(null);
 
-    fetchUserStats();
-  }, [user.id]);
-
-  useEffect(() => {
-    fetchFavoriteNovels();
-  }, [user.username]);
-
-  const fetchUserPosts = async () => {
     try {
-      const response = await fetch(`/api/users/${user.username}/posts`);
-      if (!response.ok) throw new Error("Failed to fetch posts");
-      const data = await response.json();
-      setPosts(data);
+      const [postsResponse, statsResponse, favoritesResponse] =
+        await Promise.all([
+          fetch(`/api/users/${user.username}/posts`),
+          fetch(`/api/users/${user.user_id}/stats`),
+          fetch(`/api/users/${user.user_id}/favorite-novels`),
+        ]);
+
+      if (!postsResponse.ok || !statsResponse.ok || !favoritesResponse.ok) {
+        throw new Error("Failed to fetch data");
+      }
+
+      const [postsData, statsData, favoritesData] = await Promise.all([
+        postsResponse.json(),
+        statsResponse.json(),
+        favoritesResponse.json(),
+      ]);
+
+      console.log("STATS DATA IS " + statsData.novelsRead);
+
+      setPosts(postsData);
+      setUserStats(statsData);
+      setFavoriteNovels(favoritesData);
+      setLastFetchTime(now);
     } catch (error) {
-      console.error("Error fetching user posts:", error);
+      console.error("Error fetching data:", error);
+      setError("Failed to load user data. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [user.username, user.user_id, lastFetchTime]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleCreatePost = async () => {
     try {
@@ -189,20 +205,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     }
   };
 
-  const fetchFavoriteNovels = async () => {
-    try {
-      const response = await fetch(
-        `/api/users/${user.user_id}/favorite-novels`,
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch favorite novels");
-      }
-      const data = await response.json();
-      setFavoriteNovels(data);
-    } catch (error) {
-      console.error("Error fetching favorite novels:", error);
-    }
-  };
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
@@ -219,7 +224,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               onMouseLeave={() => setIsHovered(false)}
             >
               <CardContent>
-                {isEditing ? (
+                {debouncedLoading ? (
+                  <Skeleton className="h-[100px] w-full" />
+                ) : isEditing ? (
                   <div className="flex flex-col space-y-2">
                     <Textarea
                       value={aboutMe}
@@ -258,76 +265,82 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 )}
             </Card>
           </div>
-          <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-4">
+          <div className="text-[1.24rem] font-semibold leading-none tracking-tight mb-4">
             Novel Stats
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Novels Read
-                </CardTitle>
-                <BookOpen className="h-4 w-4 text-muted-foreground text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl font-bold">
-                  {userStats?.novelsRead || "N/A"}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Chapters Read
-                </CardTitle>
-                <Bookmark className="h-4 w-4 text-muted-foreground text-yellow-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl font-bold">
-                  {userStats?.chaptersRead || 0}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Favorite Genre
-                </CardTitle>
-                <Heart className="h-4 w-4 text-muted-foreground text-red-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl font-bold">
-                  {userStats?.favoriteGenre || "N/A"}
-                </div>
-              </CardContent>
-            </Card>
+            {[
+              { label: "Novels Read", key: "novelsRead", icon: <BookOpen /> },
+              {
+                label: "Chapters Read",
+                key: "chaptersRead",
+                icon: <Bookmark />,
+              },
+              {
+                label: "Favorite Genre",
+                key: "favoriteGenre",
+                icon: <Heart />,
+              },
+            ].map((stat, index) => (
+              <Card key={stat.label}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {stat.label}
+                  </CardTitle>
+                  {stat.icon}
+                </CardHeader>
+                <CardContent>
+                  {debouncedLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <div className="text-xl font-bold">
+                      {userStats && userStats[stat.key] !== undefined
+                        ? userStats[stat.key]
+                        : "N/A"}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           {/* Favourite Novels section */}
           <div className="flex flex-col space-y-2 mb-8">
-            <div className=" text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
+            <div className="text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
               Favourite Novels
             </div>
             <Card>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
-                  {favoriteNovels.map((novel) => (
-                    <div key={novel.id} className="flex flex-col items-center">
-                      <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
-                        <img
-                          src={
-                            novel.cover_image_url ||
-                            "/img/novel-placeholder.jpg"
-                          }
-                          alt={novel.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <p className="mt-2 text-sm font-medium text-center line-clamp-2">
-                        {novel.name}
-                      </p>
-                    </div>
-                  ))}
+                  {debouncedLoading
+                    ? Array(8)
+                        .fill(0)
+                        .map((_, i) => (
+                          <div key={i} className="flex flex-col items-center">
+                            <Skeleton className="w-24 h-36 rounded-md" />
+                            <Skeleton className="w-20 h-4 mt-2" />
+                          </div>
+                        ))
+                    : favoriteNovels.map((novel) => (
+                        <div
+                          key={novel.id}
+                          className="flex flex-col items-center"
+                        >
+                          <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
+                            <img
+                              src={
+                                novel.cover_image_url ||
+                                "/img/novel-placeholder.jpg"
+                              }
+                              alt={novel.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <p className="mt-2 text-sm font-medium text-center line-clamp-2">
+                            {novel.name}
+                          </p>
+                        </div>
+                      ))}
                 </div>
               </CardContent>
             </Card>
@@ -369,15 +382,24 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             )}
           </div>
 
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onLike={handleLike}
-              onComment={handleComment}
-              onCommentLike={handleCommentLike}
-            />
-          ))}
+          {debouncedLoading
+            ? Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <Card key={i} className="p-4">
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </Card>
+                ))
+            : posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={handleLike}
+                  onComment={handleComment}
+                  onCommentLike={handleCommentLike}
+                />
+              ))}
         </div>
       </div>
     </div>
