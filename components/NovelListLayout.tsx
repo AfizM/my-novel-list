@@ -29,6 +29,7 @@ import {
 import { NovelModal } from "@/components/novelmodal";
 import { MoreHorizontal } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
+import { NovelListSkeleton } from "@/components/NovelListSkeleton";
 // import ProfileLayout from "../profilelayout";
 
 interface NovelListLayoutProps {
@@ -153,14 +154,6 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
       <div className="flex flex-col md:flex-row gap-12">
@@ -196,44 +189,52 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
 
         {/* Novel List */}
         <div className="w-full md:w-[85%] flex flex-col">
-          {selectedFilter === "All" ? (
+          {isLoading ? (
+            <NovelListSkeleton />
+          ) : error ? (
+            <div className="text-red-500">{error}</div>
+          ) : (
             <>
-              {filteredNovels.reading.length > 0 && (
-                <NovelTable
-                  novels={filteredNovels.reading}
-                  title="Reading"
-                  onSelectNovel={setSelectedNovel}
-                />
-              )}
-              {filteredNovels.planning.length > 0 && (
-                <NovelTable
-                  novels={filteredNovels.planning}
-                  title="Planning"
-                  onSelectNovel={setSelectedNovel}
-                />
-              )}
-              {filteredNovels.completed.length > 0 && (
-                <NovelTable
-                  novels={filteredNovels.completed}
-                  title="Completed"
-                  onSelectNovel={setSelectedNovel}
-                />
+              {selectedFilter === "All" ? (
+                <>
+                  {filteredNovels.reading.length > 0 && (
+                    <NovelTable
+                      novels={filteredNovels.reading}
+                      title="Reading"
+                      onSelectNovel={setSelectedNovel}
+                    />
+                  )}
+                  {filteredNovels.planning.length > 0 && (
+                    <NovelTable
+                      novels={filteredNovels.planning}
+                      title="Planning"
+                      onSelectNovel={setSelectedNovel}
+                    />
+                  )}
+                  {filteredNovels.completed.length > 0 && (
+                    <NovelTable
+                      novels={filteredNovels.completed}
+                      title="Completed"
+                      onSelectNovel={setSelectedNovel}
+                    />
+                  )}
+                </>
+              ) : (
+                filteredNovels[
+                  selectedFilter.toLowerCase() as keyof typeof filteredNovels
+                ].length > 0 && (
+                  <NovelTable
+                    novels={
+                      filteredNovels[
+                        selectedFilter.toLowerCase() as keyof typeof filteredNovels
+                      ]
+                    }
+                    title={selectedFilter}
+                    onSelectNovel={setSelectedNovel}
+                  />
+                )
               )}
             </>
-          ) : (
-            filteredNovels[
-              selectedFilter.toLowerCase() as keyof typeof filteredNovels
-            ].length > 0 && (
-              <NovelTable
-                novels={
-                  filteredNovels[
-                    selectedFilter.toLowerCase() as keyof typeof filteredNovels
-                  ]
-                }
-                title={selectedFilter}
-                onSelectNovel={setSelectedNovel}
-              />
-            )
           )}
 
           <Dialog
