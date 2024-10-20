@@ -53,16 +53,18 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const { ref, inView } = useInView({
     threshold: 0,
   });
 
   useEffect(() => {
-    if (inView && hasMore && !loading) {
+    if (inView && hasMore && !loading && !loadingMore) {
       setOffset((prev) => prev + 20);
+      setLoadingMore(true);
     }
-  }, [inView, hasMore, loading]);
+  }, [inView, hasMore, loading, loadingMore]);
 
   useEffect(() => {
     setNovels([]);
@@ -72,18 +74,17 @@ export default function Home() {
   }, [sort, status, genre, search]);
 
   useEffect(() => {
-    if (offset > 0) {
+    if (offset > 0 && loadingMore) {
       fetchNovels(offset);
     }
   }, [offset]);
 
   const fetchNovels = async (currentOffset: number) => {
-    setLoading(true);
+    if (currentOffset === 0) {
+      setLoading(true);
+    }
     setError(null);
 
-    if (currentOffset === 0) {
-      setHasMore(true);
-    }
     const params = new URLSearchParams({
       sort,
       status: status !== "Any" ? status : "",
@@ -102,6 +103,7 @@ export default function Home() {
       setError("An error occurred while fetching novels. Please try again.");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -181,42 +183,49 @@ export default function Home() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 xl:gap-[2.3rem]">
         {novels.map((novel) => (
-          <div key={novel.id} className="flex flex-col">
-            <img
-              src={novel.cover_image_url || "/img/novel1.jpg"}
-              alt={novel.name}
-              className="w-full h-auto aspect-[185/278] object-cover rounded-md"
-            />
-            <Link href={`/novel/${novel.id}`}>
-              <div className="mt-2 text-sm font-medium hover:text-primary">
-                {novel.name}
-              </div>
-            </Link>
-            {/* <div className="text-xs text-gray-500">
-              {novel.authors.join(", ")}
-            </div>
-            <div className="text-xs text-gray-500">
-              Rating: {novel.rating.toFixed(1)} ({novel.rating_votes} votes)
-            </div> */}
-          </div>
+          <NovelCard key={novel.id} novel={novel} />
         ))}
-        {loading &&
+        {(loading || loadingMore) &&
           Array(20)
             .fill(0)
             .map((_, index) => (
               <div key={`skeleton-${index}`} className="flex flex-col">
                 <Skeleton height={278} className="w-full rounded-md" />
                 <Skeleton width={120} height={20} className="mt-2" />
-                <Skeleton width={80} height={16} className="mt-1" />
-                <Skeleton width={100} height={16} className="mt-1" />
               </div>
             ))}
       </div>
       {error && <div className="text-red-500 text-center mt-4">{error}</div>}
-      {!loading && !error && hasMore && <div ref={ref} className="h-10" />}
+      {!loading && !loadingMore && !error && hasMore && (
+        <div ref={ref} className="h-10" />
+      )}
       {!hasMore && (
         <div className="text-center mt-4">No more novels to load</div>
       )}
     </div>
   );
 }
+
+const NovelCard = ({ novel }: { novel: Novel }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  return (
+    <div className="flex flex-col">
+      {!imageLoaded && <Skeleton height={278} className="w-full rounded-md" />}
+      <img
+        src={novel.cover_image_url || "/img/novel1.jpg"}
+        alt={novel.name}
+        className={`w-full h-auto aspect-[185/278] object-cover rounded-md ${
+          imageLoaded ? "block" : "hidden"
+        }`}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageLoaded(true)}
+      />
+      <Link href={`/novel/${novel.id}`}>
+        <div className="mt-2 text-sm font-medium hover:text-primary">
+          {novel.name}
+        </div>
+      </Link>
+    </div>
+  );
+};

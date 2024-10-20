@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       novel_id,
       status,
       chapter_progress,
-      rating,
+      user_rating: rating,
       notes,
       is_favorite,
       updated_at: new Date().toISOString(),

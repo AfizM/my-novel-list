@@ -18,6 +18,33 @@ import { useUser } from "@clerk/nextjs";
 import { ReviewCard } from "@/components/ReviewCard";
 import { toast } from "sonner";
 
+interface Novel {
+  id: number;
+  name: string;
+  assoc_names: string[];
+  original_language: string;
+  authors: string[];
+  genres: string[];
+  tags: string[];
+  cover_image_url: string;
+  start_year: number;
+  licensed: boolean;
+  original_publisher: string;
+  english_publisher: string;
+  complete_original: boolean;
+  chapters_original_current: string;
+  complete_translated: boolean;
+  chapter_latest_translated: string;
+  release_freq: number;
+  on_reading_lists: number;
+  reading_list_all_time_rank: number;
+  rating: number;
+  rating_votes: number;
+  recommended_series_ids: number[];
+  created_at: string;
+  updated_at: string;
+}
+
 async function getNovel(id: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/novels/${id}`,
@@ -197,8 +224,8 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           {/* Image */}
           <div className=" flex flex-col items-center mr-2 shrink-0  ">
             <img
-              src={novel.image || "/img/novel1.jpg"}
-              alt={novel.title}
+              src={novel.cover_image_url || "/img/novel1.jpg"}
+              alt={novel.name}
               className="w-full max-w-56 object-cover rounded-md mt-2"
             />
             <Button
@@ -213,7 +240,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           <div className="flex-col ml-4 space-y-3 max-w-[800px] p-2">
             {/* Title */}
             <div className="flex justify-between">
-              <div className="text-[1.6rem] font-bold">{novel.title}</div>
+              <div className="text-[1.6rem] font-bold">{novel.name}</div>
               <div className="flex space-x-1 items-center">
                 <Eye size={20} />
                 <div className="text-sm font-semibold">{novel.views} Views</div>
@@ -225,12 +252,13 @@ export default function NovelPage({ params }: { params: { id: string } }) {
                 {[...Array(5)].map((_, index) => (
                   <Star
                     key={index}
-                    fill={index < Math.floor(novel.ratings) ? "orange" : "gray"}
+                    fill={index < Math.floor(novel.rating) ? "orange" : "gray"}
                     strokeWidth={0}
                   />
                 ))}
                 <div className="ml-2 font-semibold ">
-                  {novel.ratings.toFixed(2)} Ratings ({novel.total_ratings})
+                  {novel.rating != null ? novel.rating.toFixed(2) : "N/A"}{" "}
+                  Ratings ({novel.rating_votes ?? 0})
                 </div>
               </div>
             </div>
@@ -241,52 +269,58 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div>
               <span className="font-semibold text-sm">Author: </span>{" "}
               <span className="text-primary underline cursor-pointer text-sm">
-                {novel.author}
+                {novel.authors[0]}
               </span>
             </div>
             <div>
-              <span className="font-semibold text-sm">Publisher:</span>{" "}
+              <span className="font-semibold text-sm">Original Publisher:</span>{" "}
               <span className="text-primary underline cursor-pointer text-sm">
-                {novel.publisher}
+                {novel.original_publisher}
               </span>
             </div>
-
             <div>
-              <span className="font-semibold text-sm">Country:</span>{" "}
+              <span className="font-semibold text-sm">English Publisher:</span>{" "}
               <span className="text-primary underline cursor-pointer text-sm">
-                {novel.country}
+                {novel.english_publisher}
               </span>
             </div>
-
+            <div>
+              <span className="font-semibold text-sm">Original Language:</span>{" "}
+              <span className="text-primary underline cursor-pointer text-sm">
+                {novel.original_language}
+              </span>
+            </div>
             <div>
               <span className="font-semibold text-sm">Chapters:</span>{" "}
               <span className="text-primary cursor-pointer text-sm">
-                {novel.chapters}
+                {novel.chapters_original_current}
               </span>
             </div>
-
-            {/* Genres */}
-            <div className="flex-wrap flex   ">
+            <div>
+              <span className="font-semibold text-sm">Status:</span>{" "}
+              <span className="text-primary cursor-pointer text-sm">
+                {novel.complete_original ? "Completed" : "Ongoing"}
+              </span>
+            </div>
+            <div className="flex-wrap flex">
               <div className="mr-2">
                 <span className="font-semibold text-sm">Genres:</span>{" "}
               </div>
               <div>
                 {novel.genres.map((genre, index) => (
-                  <Badge className="mr-2 mb-2 cursor-pointer " key={index}>
+                  <Badge className="mr-2 mb-2 cursor-pointer" key={index}>
                     {genre}
                   </Badge>
                 ))}
               </div>
             </div>
-
-            {/* Tags */}
-            <div className="flex-wrap flex ">
+            <div className="flex-wrap flex">
               <div className="mr-2">
                 <span className="font-semibold text-sm">Tags:</span>{" "}
               </div>
               <div>
                 {novel.tags.map((tag, index) => (
-                  <Badge className="mr-2 mb-2 cursor-pointer " key={index}>
+                  <Badge className="mr-2 mb-2 cursor-pointer" key={index}>
                     {tag}
                   </Badge>
                 ))}
