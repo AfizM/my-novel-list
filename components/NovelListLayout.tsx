@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,13 @@ import { NovelModal } from "@/components/novelmodal";
 import { MoreHorizontal } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { NovelListSkeleton } from "@/components/NovelListSkeleton";
-// import ProfileLayout from "../profilelayout";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface NovelListLayoutProps {
   user: any; // Replace 'any' with a proper user type
 }
+
+const CACHE_TIME = 60000; // 1 minute cache
 
 const NovelItem = ({ novel, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -107,8 +109,16 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
   const [novels, setNovels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
 
-  const fetchNovels = async () => {
+  const debouncedLoading = useDebounce(isLoading, 200);
+
+  const fetchNovels = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastFetchTime < CACHE_TIME) {
+      return; // Use cached data
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -118,17 +128,18 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
       }
       const data = await response.json();
       setNovels(data);
+      setLastFetchTime(now);
     } catch (error) {
       console.error("Error fetching novels:", error);
       setError("Failed to load novels. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user.user_id, lastFetchTime]);
 
   useEffect(() => {
     fetchNovels();
-  }, []);
+  }, [fetchNovels]);
 
   const filteredNovels =
     selectedFilter === "All"
@@ -142,17 +153,6 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
             (novel) => novel.status === selectedFilter.toLowerCase(),
           ),
         };
-
-  const refetchUserStats = async () => {
-    try {
-      const response = await fetch(`/api/users/${user.id}/stats`);
-      if (!response.ok) throw new Error("Failed to fetch user stats");
-      const data = await response.json();
-      // You might need to pass this data up to the parent component or use a global state management solution
-    } catch (error) {
-      console.error("Error refetching user stats:", error);
-    }
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
@@ -189,7 +189,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
 
         {/* Novel List */}
         <div className="w-full md:w-[85%] flex flex-col">
-          {isLoading ? (
+          {debouncedLoading ? (
             <NovelListSkeleton />
           ) : error ? (
             <div className="text-red-500">{error}</div>
@@ -220,15 +220,9 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                   )}
                 </>
               ) : (
-                filteredNovels[
-                  selectedFilter.toLowerCase() as keyof typeof filteredNovels
-                ].length > 0 && (
+                filteredNovels[selectedFilter.toLowerCase()]?.length > 0 && (
                   <NovelTable
-                    novels={
-                      filteredNovels[
-                        selectedFilter.toLowerCase() as keyof typeof filteredNovels
-                      ]
-                    }
+                    novels={filteredNovels[selectedFilter.toLowerCase()]}
                     title={selectedFilter}
                     onSelectNovel={setSelectedNovel}
                   />
@@ -244,12 +238,10 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
             <DialogContent>
               <NovelModal
                 novel={selectedNovel}
-                onClose={() => {
-                  setSelectedNovel(null);
-                }}
+                onClose={() => setSelectedNovel(null)}
                 onUpdateStats={() => {
-                  // You can add any additional logic here if needed
                   console.log("User stats updated");
+                  fetchNovels(); // Refetch novels after updating stats
                 }}
               />
             </DialogContent>
