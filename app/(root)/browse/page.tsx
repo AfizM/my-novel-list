@@ -15,6 +15,8 @@ import Link from "next/link";
 import { useInView } from "react-intersection-observer";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface Novel {
   id: number;
@@ -55,6 +57,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const debouncedSearch = useDebounce(search, 300);
+  const debouncedLoading = useDebounce(loading, 200);
+
   const { ref, inView } = useInView({
     threshold: 0,
   });
@@ -71,7 +76,7 @@ export default function Home() {
     setOffset(0);
     setHasMore(true);
     fetchNovels(0);
-  }, [sort, status, genre, search]);
+  }, [sort, status, genre, debouncedSearch]);
 
   useEffect(() => {
     if (offset > 0 && loadingMore) {
@@ -89,7 +94,7 @@ export default function Home() {
       sort,
       status: status !== "Any" ? status : "",
       genre: genre !== "Any" ? genre : "",
-      search,
+      search: debouncedSearch,
       offset: currentOffset.toString(),
       limit: "20",
     });
@@ -110,93 +115,115 @@ export default function Home() {
   return (
     <div className="w-full max-w-7xl mx-auto my-0 px-9">
       {/* Filters */}
-      <div className="py-4">
-        <div className="flex mb-4 space-x-6">
-          <div className="flex-col w-full max-w-[300px]">
-            <div className="ml-1 py-2 font-semibold">Search</div>
-            <Input
-              type="search"
-              placeholder="Search"
-              className="shadow-[0_2px_4px_0_var(--shadow-color)]"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          <div className="flex space-x-6 w-full items-end">
-            <div className="flex-col w-full  max-w-72 ">
-              <div className="ml-1 py-2 font-semibold">Sort</div>
-              <Select value={sort} onValueChange={setSort}>
-                <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
-                  <SelectValue placeholder="Any" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="popular">Popular</SelectItem>
-                  <SelectItem value="recent">Recent</SelectItem>
-                  <SelectItem value="rating">Rating</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                </SelectContent>
-              </Select>
+      <div className="mb-8">
+        <div className="flex flex-col space-y-4">
+          <div className="flex mb-4 space-x-6">
+            <div className="flex-col w-full max-w-[300px]">
+              <div className="ml-1 py-2 font-semibold">Search</div>
+              <Input
+                type="search"
+                placeholder="Search"
+                className="shadow-[0_2px_4px_0_var(--shadow-color)]"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
 
-            <div className="flex-col w-full max-w-48 ">
-              <div className="ml-1 py-2 font-semibold">Status</div>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
-                  <SelectValue placeholder="Any" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Any">Any</SelectItem>
-                  <SelectItem value="Ongoing">Ongoing</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="flex space-x-6 w-full items-end">
+              <div className="flex-col w-full  max-w-72 ">
+                <div className="ml-1 py-2 font-semibold">Sort</div>
+                <Select value={sort} onValueChange={setSort}>
+                  <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="popular">Popular</SelectItem>
+                    <SelectItem value="recent">Recent</SelectItem>
+                    <SelectItem value="rating">Rating</SelectItem>
+                    <SelectItem value="name">Name</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="flex-col w-full max-w-48 ">
-              <div className="ml-1 py-2 text-base font-semibold">Genre</div>
-              <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
-                  <SelectValue placeholder="Any" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Any">Any</SelectItem>
-                  <SelectItem value="Action">Action</SelectItem>
-                  <SelectItem value="Adventure">Adventure</SelectItem>
-                  <SelectItem value="Fantasy">Fantasy</SelectItem>
-                  <SelectItem value="Mystery">Mystery</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="flex-col w-full max-w-48 ">
+                <div className="ml-1 py-2 font-semibold">Status</div>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Any">Any</SelectItem>
+                    <SelectItem value="Ongoing">Ongoing</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="flex-col w-full max-w-48 ml ">
-              <Button
-                variant="outline"
-                className="p-2 shadow-[0_2px_4px_0_var(--shadow-color)] ml-2 "
-              >
-                <SlidersHorizontal className="h-5 w-6" />
-              </Button>
+              <div className="flex-col w-full max-w-48 ">
+                <div className="ml-1 py-2 text-base font-semibold">Genre</div>
+                <Select value={genre} onValueChange={setGenre}>
+                  <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Any">Any</SelectItem>
+                    <SelectItem value="Action">Action</SelectItem>
+                    <SelectItem value="Adventure">Adventure</SelectItem>
+                    <SelectItem value="Fantasy">Fantasy</SelectItem>
+                    <SelectItem value="Mystery">Mystery</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-col w-full max-w-48 ml ">
+                <Button
+                  variant="outline"
+                  className="p-2 shadow-[0_2px_4px_0_var(--shadow-color)] ml-2 "
+                >
+                  <SlidersHorizontal className="h-5 w-6" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 xl:gap-[2.3rem]">
-        {novels.map((novel) => (
-          <NovelCard key={novel.id} novel={novel} />
-        ))}
-        {(loading || loadingMore) &&
+      <motion.div
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 xl:gap-[2.3rem]"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.05 },
+          },
+        }}
+      >
+        <AnimatePresence>
+          {novels.map((novel) => (
+            <NovelCard key={novel.id} novel={novel} />
+          ))}
+        </AnimatePresence>
+        {(debouncedLoading || loadingMore) &&
           Array(20)
             .fill(0)
             .map((_, index) => (
-              <div key={`skeleton-${index}`} className="flex flex-col">
+              <motion.div
+                key={`skeleton-${index}`}
+                className="flex flex-col"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
                 <Skeleton height={278} className="w-full rounded-md" />
                 <Skeleton width={120} height={20} className="mt-2" />
-              </div>
+              </motion.div>
             ))}
-      </div>
+      </motion.div>
       {error && <div className="text-red-500 text-center mt-4">{error}</div>}
-      {!loading && !loadingMore && !error && hasMore && (
+      {!debouncedLoading && !loadingMore && !error && hasMore && (
         <div ref={ref} className="h-10" />
       )}
       {!hasMore && (
@@ -210,13 +237,19 @@ const NovelCard = ({ novel }: { novel: Novel }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
-    <div className="flex flex-col">
+    <motion.div
+      className="flex flex-col"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
       {!imageLoaded && <Skeleton height={278} className="w-full rounded-md" />}
       <img
         src={novel.cover_image_url || "/img/novel1.jpg"}
         alt={novel.name}
-        className={`w-full h-auto aspect-[185/278] object-cover rounded-md ${
-          imageLoaded ? "block" : "hidden"
+        className={`w-full h-auto aspect-[185/278] object-cover rounded-md transition-opacity duration-300 ${
+          imageLoaded ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setImageLoaded(true)}
         onError={() => setImageLoaded(true)}
@@ -226,6 +259,6 @@ const NovelCard = ({ novel }: { novel: Novel }) => {
           {novel.name}
         </div>
       </Link>
-    </div>
+    </motion.div>
   );
 };
