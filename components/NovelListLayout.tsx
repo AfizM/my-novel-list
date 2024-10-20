@@ -40,8 +40,8 @@ const NovelItem = ({ novel, onSelect }) => {
 
   return (
     <TableRow>
-      <TableCell>
-        <div className="flex items-center space-x-3">
+      <TableCell className="w-[560px] ">
+        <div className="grid grid-cols-[auto,1fr] gap-3 items-center">
           <div
             className="relative cursor-pointer"
             onMouseEnter={() => setIsHovered(true)}
@@ -61,11 +61,11 @@ const NovelItem = ({ novel, onSelect }) => {
           <span>{novel.name}</span>
         </div>
       </TableCell>
-      <TableCell>{novel.rating}</TableCell>
-      <TableCell>
+      <TableCell className="text-center">{novel.rating}</TableCell>
+      <TableCell className="text-center">
         <span className="text-sm text-gray-500">{novel.chapter_progress}</span>
       </TableCell>
-      <TableCell>{novel.original_language}</TableCell>
+      <TableCell className="text-center">{novel.original_language}</TableCell>
     </TableRow>
   );
 };
@@ -114,11 +114,11 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
 
   const NovelTable = ({ novels, title, onSelectNovel }) => (
     <>
-      <h2 className="text-[1.24rem] font-semibold mb-4 mt-8">{title}</h2>
+      <h2 className="text-[1.24rem] font-semibold mb-4 ">{title}</h2>
       <Table>
-        <TableHeader>
+        <TableHeader className="">
           <TableRow>
-            <TableHead>Title</TableHead>
+            <TableHead className="pl-[4.2rem]">Title</TableHead>
             <TableHead>Score</TableHead>
             <TableHead>Chapters</TableHead>
             <TableHead>Country</TableHead>
@@ -157,9 +157,8 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
       <div className="flex flex-col md:flex-row gap-12">
         {/* Filters */}
         <div className="w-full md:w-[18%]">
-          <h2 className="text-[1.24rem] font-semibold mb-4">Filters</h2>
-          <div className="space-y-4">
-            <Input type="search" placeholder="Search novels..." />
+          <div className="space-y-4 mt-9">
+            <Input type="search" placeholder="Filter novels..." />
             <div className="space-y-2">
               {["All", "Planning", "Reading", "Completed"].map((filter) => (
                 <Button
@@ -187,7 +186,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
         </div>
 
         {/* Novel List */}
-        <div className="w-full md:w-3/4 flex flex-col">
+        <div className="w-full md:w-[85%] flex flex-col">
           {selectedFilter === "All" ? (
             <>
               <NovelTable

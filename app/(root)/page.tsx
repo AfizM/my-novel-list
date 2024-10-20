@@ -15,8 +15,8 @@ interface Post {
   novel_id?: number;
   novels?: {
     id: number;
-    title: string;
-    image: string;
+    name: string;
+    cover_image_url: string;
   };
   users: {
     username: string;
