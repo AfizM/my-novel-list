@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import BannerUploadModal from "@/components/BannerUploadModal";
@@ -17,6 +16,7 @@ const navItems = [
 ];
 
 const defaultBannerUrl = "/img/default_banner.png";
+const defaultAvatarUrl = "/img/default-banner.png";
 
 export default function ProfileLayout({
   children,
@@ -72,10 +72,11 @@ export default function ProfileLayout({
         />
         <div className="absolute inset-0 bg-black bg-opacity-30" />
         <div className="flex absolute ml-40 bottom-8 space-x-4 z-10">
-          <Avatar className="w-24 h-24">
-            <AvatarImage src={user.image_url} alt={user.username || ""} />
-            <AvatarFallback>{user.username?.[0] || "U"}</AvatarFallback>
-          </Avatar>
+          <img
+            src={user.image_url || defaultAvatarUrl}
+            alt={user.username || ""}
+            className="w-24 h-24 rounded-full object-cover"
+          />
           <div className="flex flex-col space-y-3">
             <div className="text-white text-2xl font-semibold">
               {user.username || "Anonymous User"}
