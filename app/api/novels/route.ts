@@ -10,35 +10,36 @@ export async function GET(request: Request) {
   const offset = parseInt(searchParams.get("offset") || "0");
   const limit = parseInt(searchParams.get("limit") || "20");
 
-  console.log(offset, limit);
-
   let query = supabase.from("novels").select("*", { count: "exact" });
 
-  if (status && status !== "Any") {
-    query = query.eq("status", status);
+  if (status) {
+    query = query.eq("complete_original", status === "Completed");
   }
 
-  if (genre && genre !== "Any") {
+  if (genre) {
     query = query.contains("genres", [genre]);
   }
 
   if (search) {
-    query = query.ilike("title", `%${search}%`);
+    query = query.or(`name.ilike.%${search}%,assoc_names.cs.{${search}}`);
   }
 
   if (sort) {
     switch (sort) {
       case "popular":
-        query = query.order("views", { ascending: false });
+        query = query.order("on_reading_lists", { ascending: false });
         break;
       case "recent":
         query = query.order("created_at", { ascending: false });
         break;
       case "rating":
-        query = query.order("ratings", { ascending: false });
+        query = query.order("rating", { ascending: false });
+        break;
+      case "name":
+        query = query.order("name");
         break;
       default:
-        query = query.order("title");
+        query = query.order("on_reading_lists", { ascending: false });
     }
   }
 

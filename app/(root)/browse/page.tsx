@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LayoutGridIcon, SlidersHorizontal } from "lucide-react";
-
 import Link from "next/link";
 import { useInView } from "react-intersection-observer";
 import Skeleton from "react-loading-skeleton";
@@ -20,13 +18,29 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 interface Novel {
   id: number;
-  title: string;
-  image: string;
-  status: string;
+  name: string;
+  assoc_names: string[];
+  original_language: string;
+  authors: string[];
   genres: string[];
-  views: number;
-  ratings: number;
+  tags: string[];
+  cover_image_url: string;
+  start_year: number;
+  licensed: boolean;
+  original_publisher: string;
+  english_publisher: string;
+  complete_original: boolean;
+  chapters_original_current: string;
+  complete_translated: boolean;
+  chapter_latest_translated: string;
+  release_freq: number;
+  on_reading_lists: number;
+  reading_list_all_time_rank: number;
+  rating: number;
+  rating_votes: number;
+  recommended_series_ids: number[];
   created_at: string;
+  updated_at: string;
 }
 
 export default function Home() {
@@ -72,8 +86,8 @@ export default function Home() {
     }
     const params = new URLSearchParams({
       sort,
-      status,
-      genre,
+      status: status !== "Any" ? status : "",
+      genre: genre !== "Any" ? genre : "",
       search,
       offset: currentOffset.toString(),
       limit: "20",
@@ -92,114 +106,117 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Container */}
-      <div className="w-full max-w-7xl mx-auto my-0 px-9">
-        {/* Filters */}
+    <div className="w-full max-w-7xl mx-auto my-0 px-9">
+      {/* Filters */}
+      <div className="py-4">
+        <div className="flex mb-4 space-x-6">
+          <div className="flex-col w-full max-w-[300px]">
+            <div className="ml-1 py-2 font-semibold">Search</div>
+            <Input
+              type="search"
+              placeholder="Search"
+              className="shadow-[0_2px_4px_0_var(--shadow-color)]"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
-        <div className="py-4">
-          <div className="flex mb-4 space-x-6">
-            <div className="flex-col w-full max-w-[300px]">
-              <div className="ml-1 py-2 font-semibold">Search</div>
-              <Input
-                type="search"
-                placeholder="Search"
-                className="shadow-[0_2px_4px_0_var(--shadow-color)]"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="flex space-x-6 w-full items-end">
+            <div className="flex-col w-full  max-w-72 ">
+              <div className="ml-1 py-2 font-semibold">Sort</div>
+              <Select value={sort} onValueChange={setSort}>
+                <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="popular">Popular</SelectItem>
+                  <SelectItem value="recent">Recent</SelectItem>
+                  <SelectItem value="rating">Rating</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="flex space-x-6 w-full items-end">
-              <div className="flex-col w-full  max-w-72 ">
-                <div className="ml-1 py-2 font-semibold">Sort</div>
-                <Select value={sort} onValueChange={setSort}>
-                  <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="popular">Popular</SelectItem>
-                    <SelectItem value="recent">Recent</SelectItem>
-                    <SelectItem value="title">Title</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex-col w-full max-w-48 ">
+              <div className="ml-1 py-2 font-semibold">Status</div>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Any">Any</SelectItem>
+                  <SelectItem value="Ongoing">Ongoing</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="flex-col w-full max-w-48 ">
-                <div className="ml-1 py-2 font-semibold">Status</div>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Any">Any</SelectItem>
-                    <SelectItem value="Ongoing">Ongoing</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex-col w-full max-w-48 ">
+              <div className="ml-1 py-2 text-base font-semibold">Genre</div>
+              <Select value={genre} onValueChange={setGenre}>
+                <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Any">Any</SelectItem>
+                  <SelectItem value="Action">Action</SelectItem>
+                  <SelectItem value="Adventure">Adventure</SelectItem>
+                  <SelectItem value="Fantasy">Fantasy</SelectItem>
+                  <SelectItem value="Mystery">Mystery</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="flex-col w-full max-w-48 ">
-                <div className="ml-1 py-2 text-base font-semibold">Genre</div>
-                <Select value={genre} onValueChange={setGenre}>
-                  <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Any">Any</SelectItem>
-                    <SelectItem value="Action">Action</SelectItem>
-                    <SelectItem value="Adventure">Adventure</SelectItem>
-                    <SelectItem value="Game">Game</SelectItem>
-                    <SelectItem value="Mystery">Mystery</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex-col w-full max-w-48 ml ">
-                <Button
-                  variant="outline"
-                  className="p-2 shadow-[0_2px_4px_0_var(--shadow-color)] ml-2 "
-                >
-                  <SlidersHorizontal className="h-5 w-6" />
-                </Button>
-              </div>
+            <div className="flex-col w-full max-w-48 ml ">
+              <Button
+                variant="outline"
+                className="p-2 shadow-[0_2px_4px_0_var(--shadow-color)] ml-2 "
+              >
+                <SlidersHorizontal className="h-5 w-6" />
+              </Button>
             </div>
           </div>
         </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 xl:gap-[2.3rem]">
-          {novels.map((novel) => (
-            <div key={novel.id} className="flex flex-col">
-              <img
-                src={novel.image || "/img/novel1.jpg"}
-                alt={novel.title}
-                className="w-full h-auto aspect-[185/278] object-cover rounded-md"
-              />
-              <Link href={`/novel/${novel.id}`}>
-                <div className="mt-2 text-sm font-medium hover:text-primary">
-                  {novel.title}
-                </div>
-              </Link>
-            </div>
-          ))}
-          {loading &&
-            Array(20)
-              .fill(0)
-              .map((_, index) => (
-                <div key={`skeleton-${index}`} className="flex flex-col">
-                  <Skeleton height={278} className="w-full rounded-md" />
-                  <Skeleton width={120} height={20} className="mt-2" />
-                </div>
-              ))}
-        </div>
-        {/* {error && <div className="text-red-500 text-center mt-4">{error}</div>} */}
-        {!loading && !error && hasMore && (
-          <div ref={ref} className="h-10" /> // Invisible element for intersection observer
-        )}
-        {!hasMore && (
-          <div className="text-center mt-4">No more novels to load</div>
-        )}
       </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 xl:gap-[2.3rem]">
+        {novels.map((novel) => (
+          <div key={novel.id} className="flex flex-col">
+            <img
+              src={novel.cover_image_url || "/img/novel1.jpg"}
+              alt={novel.name}
+              className="w-full h-auto aspect-[185/278] object-cover rounded-md"
+            />
+            <Link href={`/novel/${novel.id}`}>
+              <div className="mt-2 text-sm font-medium hover:text-primary">
+                {novel.name}
+              </div>
+            </Link>
+            {/* <div className="text-xs text-gray-500">
+              {novel.authors.join(", ")}
+            </div>
+            <div className="text-xs text-gray-500">
+              Rating: {novel.rating.toFixed(1)} ({novel.rating_votes} votes)
+            </div> */}
+          </div>
+        ))}
+        {loading &&
+          Array(20)
+            .fill(0)
+            .map((_, index) => (
+              <div key={`skeleton-${index}`} className="flex flex-col">
+                <Skeleton height={278} className="w-full rounded-md" />
+                <Skeleton width={120} height={20} className="mt-2" />
+                <Skeleton width={80} height={16} className="mt-1" />
+                <Skeleton width={100} height={16} className="mt-1" />
+              </div>
+            ))}
+      </div>
+      {error && <div className="text-red-500 text-center mt-4">{error}</div>}
+      {!loading && !error && hasMore && <div ref={ref} className="h-10" />}
+      {!hasMore && (
+        <div className="text-center mt-4">No more novels to load</div>
+      )}
     </div>
   );
 }
