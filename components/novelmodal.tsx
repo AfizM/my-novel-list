@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star, StarHalf, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import ProgressBar from "./ProgressBar";
 
 type NovelModalProps = {
   novel: {
@@ -30,6 +31,8 @@ type NovelModalProps = {
 };
 
 export function NovelModal({ novel, onClose }: NovelModalProps) {
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [novelData, setNovelData] = useState(null);
   const [status, setStatus] = useState("reading");
   const [chapterProgress, setChapterProgress] = useState<string>("");
   const [rating, setRating] = useState(0);
@@ -46,31 +49,31 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
 
   useEffect(() => {
     const fetchNovelListData = async () => {
+      if (!novel) return;
+      setIsInitialLoading(true);
       try {
         const response = await fetch(`/api/novel-list/${novel.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setStatus(data.status);
-          setChapterProgress(data.chapter_progress?.toString() || "");
-          setRating(data.rating);
-          setNotes(data.notes);
-          setIsFavorite(data.is_favorite);
-
-          // Set initial values
-          setInitialStatus(data.status);
-          setInitialChapterProgress(data.chapter_progress?.toString() || "");
-          setInitialRating(data.rating);
-          setInitialNotes(data.notes);
-          setInitialIsFavorite(data.is_favorite);
-        }
+        if (!response.ok) throw new Error("Failed to fetch novel data");
+        const data = await response.json();
+        setNovelData(data);
+        setStatus(data.status);
+        setChapterProgress(data.chapter_progress?.toString() || "");
+        setRating(data.rating);
+        setNotes(data.notes);
+        setIsFavorite(data.is_favorite);
+        setInitialStatus(data.status);
+        setInitialChapterProgress(data.chapter_progress?.toString() || "");
+        setInitialRating(data.rating);
+        setInitialNotes(data.notes);
+        setInitialIsFavorite(data.is_favorite);
       } catch (error) {
         console.error("Error fetching novel list data:", error);
+      } finally {
+        setIsInitialLoading(false);
       }
     };
 
-    if (novel) {
-      fetchNovelListData();
-    }
+    fetchNovelListData();
   }, [novel]);
 
   if (!novel) return null;
@@ -202,80 +205,89 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
   };
 
   return (
-    <div className="flex flex-col space-y-6 pt-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{novel.name}</h2>
-        <button onClick={toggleFavorite} className="focus:outline-none">
-          {isFavorite ? (
-            <Heart className="h-6 w-6 text-red-500 fill-current" />
-          ) : (
-            <Heart className="h-6 w-6 text-gray-400" />
-          )}
-        </button>
-      </div>
-      <div className="flex space-x-6">
-        <div className="w-1/3">
-          <img
-            src={novel.cover_image_url}
-            alt={novel.name}
-            width={200}
-            height={300}
-            className="rounded-md"
-          />
-        </div>
-        <div className="w-2/3 space-y-6">
-          <div className="flex items-center">
-            <label className="w-1/3 text-sm font-medium">Status:</label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-2/3">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="reading">Reading</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="planning">Planning</SelectItem>
-              </SelectContent>
-            </Select>
+    <>
+      <ProgressBar isLoading={isInitialLoading} />
+      {!isInitialLoading ? (
+        <div className="flex flex-col space-y-6 pt-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">{novel.name}</h2>
+            <button onClick={toggleFavorite} className="focus:outline-none">
+              {isFavorite ? (
+                <Heart className="h-6 w-6 text-red-500 fill-current" />
+              ) : (
+                <Heart className="h-6 w-6 text-gray-400" />
+              )}
+            </button>
           </div>
+          <div className="flex space-x-6">
+            <div className="w-1/3">
+              <img
+                src={novel.cover_image_url}
+                alt={novel.name}
+                width={200}
+                height={300}
+                className="rounded-md"
+              />
+            </div>
+            <div className="w-2/3 space-y-6">
+              <div className="flex items-center">
+                <label className="w-1/3 text-sm font-medium">Status:</label>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger className="w-2/3">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="reading">Reading</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="planning">Planning</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="flex items-center">
-            <label className="w-1/3 text-sm font-medium">Chapters read:</label>
-            <Input
-              type="number"
-              placeholder="Chapter progress"
-              value={chapterProgress}
-              onChange={(e) => setChapterProgress(e.target.value)}
-              className="w-2/3"
-            />
-          </div>
+              <div className="flex items-center">
+                <label className="w-1/3 text-sm font-medium">
+                  Chapters read:
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Chapter progress"
+                  value={chapterProgress}
+                  onChange={(e) => setChapterProgress(e.target.value)}
+                  className="w-2/3"
+                />
+              </div>
 
-          <div className="flex items-center">
-            <label className="w-1/3 text-sm font-medium">Overall rating:</label>
-            <div className="flex items-center w-2/3">
-              {renderStars()}
-              <span className="ml-2 text-sm">
-                {rating > 0 ? `${rating}/5` : "Not rated"}
-              </span>
+              <div className="flex items-center">
+                <label className="w-1/3 text-sm font-medium">
+                  Overall rating:
+                </label>
+                <div className="flex items-center w-2/3">
+                  {renderStars()}
+                  <span className="ml-2 text-sm">
+                    {rating > 0 ? `${rating}/5` : "Not rated"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <label className="w-1/3 text-sm font-medium pt-2">Notes:</label>
+                <Textarea
+                  placeholder="Add your notes here"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-2/3 min-h-28"
+                />
+              </div>
             </div>
           </div>
-
-          <div className="flex items-start">
-            <label className="w-1/3 text-sm font-medium pt-2">Notes:</label>
-            <Textarea
-              placeholder="Add your notes here"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-2/3 min-h-28"
-            />
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save"}
+            </Button>
           </div>
+          {error && <p className="text-red-500">{error}</p>}
         </div>
-      </div>
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save"}
-        </Button>
-      </div>
-      {error && <p className="text-red-500">{error}</p>}
-    </div>
+      ) : null}
+    </>
   );
 }
