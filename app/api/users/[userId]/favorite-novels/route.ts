@@ -21,8 +21,8 @@ export async function GET(
         *,
         novels (
           id,
-          title,
-          image
+          name,
+          cover_image_url
         )
       `,
       )
@@ -34,8 +34,8 @@ export async function GET(
 
     const formattedData = data.map((item) => ({
       id: item.novel_id,
-      title: item.novels.title,
-      image: item.novels.image,
+      name: item.novels.name,
+      cover_image_url: item.novels.cover_image_url,
       favoriteOrder: item.favorite_order,
     }));
 

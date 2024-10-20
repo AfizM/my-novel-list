@@ -30,8 +30,8 @@ export async function GET(
         users!inner (username, image_url),
         novels (
           id,
-          title,
-          image
+          name,
+          cover_image_url
         ),
         post_comments (
           id,

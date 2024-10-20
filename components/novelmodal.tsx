@@ -16,11 +16,15 @@ import { toast } from "sonner";
 type NovelModalProps = {
   novel: {
     id: number;
-    title: string;
-    image: string;
-    score: number;
-    chapterProgress: number;
-    country: string;
+    name: string;
+    cover_image_url: string;
+    authors: string[];
+    rating: number;
+    chapters_original_current: string;
+    original_language: string;
+    status: string;
+    chapter_progress: number;
+    rating_votes: number;
   } | null;
   onClose: () => void;
 };
@@ -109,11 +113,11 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
         let postContent = "";
 
         if (hasStatusChanged) {
-          postContent += `Changed status of ${novel.title} to ${status}. `;
+          postContent += `Changed status of ${novel.name} to ${status}. `;
         }
 
         if (hasChapterProgressChanged) {
-          postContent += `Updated progress to chapter ${chapterProgress} of ${novel.title}. `;
+          postContent += `Updated progress to chapter ${chapterProgress} of ${novel.name}. `;
         }
 
         if (postContent) {
@@ -132,7 +136,7 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
 
       await refetchUserStats();
 
-      toast.success(`${novel.title} list entry updated`);
+      toast.success(`${novel.name} list entry updated`);
 
       onClose();
     } catch (error) {
@@ -200,7 +204,7 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
   return (
     <div className="flex flex-col space-y-6 pt-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{novel.title}</h2>
+        <h2 className="text-2xl font-bold">{novel.name}</h2>
         <button onClick={toggleFavorite} className="focus:outline-none">
           {isFavorite ? (
             <Heart className="h-6 w-6 text-red-500 fill-current" />
@@ -212,8 +216,8 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
       <div className="flex space-x-6">
         <div className="w-1/3">
           <img
-            src={novel.image}
-            alt={novel.title}
+            src={novel.cover_image_url}
+            alt={novel.name}
             width={200}
             height={300}
             className="rounded-md"

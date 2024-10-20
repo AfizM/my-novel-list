@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       novel_id,
       status,
       chapter_progress,
-      user_rating: rating,
+      rating,
       notes,
       is_favorite,
       updated_at: new Date().toISOString(),
@@ -73,9 +73,9 @@ export async function GET(request: Request) {
         *,
         novels (
           id,
-          title,
-          image,
-          country
+          name,
+          cover_image_url,
+          original_language
         )
       `,
       )

@@ -49,8 +49,8 @@ const NovelItem = ({ novel, onSelect }) => {
             onClick={() => onSelect(novel)}
           >
             <Avatar className="w-10 h-10">
-              <AvatarImage src={novel.image} alt={novel.title} />
-              <AvatarFallback>{novel.title.substring(0, 2)}</AvatarFallback>
+              <AvatarImage src={novel.cover_image_url} alt={novel.name} />
+              <AvatarFallback>{novel.name.substring(0, 2)}</AvatarFallback>
             </Avatar>
             {isHovered && (
               <div className="absolute inset-0 bg-gray-500 rounded-full flex items-center justify-center">
@@ -58,14 +58,14 @@ const NovelItem = ({ novel, onSelect }) => {
               </div>
             )}
           </div>
-          <span>{novel.title}</span>
+          <span>{novel.name}</span>
         </div>
       </TableCell>
       <TableCell>{novel.rating}</TableCell>
       <TableCell>
         <span className="text-sm text-gray-500">{novel.chapter_progress}</span>
       </TableCell>
-      <TableCell>{novel.country}</TableCell>
+      <TableCell>{novel.original_language}</TableCell>
     </TableRow>
   );
 };

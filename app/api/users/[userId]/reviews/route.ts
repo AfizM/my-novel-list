@@ -34,8 +34,8 @@ export async function GET(
         *,
         novels (
           id,
-          title,
-          image
+          name,
+          cover_image_url
         )
       `,
         { count: "exact" },

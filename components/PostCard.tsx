@@ -16,8 +16,8 @@ interface Post {
   novel_id?: number;
   novels?: {
     id: number;
-    title: string;
-    image: string;
+    name: string;
+    cover_image_url: string;
   };
   users: {
     username: string;
@@ -96,8 +96,8 @@ export function PostCard({
           {post.novel_id && post.novels && (
             <div className="w-1/6 mr-3">
               <img
-                src={post.novels.image}
-                alt={post.novels.title}
+                src={post.novels.cover_image_url}
+                alt={post.novels.name}
                 className="w-full h-auto object-cover rounded-md"
                 style={{ maxHeight: "110px" }}
               />

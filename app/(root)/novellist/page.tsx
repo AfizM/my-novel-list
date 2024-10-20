@@ -40,7 +40,7 @@ interface Novel {
   original_language: string;
   status: string;
   chapter_progress: number;
-  user_rating: number;
+  rating_votes: number;
 }
 
 const NovelItem = ({ novel, onSelect }) => {

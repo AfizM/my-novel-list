@@ -7,8 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface Novel {
   id: number;
-  title: string;
-  image: string;
+  name: string;
+  cover_image_url: string;
   favoriteOrder: number;
 }
 
@@ -123,14 +123,15 @@ const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
                             <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
                               <img
                                 src={
-                                  novel.image || "/img/novel-placeholder.jpg"
+                                  novel.cover_image_url ||
+                                  "/img/novel-placeholder.jpg"
                                 }
-                                alt={novel.title}
+                                alt={novel.name}
                                 className="w-full h-full object-cover"
                               />
                             </div>
                             <p className="mt-2 text-sm font-medium text-center line-clamp-2 w-24">
-                              {novel.title}
+                              {novel.name}
                             </p>
                             {isReordering && (
                               <div className="absolute top-0 left-0 bg-black bg-opacity-50 text-white p-1 rounded">

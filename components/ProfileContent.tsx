@@ -315,13 +315,16 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                     <div key={novel.id} className="flex flex-col items-center">
                       <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
                         <img
-                          src={novel.image || "/img/novel-placeholder.jpg"}
-                          alt={novel.title}
+                          src={
+                            novel.cover_image_url ||
+                            "/img/novel-placeholder.jpg"
+                          }
+                          alt={novel.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <p className="mt-2 text-sm font-medium text-center line-clamp-2">
-                        {novel.title}
+                        {novel.name}
                       </p>
                     </div>
                   ))}

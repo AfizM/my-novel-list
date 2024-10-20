@@ -25,8 +25,8 @@ export async function POST(request: Request) {
         novel_id,
         novels (
           id,
-          title,
-          image
+          name,
+          cover_image_url
         ),
         users (
           username,
@@ -67,8 +67,8 @@ export async function GET() {
         novel_id,
         novels (
           id,
-          title,
-          image
+          name,
+          cover_image_url
         ),
         users (
           username,

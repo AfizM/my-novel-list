@@ -366,11 +366,11 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           <NovelModal
             novel={{
               id: novel.id,
-              title: novel.title,
-              image: novel.image || "/img/novel1.jpg",
-              score: novel.ratings,
-              chapterProgress: novel.chapter_progress || 0,
-              country: novel.country,
+              name: novel.name,
+              cover_image_url: novel.cover_image_url || "/img/novel1.jpg",
+              rating: novel.rating,
+              chapters_original_current: novel.chapters_original_current,
+              original_language: novel.original_language,
             }}
             onClose={() => setIsModalOpen(false)}
           />

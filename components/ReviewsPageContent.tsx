@@ -22,8 +22,8 @@ interface Review {
   created_at: string;
   novel: {
     id: number;
-    title: string;
-    image: string;
+    name: string;
+    cover_image_url: string;
   };
 }
 

@@ -172,7 +172,7 @@ export function ReviewCard({
                   href={`/novel/${review.novels.id}`}
                   className="font-semibold hover:underline text-primary"
                 >
-                  {review.novels.title}
+                  {review.novels.name}
                 </Link>
               </div>
             )}
