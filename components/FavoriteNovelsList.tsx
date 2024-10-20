@@ -1,9 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface Novel {
   id: number;
@@ -20,18 +23,32 @@ interface FavoriteNovelsListProps {
   isCurrentUser: boolean;
 }
 
+const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
+
 const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
   user,
   isCurrentUser,
 }) => {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [isReordering, setIsReordering] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [cache, setCache] = useState<{
+    data: Novel[];
+    timestamp: number;
+  } | null>(null);
 
-  useEffect(() => {
-    fetchFavoriteNovels();
-  }, [user.user_id]);
+  const debouncedLoading = useDebounce(isLoading, 200);
 
-  const fetchFavoriteNovels = async () => {
+  const fetchFavoriteNovels = useCallback(async () => {
+    if (cache && Date.now() - cache.timestamp < CACHE_TIME) {
+      setNovels(cache.data);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(
         `/api/users/${user.user_id}/favorite-novels`,
@@ -39,11 +56,18 @@ const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
       if (!response.ok) throw new Error("Failed to fetch favorite novels");
       const data = await response.json();
       setNovels(data);
+      setCache({ data, timestamp: Date.now() });
     } catch (error) {
       console.error("Error fetching favorite novels:", error);
-      toast.error("Failed to fetch favorite novels");
+      setError("Failed to fetch favorite novels. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [user.user_id, cache]);
+
+  useEffect(() => {
+    fetchFavoriteNovels();
+  }, [fetchFavoriteNovels]);
 
   const handleReorder = () => {
     setIsReordering(!isReordering);
@@ -63,6 +87,8 @@ const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
         throw new Error("Failed to update favorite novels order");
       setIsReordering(false);
       toast.success("Favorite novels order updated successfully");
+      // Update cache after successful reorder
+      setCache({ data: novels, timestamp: Date.now() });
     } catch (error) {
       console.error("Error updating favorite novels order:", error);
       toast.error("Failed to update favorite novels order");
@@ -88,13 +114,24 @@ const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
           Favorite Novels
         </h2>
         {isCurrentUser && (
-          <Button onClick={isReordering ? handleSaveOrder : handleReorder}>
+          <Button
+            onClick={isReordering ? handleSaveOrder : handleReorder}
+            disabled={debouncedLoading}
+          >
             {isReordering ? "Save Order" : "Reorder"}
           </Button>
         )}
       </div>
       <Card>
         <CardContent>
+          {error && (
+            <div className="text-red-500 text-center mb-4 p-2 bg-red-100 rounded">
+              {error}
+              <Button onClick={fetchFavoriteNovels} className="ml-2">
+                Retry
+              </Button>
+            </div>
+          )}
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="favorites" direction="horizontal">
               {(provided) => (
@@ -103,46 +140,55 @@ const FavoriteNovelsList: React.FC<FavoriteNovelsListProps> = ({
                   ref={provided.innerRef}
                   className="flex flex-wrap gap-4 mt-6 space-x-4"
                 >
-                  {novels.map((novel, index) => (
-                    <Draggable
-                      key={novel.id}
-                      draggableId={novel.id.toString()}
-                      index={index}
-                      isDragDisabled={!isReordering}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`relative ${
-                            snapshot.isDragging ? "z-10" : ""
-                          }`}
-                        >
-                          <div className="flex flex-col items-center">
-                            <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
-                              <img
-                                src={
-                                  novel.cover_image_url ||
-                                  "/img/novel-placeholder.jpg"
-                                }
-                                alt={novel.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <p className="mt-2 text-sm font-medium text-center line-clamp-2 w-24">
-                              {novel.name}
-                            </p>
-                            {isReordering && (
-                              <div className="absolute top-0 left-0 bg-black bg-opacity-50 text-white p-1 rounded">
-                                {index + 1}
-                              </div>
-                            )}
+                  {debouncedLoading
+                    ? Array(6)
+                        .fill(0)
+                        .map((_, index) => (
+                          <div key={index} className="w-24">
+                            <Skeleton height={144} className="mb-2" />
+                            <Skeleton width={96} height={20} />
                           </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
+                        ))
+                    : novels.map((novel, index) => (
+                        <Draggable
+                          key={novel.id}
+                          draggableId={novel.id.toString()}
+                          index={index}
+                          isDragDisabled={!isReordering}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`relative ${
+                                snapshot.isDragging ? "z-10" : ""
+                              }`}
+                            >
+                              <div className="flex flex-col items-center">
+                                <div className="w-24 h-36 overflow-hidden rounded-md shadow-md">
+                                  <img
+                                    src={
+                                      novel.cover_image_url ||
+                                      "/img/novel-placeholder.jpg"
+                                    }
+                                    alt={novel.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <p className="mt-2 text-sm font-medium text-center line-clamp-2 w-24">
+                                  {novel.name}
+                                </p>
+                                {isReordering && (
+                                  <div className="absolute top-0 left-0 bg-black bg-opacity-50 text-white p-1 rounded">
+                                    {index + 1}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
                   {provided.placeholder}
                 </div>
               )}
