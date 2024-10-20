@@ -89,7 +89,7 @@ export function PostCard({
   return (
     <>
       <div
-        className="mt-3 border rounded-md p-3 mb-3"
+        className="mt-3 border rounded-md p-4 mb-3"
         style={{ fontSize: "0.9rem" }}
       >
         <div className="flex">
