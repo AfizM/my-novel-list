@@ -115,12 +115,16 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
       if (hasStatusChanged || hasChapterProgressChanged) {
         let postContent = "";
 
-        if (hasStatusChanged) {
-          postContent += `Changed status of ${novel.name} to ${status}. `;
-        }
-
-        if (hasChapterProgressChanged) {
-          postContent += `Updated progress to chapter ${chapterProgress} of ${novel.name}. `;
+        if (status === "completed") {
+          postContent = `Completed ${novel.name}`;
+        } else if (status === "planning") {
+          postContent = chapterProgress
+            ? `Plans to read ${chapterProgress} chapters of ${novel.name}`
+            : `Plans to read ${novel.name}`;
+        } else if (status === "reading") {
+          postContent = chapterProgress
+            ? `Read chapter ${chapterProgress} of ${novel.name}`
+            : `Started Reading ${novel.name}`;
         }
 
         if (postContent) {
