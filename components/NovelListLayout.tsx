@@ -38,25 +38,26 @@ interface NovelListLayoutProps {
 
 const CACHE_TIME = 60000; // 1 minute cache
 
-const NovelItem = ({ novel, onSelect }) => {
+const NovelItem = ({ novel, onSelect, isCurrentUser }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <TableRow>
-      <TableCell className="w-[560px] ">
+    <TableRow
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <TableCell className="w-[560px]">
         <div className="grid grid-cols-[auto,1fr] gap-3 items-center">
           <div
             className="relative cursor-pointer"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onClick={() => onSelect(novel)}
+            onClick={() => isCurrentUser && onSelect(novel)}
           >
             <Avatar className="w-10 h-10">
               <AvatarImage src={novel.cover_image_url} alt={novel.name} />
               <AvatarFallback>{novel.name.substring(0, 2)}</AvatarFallback>
             </Avatar>
             {isHovered && (
-              <div className="absolute inset-0 bg-gray-500 rounded-full flex items-center justify-center">
+              <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full flex items-center justify-center">
                 <MoreHorizontal className="text-white" size={16} />
               </div>
             )}
@@ -66,7 +67,7 @@ const NovelItem = ({ novel, onSelect }) => {
       </TableCell>
       <TableCell className="text-center">{novel.rating}</TableCell>
       <TableCell className="text-center">
-        <span className="text-sm ">{novel.chapter_progress}</span>
+        <span className="text-sm">{novel.chapter_progress}</span>
       </TableCell>
       <TableCell className="text-center">
         {novel.original_language.charAt(0).toUpperCase() +
@@ -76,14 +77,14 @@ const NovelItem = ({ novel, onSelect }) => {
   );
 };
 
-const NovelTable = ({ novels, title, onSelectNovel }) => {
+const NovelTable = ({ novels, title, onSelectNovel, isCurrentUser }) => {
   if (novels.length === 0) {
-    return null; // Don't render anything if there are no novels
+    return null;
   }
 
   return (
     <>
-      <h2 className="text-[1.24rem] font-semibold mb-4 ">{title}</h2>
+      <h2 className="text-[1.24rem] font-semibold mb-4">{title}</h2>
       <Table>
         <TableHeader>
           <TableRow>
@@ -95,7 +96,12 @@ const NovelTable = ({ novels, title, onSelectNovel }) => {
         </TableHeader>
         <TableBody>
           {novels.map((novel) => (
-            <NovelItem key={novel.id} novel={novel} onSelect={onSelectNovel} />
+            <NovelItem
+              key={novel.id}
+              novel={novel}
+              onSelect={onSelectNovel}
+              isCurrentUser={isCurrentUser}
+            />
           ))}
         </TableBody>
       </Table>
@@ -104,6 +110,9 @@ const NovelTable = ({ novels, title, onSelectNovel }) => {
 };
 
 export default function NovelListLayout({ user }: NovelListLayoutProps) {
+  const { user: currentUser } = useUser();
+  const isCurrentUser = user.user_id === currentUser?.id;
+
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [selectedNovel, setSelectedNovel] = useState(null);
   const [novels, setNovels] = useState([]);
@@ -202,6 +211,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                       novels={filteredNovels.reading}
                       title="Reading"
                       onSelectNovel={setSelectedNovel}
+                      isCurrentUser={isCurrentUser}
                     />
                   )}
                   {filteredNovels.planning.length > 0 && (
@@ -209,6 +219,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                       novels={filteredNovels.planning}
                       title="Planning"
                       onSelectNovel={setSelectedNovel}
+                      isCurrentUser={isCurrentUser}
                     />
                   )}
                   {filteredNovels.completed.length > 0 && (
@@ -216,6 +227,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                       novels={filteredNovels.completed}
                       title="Completed"
                       onSelectNovel={setSelectedNovel}
+                      isCurrentUser={isCurrentUser}
                     />
                   )}
                 </>
@@ -225,6 +237,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                     novels={filteredNovels[selectedFilter.toLowerCase()]}
                     title={selectedFilter}
                     onSelectNovel={setSelectedNovel}
+                    isCurrentUser={isCurrentUser}
                   />
                 )
               )}
