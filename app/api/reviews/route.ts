@@ -19,42 +19,24 @@ export async function POST(request: Request) {
       writing_style_rating,
     } = await request.json();
 
-    // Check if a review already exists
-    const { data: existingReview, error: existingReviewError } = await supabase
-      .from("reviews")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("novel_id", novel_id)
-      .single();
-
-    if (existingReviewError && existingReviewError.code !== "PGRST116") {
-      throw existingReviewError;
-    }
-
-    if (existingReview) {
-      return NextResponse.json(
-        { error: "You have already reviewed this novel" },
-        { status: 400 },
-      );
-    }
-
-    const { data, error } = await supabase
-      .from("reviews")
-      .insert({
-        user_id: userId,
-        novel_id,
-        rating,
-        review_description,
-        plot_rating,
-        characters_rating,
-        world_building_rating,
-        writing_style_rating,
-      })
-      .select();
+    // Call the Supabase function
+    const { data, error } = await supabase.rpc(
+      "create_review_and_update_novel",
+      {
+        p_user_id: userId,
+        p_novel_id: novel_id,
+        p_rating: rating,
+        p_review_description: review_description,
+        p_plot_rating: plot_rating,
+        p_characters_rating: characters_rating,
+        p_world_building_rating: world_building_rating,
+        p_writing_style_rating: writing_style_rating,
+      },
+    );
 
     if (error) throw error;
 
-    return NextResponse.json(data[0]);
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error submitting review:", error);
     return NextResponse.json(
