@@ -50,9 +50,6 @@ export async function POST(request: Request) {
 
 export async function GET() {
   const { userId } = auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const { data: posts, error } = await supabase

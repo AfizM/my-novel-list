@@ -7,9 +7,6 @@ export async function GET(
   { params }: { params: { Id: string } },
 ) {
   const { userId } = auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const novelId = parseInt(params.Id);
   const { searchParams } = new URL(request.url);
