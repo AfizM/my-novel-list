@@ -6,11 +6,6 @@ export async function GET(
   request: Request,
   { params }: { params: { userId: string } },
 ) {
-  const { userId: currentUserId } = auth();
-  if (!currentUserId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const targetUserId = params.userId;
 
   try {
