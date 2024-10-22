@@ -17,6 +17,7 @@ import WriteReviewDialog from "@/components/write-a-review-dialog";
 import { useUser } from "@clerk/nextjs";
 import { ReviewCard } from "@/components/ReviewCard";
 import { toast } from "sonner";
+import { capitalizeFirstLetter } from "@/utils/capitalize";
 
 interface Novel {
   id: number;
@@ -269,25 +270,25 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div>
               <span className="font-semibold text-sm">Author: </span>{" "}
               <span className="text-primary underline cursor-pointer text-sm">
-                {novel.authors[0]}
+                {capitalizeFirstLetter(novel.authors[0])}
               </span>
             </div>
             <div>
               <span className="font-semibold text-sm">Original Publisher:</span>{" "}
               <span className="text-primary underline cursor-pointer text-sm">
-                {novel.original_publisher}
+                {capitalizeFirstLetter(novel.original_publisher)}
               </span>
             </div>
             <div>
               <span className="font-semibold text-sm">English Publisher:</span>{" "}
               <span className="text-primary underline cursor-pointer text-sm">
-                {novel.english_publisher}
+                {capitalizeFirstLetter(novel.english_publisher)}
               </span>
             </div>
             <div>
               <span className="font-semibold text-sm">Original Language:</span>{" "}
               <span className="text-primary underline cursor-pointer text-sm">
-                {novel.original_language}
+                {capitalizeFirstLetter(novel.original_language)}
               </span>
             </div>
             <div>
@@ -302,28 +303,40 @@ export default function NovelPage({ params }: { params: { id: string } }) {
                 {novel.complete_original ? "Completed" : "Ongoing"}
               </span>
             </div>
-            <div className="flex-wrap flex">
-              <div className="mr-2">
-                <span className="font-semibold text-sm">Genres:</span>{" "}
-              </div>
-              <div>
-                {novel.genres.map((genre, index) => (
-                  <Badge className="mr-2 mb-2 cursor-pointer" key={index}>
-                    {genre}
-                  </Badge>
-                ))}
+            <div className="flex flex-col">
+              <div className="flex items-start mb-2">
+                <div className="flex flex-wrap gap-2 w-full">
+                  <span className="font-semibold text-sm ">Genres:</span>
+                  {novel.genres.map((tag, index) => (
+                    <Badge
+                      className="cursor-pointer transition-transform transform hover:scale-105 hover:bg-green-600 hover:text-white rounded-full px-3 py-1 border border-gray-300"
+                      key={index}
+                    >
+                      {capitalizeFirstLetter(tag)}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="flex-wrap flex">
-              <div className="mr-2">
-                <span className="font-semibold text-sm">Tags:</span>{" "}
-              </div>
-              <div>
-                {novel.tags.map((tag, index) => (
-                  <Badge className="mr-2 mb-2 cursor-pointer" key={index}>
-                    {tag}
-                  </Badge>
-                ))}
+            <div className="flex flex-col">
+              <div className="flex items-start mb-2">
+                <div className="flex flex-wrap gap-2 w-full">
+                  {" "}
+                  {/* Added w-full to allow wrapping */}
+                  <span className="font-semibold text-sm ">Tags:</span>
+                  {novel.tags.map((tag, index) => {
+                    const capitalizedTag =
+                      tag.charAt(0).toUpperCase() + tag.slice(1);
+                    return (
+                      <Badge
+                        className="cursor-pointer transition-transform transform hover:scale-105 hover:bg-green-600 hover:text-white rounded-full px-3 py-1 border border-gray-300"
+                        key={index}
+                      >
+                        {capitalizedTag}
+                      </Badge>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
