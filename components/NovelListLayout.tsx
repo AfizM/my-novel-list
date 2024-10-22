@@ -54,9 +54,8 @@ const NovelItem = ({ novel, onSelect, isCurrentUser }) => {
           >
             <Avatar className="w-10 h-10">
               <AvatarImage src={novel.cover_image_url} alt={novel.name} />
-              <AvatarFallback>{novel.name.substring(0, 2)}</AvatarFallback>
             </Avatar>
-            {isHovered && (
+            {isHovered && isCurrentUser && (
               <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full flex items-center justify-center">
                 <MoreHorizontal className="text-white" size={16} />
               </div>
