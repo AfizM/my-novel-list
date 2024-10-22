@@ -89,7 +89,7 @@ export function PostCard({
   return (
     <>
       <div
-        className="mt-3 border rounded-md p-4 mb-3"
+        className="mt-3 border shadow-md rounded-lg  p-4 mb-3"
         style={{ fontSize: "0.9rem" }}
       >
         <div className="flex">
@@ -211,7 +211,7 @@ function CommentCard({
 
   return (
     <div
-      className="border rounded-md p-2 w-11/12 mx-auto"
+      className="border  shadow-md rounded-lg p-2 w-11/12 mx-auto"
       style={{ fontSize: "0.85rem" }}
     >
       <div className="flex justify-between items-start mb-1">

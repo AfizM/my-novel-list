@@ -221,7 +221,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   return (
     <div>
       <div className="w-full max-w-[1100px] mx-auto my-0 px-9">
-        <div className="flex mt-4 p-4  ">
+        <div className="flex mt-4 p-4  bg-white border shadow-lg rounded-lg ">
           {/* Image */}
           <div className=" flex flex-col items-center mr-2 shrink-0  ">
             <img
@@ -238,73 +238,91 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             </Button>
           </div>
 
-          <div className="flex-col ml-4 space-y-3 max-w-[800px] p-2">
+          <div className="flex-col ml-4 space-y-4 max-w-[800px] p-4 ">
             {/* Title */}
-            <div className="flex justify-between">
-              <div className="text-[1.6rem] font-bold">{novel.name}</div>
-              <div className="flex space-x-1 items-center">
-                <Eye size={20} />
-                <div className="text-sm font-semibold">{novel.views} Views</div>
+            <div className="flex justify-between items-center">
+              <div className="text-[1.8rem] font-bold text-gray-800 hover:text-green-600 transition-colors">
+                {novel.name}
               </div>
-            </div>
-            <div>
-              {/* Ratings */}
-              <div className="flex">
-                {[...Array(5)].map((_, index) => (
-                  <Star
-                    key={index}
-                    fill={index < Math.floor(novel.rating) ? "orange" : "gray"}
-                    strokeWidth={0}
-                  />
-                ))}
-                <div className="ml-2 font-semibold ">
-                  {novel.rating != null ? novel.rating.toFixed(2) : "N/A"}{" "}
-                  Ratings ({novel.rating_votes ?? 0})
+              <div className="flex space-x-1 items-center">
+                <Eye size={20} className="text-gray-500" />
+                <div className="text-sm font-semibold text-gray-600">
+                  {novel.views} Views
                 </div>
               </div>
             </div>
+
+            {/* Ratings */}
+            <div className="flex items-center">
+              {[...Array(5)].map((_, index) => (
+                <Star
+                  key={index}
+                  fill={index < Math.floor(novel.rating) ? "orange" : "gray"}
+                  strokeWidth={0}
+                  className="transition-transform transform hover:scale-110"
+                />
+              ))}
+              <div className="ml-2 font-semibold text-gray-700">
+                {novel.rating != null ? novel.rating.toFixed(2) : "N/A"} Ratings
+                ({novel.rating_votes ?? 0})
+              </div>
+            </div>
+
             {/* Description */}
-            <div className="w-full max-w-[800px] text-[0.95rem] ">
+            <div className="w-full text-[0.95rem] text-gray-700">
               {novel.description}
             </div>
-            <div>
-              <span className="font-semibold text-sm">Author: </span>{" "}
-              <span className="text-primary underline cursor-pointer text-sm">
+
+            {/* Author */}
+            <div className="flex items-center">
+              <span className="font-semibold text-sm">Author:</span>
+              <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
                 {capitalizeFirstLetter(novel.authors[0])}
               </span>
             </div>
-            <div>
-              <span className="font-semibold text-sm">Original Publisher:</span>{" "}
-              <span className="text-primary underline cursor-pointer text-sm">
+
+            {/* Original Publisher */}
+            <div className="flex items-center">
+              <span className="font-semibold text-sm">Original Publisher:</span>
+              <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
                 {capitalizeFirstLetter(novel.original_publisher)}
               </span>
             </div>
-            <div>
-              <span className="font-semibold text-sm">English Publisher:</span>{" "}
-              <span className="text-primary underline cursor-pointer text-sm">
+
+            {/* English Publisher */}
+            <div className="flex items-center">
+              <span className="font-semibold text-sm">English Publisher:</span>
+              <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
                 {capitalizeFirstLetter(novel.english_publisher)}
               </span>
             </div>
-            <div>
-              <span className="font-semibold text-sm">Original Language:</span>{" "}
-              <span className="text-primary underline cursor-pointer text-sm">
+
+            {/* Original Language */}
+            <div className="flex items-center">
+              <span className="font-semibold text-sm">Original Language:</span>
+              <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
                 {capitalizeFirstLetter(novel.original_language)}
               </span>
             </div>
-            <div>
-              <span className="font-semibold text-sm">Chapters:</span>{" "}
-              <span className="text-primary cursor-pointer text-sm">
+
+            {/* Chapters */}
+            <div className="flex items-center">
+              <span className="font-semibold text-sm">Chapters:</span>
+              <span className="text-primary cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
                 {novel.chapters_original_current}
               </span>
             </div>
-            <div>
-              <span className="font-semibold text-sm">Status:</span>{" "}
-              <span className="text-primary cursor-pointer text-sm">
+
+            {/* Status */}
+            <div className="flex items-center">
+              <span className="font-semibold text-sm">Status:</span>
+              <span className="text-primary cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
                 {novel.complete_original ? "Completed" : "Ongoing"}
               </span>
             </div>
+
             <div className="flex flex-col">
-              <div className="flex items-start mb-2">
+              <div className="flex items-start">
                 <div className="flex flex-wrap gap-2 w-full">
                   <span className="font-semibold text-sm ">Genres:</span>
                   {novel.genres.map((tag, index) => (
