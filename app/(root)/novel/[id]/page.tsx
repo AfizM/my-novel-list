@@ -238,7 +238,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               className="w-full max-w-56 object-cover rounded-md mt-2"
             />
             <Button
-              className="mt-2 w-full relative max-w-44"
+              className="mt-2.5 w-full relative max-w-44"
               onClick={() => setIsModalOpen(true)}
             >
               Add to list
