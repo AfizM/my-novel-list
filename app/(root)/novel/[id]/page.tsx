@@ -241,12 +241,12 @@ export default function NovelPage({ params }: { params: { id: string } }) {
           <div className="flex-col ml-4 space-y-4 max-w-[800px] p-4 ">
             {/* Title */}
             <div className="flex justify-between items-center">
-              <div className="text-[1.8rem] font-bold text-gray-800 hover:text-green-600 transition-colors">
+              <div className="text-[1.8rem] font-bold text-gray-800 dark:text-gray-200 hover:text-green-600 transition-colors">
                 {novel.name || "Untitled Novel"}
               </div>
               <div className="flex space-x-1 items-center">
-                <Eye size={20} className="text-gray-500" />
-                <div className="text-sm font-semibold text-gray-600">
+                <Eye size={20} className="text-gray-500 dark:text-gray-400" />
+                <div className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                   {novel.views || 0} Views
                 </div>
               </div>
@@ -264,14 +264,14 @@ export default function NovelPage({ params }: { params: { id: string } }) {
                   }`}
                 />
               ))}
-              <div className="ml-2 font-semibold text-gray-700">
+              <div className="ml-2 font-semibold text-gray-700 dark:text-gray-300">
                 {novel.rating != null ? novel.rating.toFixed(2) : "N/A"} Ratings
                 ({novel.rating_votes ?? 0})
               </div>
             </div>
 
             {/* Description */}
-            <div className="w-full text-[0.95rem] text-gray-700">
+            <div className="w-full text-[0.95rem] text-gray-700 dark:text-gray-300">
               {novel.description || "No description available."}
             </div>
 
@@ -337,8 +337,8 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
             <div className="flex flex-col">
               <div className="flex items-start">
-                <div className="flex flex-wrap gap-2 w-full">
-                  <span className="font-semibold text-sm ">Genres:</span>
+                <div className="flex flex-wrap gap-2 w-full ">
+                  <span className="font-semibold text-sm  ">Genres:</span>
                   {novel.genres && novel.genres.length > 0 ? (
                     novel.genres.map((tag, index) => (
                       <Badge

@@ -135,7 +135,7 @@ export function ReviewCard({
           </div>
         </div>
       )} */}
-      <div className="mt-4 border shadow-lg rounded-lg p-4 mb-4">
+      <div className="mt-4 border shadow-md rounded-lg p-4 mb-4">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center">
             <Avatar className="w-8 h-8">
