@@ -44,6 +44,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [newPostContent, setNewPostContent] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [aboutMe, setAboutMe] = useState(user.about_me || "");
+
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { user: currentUser } = useUser();
