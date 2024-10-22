@@ -257,11 +257,11 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               {[...Array(5)].map((_, index) => (
                 <Star
                   key={index}
-                  fill={
-                    index < Math.floor(novel.rating || 0) ? "orange" : "gray"
-                  }
-                  strokeWidth={0}
-                  className="transition-transform transform hover:scale-110"
+                  className={`${
+                    index < Math.floor(novel.rating || 0)
+                      ? "text-[var(--orange-rating)] fill-[var(--orange-rating)]"
+                      : "text-gray-300"
+                  }`}
                 />
               ))}
               <div className="ml-2 font-semibold text-gray-700">
