@@ -221,12 +221,12 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   return (
     <div>
       <div className="w-full max-w-[1100px] mx-auto my-0 px-9">
-        <div className="flex mt-4 p-4  bg-white border shadow-lg rounded-lg ">
+        <div className="flex mt-4 p-4   border shadow-lg rounded-lg ">
           {/* Image */}
           <div className=" flex flex-col items-center mr-2 shrink-0  ">
             <img
               src={novel.cover_image_url || "/img/novel1.jpg"}
-              alt={novel.name}
+              alt={novel.name || "Novel cover"}
               className="w-full max-w-56 object-cover rounded-md mt-2"
             />
             <Button
@@ -242,12 +242,12 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             {/* Title */}
             <div className="flex justify-between items-center">
               <div className="text-[1.8rem] font-bold text-gray-800 hover:text-green-600 transition-colors">
-                {novel.name}
+                {novel.name || "Untitled Novel"}
               </div>
               <div className="flex space-x-1 items-center">
                 <Eye size={20} className="text-gray-500" />
                 <div className="text-sm font-semibold text-gray-600">
-                  {novel.views} Views
+                  {novel.views || 0} Views
                 </div>
               </div>
             </div>
@@ -257,7 +257,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               {[...Array(5)].map((_, index) => (
                 <Star
                   key={index}
-                  fill={index < Math.floor(novel.rating) ? "orange" : "gray"}
+                  fill={
+                    index < Math.floor(novel.rating || 0) ? "orange" : "gray"
+                  }
                   strokeWidth={0}
                   className="transition-transform transform hover:scale-110"
                 />
@@ -270,14 +272,16 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
             {/* Description */}
             <div className="w-full text-[0.95rem] text-gray-700">
-              {novel.description}
+              {novel.description || "No description available."}
             </div>
 
             {/* Author */}
             <div className="flex items-center">
               <span className="font-semibold text-sm">Author:</span>
               <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
-                {capitalizeFirstLetter(novel.authors[0])}
+                {novel.authors && novel.authors.length > 0
+                  ? capitalizeFirstLetter(novel.authors[0])
+                  : "Unknown"}
               </span>
             </div>
 
@@ -285,7 +289,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div className="flex items-center">
               <span className="font-semibold text-sm">Original Publisher:</span>
               <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
-                {capitalizeFirstLetter(novel.original_publisher)}
+                {novel.original_publisher
+                  ? capitalizeFirstLetter(novel.original_publisher)
+                  : "Unknown"}
               </span>
             </div>
 
@@ -293,7 +299,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div className="flex items-center">
               <span className="font-semibold text-sm">English Publisher:</span>
               <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
-                {capitalizeFirstLetter(novel.english_publisher)}
+                {novel.english_publisher
+                  ? capitalizeFirstLetter(novel.english_publisher)
+                  : "Unknown"}
               </span>
             </div>
 
@@ -301,7 +309,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div className="flex items-center">
               <span className="font-semibold text-sm">Original Language:</span>
               <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
-                {capitalizeFirstLetter(novel.original_language)}
+                {novel.original_language
+                  ? capitalizeFirstLetter(novel.original_language)
+                  : "Unknown"}
               </span>
             </div>
 
@@ -309,7 +319,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div className="flex items-center">
               <span className="font-semibold text-sm">Chapters:</span>
               <span className="text-primary cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
-                {novel.chapters_original_current}
+                {novel.chapters_original_current || "Unknown"}
               </span>
             </div>
 
@@ -317,7 +327,11 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div className="flex items-center">
               <span className="font-semibold text-sm">Status:</span>
               <span className="text-primary cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
-                {novel.complete_original ? "Completed" : "Ongoing"}
+                {novel.complete_original != null
+                  ? novel.complete_original
+                    ? "Completed"
+                    : "Ongoing"
+                  : "Unknown"}
               </span>
             </div>
 
@@ -325,35 +339,45 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               <div className="flex items-start">
                 <div className="flex flex-wrap gap-2 w-full">
                   <span className="font-semibold text-sm ">Genres:</span>
-                  {novel.genres.map((tag, index) => (
-                    <Badge
-                      className="cursor-pointer transition-transform transform hover:scale-105 hover:bg-green-600 hover:text-white rounded-full px-3 py-1 border border-gray-300"
-                      key={index}
-                    >
-                      {capitalizeFirstLetter(tag)}
-                    </Badge>
-                  ))}
+                  {novel.genres && novel.genres.length > 0 ? (
+                    novel.genres.map((tag, index) => (
+                      <Badge
+                        className="cursor-pointer transition-transform transform hover:scale-105 hover:bg-green-600 hover:text-white rounded-full px-3 py-1 border border-gray-300"
+                        key={index}
+                      >
+                        {capitalizeFirstLetter(tag)}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      No genres available
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
             <div className="flex flex-col">
               <div className="flex items-start mb-2">
                 <div className="flex flex-wrap gap-2 w-full">
-                  {" "}
-                  {/* Added w-full to allow wrapping */}
                   <span className="font-semibold text-sm ">Tags:</span>
-                  {novel.tags.map((tag, index) => {
-                    const capitalizedTag =
-                      tag.charAt(0).toUpperCase() + tag.slice(1);
-                    return (
-                      <Badge
-                        className="cursor-pointer transition-transform transform hover:scale-105 hover:bg-green-600 hover:text-white rounded-full px-3 py-1 border border-gray-300"
-                        key={index}
-                      >
-                        {capitalizedTag}
-                      </Badge>
-                    );
-                  })}
+                  {novel.tags && novel.tags.length > 0 ? (
+                    novel.tags.map((tag, index) => {
+                      const capitalizedTag =
+                        tag.charAt(0).toUpperCase() + tag.slice(1);
+                      return (
+                        <Badge
+                          className="cursor-pointer transition-transform transform hover:scale-105 hover:bg-green-600 hover:text-white rounded-full px-3 py-1 border border-gray-300"
+                          key={index}
+                        >
+                          {capitalizedTag}
+                        </Badge>
+                      );
+                    })
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      No tags available
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
