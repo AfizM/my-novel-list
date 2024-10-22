@@ -273,8 +273,8 @@ export default function NovelPage({ params }: { params: { id: string } }) {
                 />
               ))}
               <div className="ml-2 font-semibold text-gray-700 dark:text-gray-300">
-                {novel.rating != null ? novel.rating.toFixed(2) : "N/A"} Ratings
-                ({novel.rating_votes ?? 0})
+                {novel.rating != null ? novel.rating.toFixed(1) : "N/A"} (
+                {novel.rating_votes ?? 0} ratings)
               </div>
             </div>
 
