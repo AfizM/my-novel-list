@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { Star, ChevronDown, SquarePen, Eye } from "lucide-react";
+import { Star, ChevronDown, SquarePen, Eye, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { capitalizeFirstLetter } from "@/utils/capitalize";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TagModal } from "@/components/TagModal";
+import { TagManagement } from "@/components/TagManagement";
 
 interface Novel {
   id: number;
@@ -60,6 +62,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     novel: Novel | null;
     timestamp: number;
   } | null>(null);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
 
   const debouncedLoading = useDebounce(isLoading, 200);
 
@@ -212,6 +215,43 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
   const handleEditReview = () => {
     setIsReviewDialogOpen(true);
+  };
+
+  const handleAddTag = async (tag: string) => {
+    try {
+      const response = await fetch(`/api/novels/${params.id}/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add tag");
+
+      const updatedNovel = await response.json();
+      setNovel(updatedNovel);
+      setIsTagModalOpen(false);
+    } catch (error) {
+      console.error("Error adding tag:", error);
+      throw error;
+    }
+  };
+
+  const handleUpdateTags = async (updatedTags: string[]) => {
+    try {
+      const response = await fetch(`/api/novels/${params.id}/tags`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tags: updatedTags }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update tags");
+
+      const updatedNovel = await response.json();
+      setNovel(updatedNovel);
+    } catch (error) {
+      console.error("Error updating tags:", error);
+      throw error;
+    }
   };
 
   if (debouncedLoading) {
@@ -386,6 +426,15 @@ export default function NovelPage({ params }: { params: { id: string } }) {
                       No tags available
                     </span>
                   )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsTagModalOpen(true)}
+                    className="ml-2"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-1" />
+                    Add Tag
+                  </Button>
                 </div>
               </div>
             </div>
@@ -448,6 +497,13 @@ export default function NovelPage({ params }: { params: { id: string } }) {
         onReviewCreated={handleReviewCreated}
         existingReview={userReview}
       />
+      <TagModal
+        isOpen={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+        onAddTag={handleAddTag}
+        existingTags={novel.tags || []}
+      />
+      {/* <TagManagement tags={novel.tags || []} onUpdateTags={handleUpdateTags} /> */}
     </div>
   );
 }
