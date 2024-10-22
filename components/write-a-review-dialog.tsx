@@ -86,13 +86,10 @@ export default function WriteReviewDialog({
 
   const handleSubmitReview = async () => {
     try {
-      const method = existingReview ? "PUT" : "POST";
-      const url = existingReview
-        ? `/api/reviews/${existingReview.id}`
-        : "/api/reviews";
+      const url = "/api/reviews"; // Always POST to the same endpoint
 
       const response = await fetch(url, {
-        method,
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
