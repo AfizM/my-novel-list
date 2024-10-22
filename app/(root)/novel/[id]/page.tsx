@@ -1,23 +1,19 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Star, ChevronDown, Heart, Flag, SquarePen, Eye } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Star, ChevronDown, SquarePen, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { notFound } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
 import WriteReviewDialog from "@/components/write-a-review-dialog";
 import { useUser } from "@clerk/nextjs";
 import { ReviewCard } from "@/components/ReviewCard";
 import { toast } from "sonner";
 import { capitalizeFirstLetter } from "@/utils/capitalize";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Novel {
   id: number;
@@ -44,45 +40,57 @@ interface Novel {
   recommended_series_ids: number[];
   created_at: string;
   updated_at: string;
+  description: string;
 }
 
-async function getNovel(id: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/novels/${id}`,
-    { cache: "no-store" },
-  );
-  if (!res.ok) {
-    throw new Error("Failed to fetch novel");
-  }
-  return res.json();
-}
+const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
 
 export default function NovelPage({ params }: { params: { id: string } }) {
   const { user } = useUser();
-  const [novel, setNovel] = useState<any>(null);
+  const [novel, setNovel] = useState<Novel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [userReview, setUserReview] = useState<any>(null);
+  const [cache, setCache] = useState<{
+    novel: Novel | null;
+    timestamp: number;
+  } | null>(null);
+
+  const debouncedLoading = useDebounce(isLoading, 200);
+
+  const fetchNovel = useCallback(async () => {
+    if (cache && Date.now() - cache.timestamp < CACHE_TIME) {
+      setNovel(cache.novel);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/novels/${params.id}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error("Failed to fetch novel");
+      const data = await res.json();
+      setNovel(data);
+      setCache({ novel: data, timestamp: Date.now() });
+    } catch (err) {
+      console.error("Error fetching novel:", err);
+      setError("Failed to fetch novel");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [params.id, cache]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const fetchedNovel = await getNovel(params.id);
-        setNovel(fetchedNovel);
-        await fetchUserReview();
-      } catch (err) {
-        setError("Failed to fetch novel");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, [params.id]);
+    fetchNovel();
+  }, [fetchNovel]);
 
   useEffect(() => {
     setReviews([]);
@@ -206,8 +214,8 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     setIsReviewDialogOpen(true);
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (debouncedLoading) {
+    return <NovelSkeleton />;
   }
 
   if (error) {
@@ -221,9 +229,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   return (
     <div>
       <div className="w-full max-w-[1100px] mx-auto my-0 px-9">
-        <div className="flex mt-4 p-4   border shadow-lg rounded-lg ">
+        <div className="flex mt-4 p-4 border shadow-lg rounded-lg ">
           {/* Image */}
-          <div className=" flex flex-col items-center mr-2 shrink-0  ">
+          <div className="flex flex-col items-center mr-2 shrink-0">
             <img
               src={novel.cover_image_url || "/img/novel1.jpg"}
               alt={novel.name || "Novel cover"}
@@ -440,6 +448,37 @@ export default function NovelPage({ params }: { params: { id: string } }) {
         onReviewCreated={handleReviewCreated}
         existingReview={userReview}
       />
+    </div>
+  );
+}
+
+function NovelSkeleton() {
+  return (
+    <div className="w-full max-w-[1100px] mx-auto my-0 px-9">
+      <div className="flex mt-4 p-4 border shadow-lg rounded-lg">
+        <div className="flex flex-col items-center mr-2 shrink-0">
+          <Skeleton className="w-56 h-80 rounded-md" />
+          <Skeleton className="mt-2 w-44 h-10" />
+        </div>
+        <div className="flex-col ml-4 space-y-4 max-w-[800px] p-4 w-full">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-20 w-full" />
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-4 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="mt-16">
+        <Skeleton className="h-8 w-1/4 mb-4" />
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full" />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
