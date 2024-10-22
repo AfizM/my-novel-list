@@ -19,7 +19,7 @@ export async function POST(request: Request) {
         id,
         comment,
         created_at,
-        users!inner (image_url, first_name, last_name)
+        users!inner (image_url, username)
       `);
 
     if (error) throw error;
