@@ -19,6 +19,15 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
+// import Select from "react-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/MultiSelect";
 
 const novelSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -41,6 +50,20 @@ const novelSchema = z.object({
 });
 
 type NovelFormValues = z.infer<typeof novelSchema>;
+
+const genreOptions = [
+  { value: "action", label: "Action" },
+  { value: "adventure", label: "Adventure" },
+  { value: "comedy", label: "Comedy" },
+  { value: "drama", label: "Drama" },
+  { value: "fantasy", label: "Fantasy" },
+  { value: "horror", label: "Horror" },
+  { value: "mystery", label: "Mystery" },
+  { value: "romance", label: "Romance" },
+  { value: "sci-fi", label: "Science Fiction" },
+  { value: "thriller", label: "Thriller" },
+  // Add more genres as needed
+];
 
 export default function SubmissionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,14 +152,10 @@ export default function SubmissionPage() {
                   <FormItem>
                     <FormLabel>Genres</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter genres (comma-separated)"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value.split(",").map((s) => s.trim()),
-                          )
-                        }
+                      <MultiSelect
+                        options={genreOptions}
+                        selected={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -208,6 +227,35 @@ export default function SubmissionPage() {
           </Form>
         </div>
       </div>
+      <style jsx global>{`
+        .react-select__control {
+          background-color: hsl(var(--input));
+          border-color: hsl(var(--input));
+        }
+        .react-select__menu {
+          background-color: hsl(var(--background));
+        }
+        .react-select__option {
+          background-color: hsl(var(--background));
+        }
+        .react-select__option--is-focused {
+          background-color: hsl(var(--accent));
+        }
+        .react-select__option--is-selected {
+          background-color: hsl(var(--primary));
+          color: hsl(var(--primary-foreground));
+        }
+        .react-select__multi-value {
+          background-color: hsl(var(--accent));
+        }
+        .react-select__multi-value__label {
+          color: hsl(var(--accent-foreground));
+        }
+        .react-select__multi-value__remove:hover {
+          background-color: hsl(var(--destructive));
+          color: hsl(var(--destructive-foreground));
+        }
+      `}</style>
     </div>
   );
 }

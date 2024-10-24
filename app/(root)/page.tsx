@@ -9,6 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { toast } from "sonner";
+import { MultiSelect } from "@/components/ui/MultiSelect";
 
 interface Post {
   id: string;
