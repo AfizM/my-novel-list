@@ -41,7 +41,9 @@ export async function POST(
     if (fetchError) throw fetchError;
 
     // Add new tag if it doesn't exist
-    const updatedTags = [...new Set([...(novel.tags || []), sanitizedTag])];
+    const updatedTags = Array.from(
+      new Set([...(novel.tags || []), sanitizedTag]),
+    );
 
     // Update the novel with new tags
     const { data, error } = await supabase

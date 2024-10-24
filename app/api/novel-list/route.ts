@@ -2,6 +2,18 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
 import { auth } from "@clerk/nextjs/server";
 
+interface NovelData {
+  user_id: string;
+  novel_id: any;
+  status: any;
+  chapter_progress: any;
+  rating: any;
+  notes: any;
+  is_favorite: any;
+  updated_at: string;
+  favorite_order?: number;
+}
+
 export async function POST(request: Request) {
   const { userId } = auth();
   if (!userId) {
@@ -27,7 +39,7 @@ export async function POST(request: Request) {
       maxOrderData.length > 0 ? maxOrderData[0].favorite_order + 1 : 1;
 
     // Create the data object to be inserted
-    const novelData = {
+    const novelData: NovelData = {
       user_id: userId,
       novel_id,
       status,

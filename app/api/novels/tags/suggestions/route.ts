@@ -19,7 +19,9 @@ async function getAllUniqueTags(): Promise<string[]> {
 
     if (error) throw error;
 
-    const allTags = [...new Set(data.flatMap((novel) => novel.tags || []))];
+    const allTags = Array.from(
+      new Set(data.flatMap((novel) => novel.tags || [])),
+    );
     cachedTags = allTags;
     lastCacheTime = currentTime;
     return allTags;

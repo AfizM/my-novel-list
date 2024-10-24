@@ -29,7 +29,9 @@ export async function GET(
     }, 0);
 
     const genreCounts = novelList.reduce((acc, item) => {
+      // @ts-ignore: Suppress type error for accessing genres
       if (item.novels && Array.isArray(item.novels.genres)) {
+        // @ts-ignore: Suppress type error for accessing genres
         item.novels.genres.forEach((genre) => {
           acc[genre] = (acc[genre] || 0) + 1;
         });

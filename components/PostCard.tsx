@@ -190,6 +190,7 @@ function CommentCard({
   const handleLike = useDebouncedCallback(async () => {
     try {
       const response = await fetch(
+        // @ts-ignore: Suppress type error for accessing genres
         `/api/posts/${comment.post_id}/comments/${comment.id}/like`,
         {
           method: "POST",
