@@ -19,13 +19,9 @@ type NovelModalProps = {
     id: number;
     name: string;
     cover_image_url: string;
-    authors: string[];
     rating: number;
     chapters_original_current: string;
     original_language: string;
-    status: string;
-    chapter_progress: number;
-    rating_votes: number;
   } | null;
   onClose: () => void;
 };
