@@ -344,14 +344,14 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             </div>
 
             {/* English Publisher */}
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               <span className="font-semibold text-sm">English Publisher:</span>
               <span className="text-primary underline cursor-pointer text-sm ml-1 transition-colors hover:text-green-600">
                 {novel.english_publisher
                   ? capitalizeFirstLetter(novel.english_publisher)
                   : "Unknown"}
               </span>
-            </div>
+            </div> */}
 
             {/* Original Language */}
             <div className="flex items-center">

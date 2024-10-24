@@ -32,21 +32,25 @@ import { MultiSelect } from "@/components/ui/MultiSelect";
 const novelSchema = z.object({
   name: z.string().min(1, "Name is required"),
   assoc_names: z.array(z.string()).optional(),
-  original_language: z.string().optional(),
+  original_language: z
+    .string()
+    .min(10, "Original language must be at least 10 characters"),
   authors: z.array(z.string()).min(1, "At least one author is required"),
   genres: z.array(z.string()).min(1, "At least one genre is required"),
   tags: z.array(z.string()).optional(),
   cover_image_url: z.string().optional(),
   start_year: z.number().int().positive().optional(),
   licensed: z.boolean().optional(),
-  original_publisher: z.string().optional(),
+  original_publisher: z
+    .string()
+    .min(10, "Original publisher must be at least 10 characters"),
   english_publisher: z.string().optional(),
   complete_original: z.boolean().optional(),
   chapters_original_current: z.string().optional(),
   complete_translated: z.boolean().optional(),
   chapter_latest_translated: z.string().optional(),
   release_freq: z.number().positive().optional(),
-  description: z.string().optional(),
+  description: z.string().min(10, "Description must be at least 10 characters"),
 });
 
 type NovelFormValues = z.infer<typeof novelSchema>;
@@ -147,6 +151,40 @@ export default function SubmissionPage() {
 
               <FormField
                 control={form.control}
+                name="original_publisher"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Original Publisher</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter original publisher (min 10 characters)"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="original_language"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Original Language</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter original language (min 10 characters)"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="genres"
                 render={({ field }) => (
                   <FormItem>
@@ -171,7 +209,7 @@ export default function SubmissionPage() {
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Enter novel description"
+                        placeholder="Enter novel description (min 10 characters)"
                         className="resize-none"
                         {...field}
                       />
