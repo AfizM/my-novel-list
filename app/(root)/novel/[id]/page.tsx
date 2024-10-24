@@ -386,7 +386,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
             <div className="flex flex-col">
               <div className="flex items-start">
                 <div className="flex flex-wrap gap-2 w-full ">
-                  <span className="font-semibold text-sm  ">Genres:</span>
+                  <span className="font-semibold text-sm mt-[1px]  ">
+                    Genres:
+                  </span>
                   {novel.genres && novel.genres.length > 0 ? (
                     novel.genres.map((tag, index) => (
                       <Badge
