@@ -176,7 +176,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <div className="w-full max-w-7xl mx-auto my-0 px-9 flex justify-center">
-        <div className="w-full max-w-xl">
+        <div className="w-full max-w-lg">
           <div className="flex justify-between items-center mb-6 mt-8">
             <h2 className="text-2xl font-bold">Activity</h2>
             <Tabs value={activeTab} onValueChange={setActiveTab}>

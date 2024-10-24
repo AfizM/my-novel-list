@@ -21,7 +21,7 @@ const Navbar = () => {
   const navItems = [
     { name: "Browse", href: "/browse" },
     { name: "Social", href: "/" },
-    { name: "Contribute", href: "/" },
+    { name: "Landing", href: "/landing" },
   ];
 
   const signedInNavItems = [
@@ -29,7 +29,7 @@ const Navbar = () => {
     { name: "Profile", href: `/profile/${user?.username}` },
     { name: "Novel List", href: `/profile/${user?.username}/novellist` },
     { name: "Browse", href: "/browse" },
-    { name: "Contribute", href: "/" },
+    { name: "Submission", href: "/submission" },
   ];
 
   return (

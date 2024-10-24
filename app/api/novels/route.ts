@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -52,4 +53,35 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ data, count });
+}
+
+export async function POST(request: Request) {
+  const { userId } = auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const novelData = await request.json();
+
+    // Add created_at and updated_at fields
+    novelData.created_at = new Date().toISOString();
+    novelData.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("novels")
+      .insert(novelData)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error submitting novel:", error);
+    return NextResponse.json(
+      { error: "Failed to submit novel" },
+      { status: 500 },
+    );
+  }
 }
