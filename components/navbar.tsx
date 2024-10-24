@@ -13,6 +13,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -89,6 +90,7 @@ const Navbar = () => {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
+              {/* <NotificationBell /> */}
               <UserButton
                 appearance={{
                   elements: {

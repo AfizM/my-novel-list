@@ -150,7 +150,7 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
-          {user.username}'s Reviews
+          {user.username}&apos;s Reviews
         </h2>
         <Select value={sort} onValueChange={(value) => setSort(value)}>
           <SelectTrigger className="w-[180px]">

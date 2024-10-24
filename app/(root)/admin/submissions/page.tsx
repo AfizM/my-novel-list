@@ -12,6 +12,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { SubmissionModal } from "@/components/SubmissionModal";
 
 interface Submission {
   id: string;
@@ -25,22 +35,30 @@ export default function AdminSubmissionsPage() {
   const { user } = useUser();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<Submission | null>(null);
 
   useEffect(() => {
     fetchSubmissions();
-  }, []);
+  }, [currentPage]);
 
   const fetchSubmissions = async () => {
     try {
-      const response = await fetch("/api/admin/submissions");
+      setIsLoading(true);
+      const response = await fetch(
+        `/api/admin/submissions?page=${currentPage}`,
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch submissions");
       }
       const data = await response.json();
-      setSubmissions(data);
+      setSubmissions(data.submissions);
+      setTotalPages(data.totalPages);
     } catch (error) {
       console.error("Error fetching submissions:", error);
-      toast.error("Failed to fetch submissions");
+      toast.error("Failed to fetch submissions. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +103,14 @@ export default function AdminSubmissionsPage() {
     }
   };
 
+  const handleEdit = (submission: Submission) => {
+    setSelectedSubmission(submission);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -112,6 +138,9 @@ export default function AdminSubmissionsPage() {
                 {new Date(submission.created_at).toLocaleString()}
               </TableCell>
               <TableCell>
+                <Button onClick={() => handleEdit(submission)} className="mr-2">
+                  Edit
+                </Button>
                 {submission.status === "pending" && (
                   <>
                     <Button
@@ -133,6 +162,42 @@ export default function AdminSubmissionsPage() {
           ))}
         </TableBody>
       </Table>
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href="#"
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+            />
+          </PaginationItem>
+          {[...Array(totalPages)].map((_, index) => (
+            <PaginationItem key={index}>
+              <PaginationLink
+                href="#"
+                isActive={currentPage === index + 1}
+                onClick={() => handlePageChange(index + 1)}
+              >
+                {index + 1}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+          <PaginationItem>
+            <PaginationNext
+              href="#"
+              onClick={() =>
+                handlePageChange(Math.min(totalPages, currentPage + 1))
+              }
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+      {selectedSubmission && (
+        <SubmissionModal
+          submission={selectedSubmission}
+          onClose={() => setSelectedSubmission(null)}
+          onUpdate={fetchSubmissions}
+        />
+      )}
     </div>
   );
 }

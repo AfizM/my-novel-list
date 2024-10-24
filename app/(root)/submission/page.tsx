@@ -86,7 +86,7 @@ export default function SubmissionPage() {
   const onSubmit: SubmitHandler<NovelFormValues> = async (data) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/novels", {
+      const response = await fetch("/api/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -96,7 +96,9 @@ export default function SubmissionPage() {
         throw new Error("Failed to submit novel");
       }
 
-      toast.success("Novel submitted successfully!");
+      toast.success(
+        "Novel submitted successfully! It will be reviewed by an admin.",
+      );
       form.reset();
     } catch (error) {
       console.error("Error submitting novel:", error);

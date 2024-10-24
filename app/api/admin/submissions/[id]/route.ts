@@ -23,7 +23,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { status, feedback } = await request.json();
+    const { status, feedback, ...submissionData } = await request.json();
 
     if (status === "approved") {
       // Fetch the submission
@@ -38,25 +38,7 @@ export async function PUT(
       // Insert into novels table
       const { data: novel, error: novelError } = await supabase
         .from("novels")
-        .insert({
-          name: submission.name,
-          assoc_names: submission.assoc_names,
-          original_language: submission.original_language,
-          authors: submission.authors,
-          genres: submission.genres,
-          tags: submission.tags,
-          cover_image_url: submission.cover_image_url,
-          start_year: submission.start_year,
-          licensed: submission.licensed,
-          original_publisher: submission.original_publisher,
-          english_publisher: submission.english_publisher,
-          complete_original: submission.complete_original,
-          chapters_original_current: submission.chapters_original_current,
-          complete_translated: submission.complete_translated,
-          chapter_latest_translated: submission.chapter_latest_translated,
-          release_freq: submission.release_freq,
-          description: submission.description,
-        })
+        .insert(submission)
         .select()
         .single();
 
@@ -70,6 +52,9 @@ export async function PUT(
 
       if (updateError) throw updateError;
 
+      // Notify the user
+      await notifyUser(submission.user_id, "approved", novel.id);
+
       return NextResponse.json(novel);
     } else if (status === "rejected") {
       // Update submission status
@@ -80,9 +65,29 @@ export async function PUT(
 
       if (updateError) throw updateError;
 
+      // Fetch the submission to get the user_id
+      const { data: submission, error: submissionError } = await supabase
+        .from("novel_submissions")
+        .select("user_id")
+        .eq("id", params.id)
+        .single();
+
+      if (submissionError) throw submissionError;
+
+      // Notify the user
+      await notifyUser(submission.user_id, "rejected", null, feedback);
+
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+      // Update submission data
+      const { error: updateError } = await supabase
+        .from("novel_submissions")
+        .update(submissionData)
+        .eq("id", params.id);
+
+      if (updateError) throw updateError;
+
+      return NextResponse.json({ success: true });
     }
   } catch (error) {
     console.error("Error updating submission:", error);
@@ -90,5 +95,28 @@ export async function PUT(
       { error: "Failed to update submission" },
       { status: 500 },
     );
+  }
+}
+
+async function notifyUser(
+  userId: string,
+  status: "approved" | "rejected",
+  novelId: number | null,
+  feedback?: string,
+) {
+  try {
+    const message =
+      status === "approved"
+        ? `Your novel submission has been approved! You can view it here: /novel/${novelId}`
+        : `Your novel submission has been rejected. Feedback: ${feedback}`;
+
+    await supabase.from("notifications").insert({
+      user_id: userId,
+      message,
+      type: "submission_" + status,
+      novel_id: novelId,
+    });
+  } catch (error) {
+    console.error("Error notifying user:", error);
   }
 }
