@@ -63,7 +63,7 @@ export function TagModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="flex flex-col min-h-0">
         <DialogHeader>
           <DialogTitle>Add New Tag</DialogTitle>
         </DialogHeader>
@@ -90,19 +90,6 @@ export function TagModal({
           </div>
           <Button type="submit">Add Tag</Button>
         </form>
-        <div className="mt-4">
-          <h3 className="text-sm font-semibold">Existing Tags:</h3>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {existingTags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-gray-200 px-2 py-1 rounded-full text-sm"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );

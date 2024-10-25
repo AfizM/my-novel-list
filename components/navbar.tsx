@@ -20,9 +20,9 @@ const Navbar = () => {
   const { user } = useUser();
 
   const navItems = [
-    { name: "Browse", href: "/browse" },
     { name: "Social", href: "/" },
-    { name: "Landing", href: "/landing" },
+    { name: "Browse", href: "/browse" },
+    { name: "Submission", href: "/submission" },
   ];
 
   const signedInNavItems = [

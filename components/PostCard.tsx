@@ -109,7 +109,7 @@ export function PostCard({
               <div className="flex items-center">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={post.users.image_url} alt="User avatar" />
-                  <AvatarFallback>{post.users.username[0]}</AvatarFallback>
+                  {/* <AvatarFallback>{post.users.username[0]}</AvatarFallback> */}
                 </Avatar>
                 <div className="ml-2">
                   <Link
