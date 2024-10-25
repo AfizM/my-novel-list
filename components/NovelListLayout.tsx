@@ -1,6 +1,6 @@
 // @ts-nocheck
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,8 +116,10 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
   const [novels, setNovels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const debouncedLoading = useDebounce(isLoading, 200);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const fetchNovels = useCallback(async () => {
     setIsLoading(true);
@@ -141,26 +143,25 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
     fetchNovels();
   }, [fetchNovels]);
 
-  const filteredNovels =
-    selectedFilter === "All"
-      ? {
-          reading: novels.filter((novel) => novel.status === "reading"),
-          planning: novels.filter((novel) => novel.status === "planning"),
-          completed: novels.filter((novel) => novel.status === "completed"),
-        }
-      : {
-          [selectedFilter.toLowerCase()]: novels.filter(
-            (novel) => novel.status === selectedFilter.toLowerCase(),
-          ),
-        };
-
-  const handleNovelUpdate = (updatedNovel) => {
-    setNovels((prevNovels) =>
-      prevNovels.map((novel) =>
-        novel.id === updatedNovel.id ? { ...novel, ...updatedNovel } : novel,
-      ),
+  const filteredNovels = useMemo(() => {
+    const filtered = novels.filter((novel) =>
+      novel.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
     );
-  };
+
+    if (selectedFilter === "All") {
+      return {
+        reading: filtered.filter((novel) => novel.status === "reading"),
+        planning: filtered.filter((novel) => novel.status === "planning"),
+        completed: filtered.filter((novel) => novel.status === "completed"),
+      };
+    } else {
+      return {
+        [selectedFilter.toLowerCase()]: filtered.filter(
+          (novel) => novel.status === selectedFilter.toLowerCase(),
+        ),
+      };
+    }
+  }, [novels, selectedFilter, debouncedSearchTerm]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
@@ -168,7 +169,12 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
         {/* Filters */}
         <div className="w-full md:w-[18%]">
           <div className="space-y-4 mt-9">
-            <Input type="search" placeholder="Filter novels..." />
+            <Input
+              type="search"
+              placeholder="Search novels..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <div className="space-y-2">
               {["All", "Planning", "Reading", "Completed"].map((filter) => (
                 <Button
@@ -181,17 +187,6 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                 </Button>
               ))}
             </div>
-            {/* <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Select genre" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fantasy">Fantasy</SelectItem>
-                <SelectItem value="scifi">Sci-Fi</SelectItem>
-                <SelectItem value="romance">Romance</SelectItem>
-                <SelectItem value="action">Action</SelectItem>
-              </SelectContent>
-            </Select> */}
           </div>
         </div>
 
