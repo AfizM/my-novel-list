@@ -292,12 +292,12 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               <div className="text-[1.8rem] font-bold text-gray-800 dark:text-gray-200 hover:text-green-600 transition-colors">
                 {novel.name || "Untitled Novel"}
               </div>
-              {/* <div className="flex space-x-1 items-center">
+              <div className="flex space-x-1 items-center">
                 <Eye size={20} className="text-gray-500 dark:text-gray-400" />
                 <div className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                   {novel.views || 0} Views
                 </div>
-              </div> */}
+              </div>
             </div>
 
             {/* Ratings */}

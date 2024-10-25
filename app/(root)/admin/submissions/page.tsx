@@ -29,7 +29,6 @@ interface Submission {
   user_id: string;
   status: string;
   created_at: string;
-  description: string;
 }
 
 export default function AdminSubmissionsPage() {
