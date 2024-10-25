@@ -40,6 +40,11 @@ interface UserStats {
 
 const CACHE_TIME = 60000; // 1 minute cache
 
+// Add this helper function at the top of your file or in a separate utils file
+function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export default function ProfileContent({ user }: ProfileContentProps) {
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
@@ -124,7 +129,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const handleLike = async (
     postId: string,
     isLiked: boolean,
-    newLikeCount: number
+    newLikeCount: number,
   ) => {
     setPosts(
       posts.map((post) =>
@@ -134,8 +139,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               likes: newLikeCount,
               is_liked: isLiked,
             }
-          : post
-      )
+          : post,
+      ),
     );
   };
 
@@ -154,8 +159,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         posts.map((post) =>
           post.id === postId
             ? { ...post, post_comments: [...post.post_comments, newComment] }
-            : post
-        )
+            : post,
+        ),
       );
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -166,7 +171,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     postId: string,
     commentId: string,
     isLiked: boolean,
-    newLikeCount: number
+    newLikeCount: number,
   ) => {
     setPosts(
       posts.map((post) =>
@@ -176,11 +181,11 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               post_comments: post.post_comments.map((comment) =>
                 comment.id === commentId
                   ? { ...comment, likes: newLikeCount, is_liked: isLiked }
-                  : comment
+                  : comment,
               ),
             }
-          : post
-      )
+          : post,
+      ),
     );
   };
 
@@ -297,7 +302,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                   ) : (
                     <div className="text-xl font-bold">
                       {userStats && userStats[stat.key] !== undefined
-                        ? userStats[stat.key]
+                        ? stat.key === "favoriteGenre"
+                          ? capitalizeFirstLetter(userStats[stat.key])
+                          : userStats[stat.key]
                         : "N/A"}
                     </div>
                   )}

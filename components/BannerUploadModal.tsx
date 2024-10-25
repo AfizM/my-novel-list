@@ -71,11 +71,18 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
           <DialogTitle>Upload Banner Image</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <Input
-            type="file"
-            accept="image/jpeg,image/png"
-            onChange={handleFileChange}
-          />
+          <div>
+            <Input
+              type="file"
+              accept="image/jpeg,image/png"
+              onChange={handleFileChange}
+            />
+            {file && (
+              <p className="mt-2 text-sm text-gray-600">
+                Selected file: {file.name}
+              </p>
+            )}
+          </div>
           <Button onClick={handleUpload} disabled={!file || isUploading}>
             {isUploading ? "Uploading..." : "Upload"}
           </Button>

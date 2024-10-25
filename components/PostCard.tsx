@@ -47,7 +47,7 @@ interface PostCardProps {
     postId: string,
     commentId: string,
     isLiked: boolean,
-    likes: number
+    likes: number,
   ) => Promise<void>;
 }
 
@@ -63,7 +63,7 @@ export function PostCard({
 
   const formattedTime = useMemo(
     () => formatRelativeTime(post.created_at),
-    [post.created_at]
+    [post.created_at],
   );
 
   const handleComment = useDebouncedCallback(async () => {
@@ -174,6 +174,7 @@ export function PostCard({
             comment={comment}
             setComment={setComment}
             handleComment={handleComment}
+            setShowCommentsAndReply={setShowCommentsAndReply}
           />
         </div>
       )}
@@ -194,7 +195,7 @@ function CommentCard({
         `/api/posts/${comment.post_id}/comments/${comment.id}/like`,
         {
           method: "POST",
-        }
+        },
       );
       if (!response.ok) throw new Error("Failed to like comment");
       const { likes, action } = await response.json();
@@ -207,7 +208,7 @@ function CommentCard({
   // Memoize the formatted time for comments
   const formattedCommentTime = useMemo(
     () => formatRelativeTime(comment.created_at),
-    [comment.created_at]
+    [comment.created_at],
   );
 
   return (
@@ -256,7 +257,17 @@ function CommentCard({
   );
 }
 
-function CommentInput({ comment, setComment, handleComment }) {
+function CommentInput({
+  comment,
+  setComment,
+  handleComment,
+  setShowCommentsAndReply,
+}) {
+  const handleCancel = () => {
+    setComment("");
+    setShowCommentsAndReply(false);
+  };
+
   return (
     <div className="w-11/12 mx-auto rounded" style={{ fontSize: "0.85rem" }}>
       <Textarea
@@ -278,7 +289,7 @@ function CommentInput({ comment, setComment, handleComment }) {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => setComment("")}
+          onClick={handleCancel}
           style={{ fontSize: "0.8rem" }}
         >
           Cancel

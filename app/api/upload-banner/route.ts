@@ -43,12 +43,12 @@ export async function POST(request: Request) {
           (error, result) => {
             if (error) reject(error);
             else resolve(result);
-          }
+          },
         )
         .end(buffer);
     });
 
-    // Update user's banner URL in your database
+    // Update user's banner URL in the database
     await updateUserBanner(userId, result.secure_url);
 
     return NextResponse.json({ bannerUrl: result.secure_url });
