@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
 import { ReviewCard } from "@/components/ReviewCard";
@@ -56,7 +57,7 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
     (pageNum: number) => {
       return `${user.username}-${sort}-${pageNum}`;
     },
-    [user.username, sort],
+    [user.username, sort]
   );
 
   const fetchReviews = useCallback(
@@ -66,9 +67,7 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
 
       if (cachedData && Date.now() - cachedData.timestamp < CACHE_TIME) {
         setReviews((prevReviews) =>
-          pageNum === 1
-            ? cachedData.data
-            : [...prevReviews, ...cachedData.data],
+          pageNum === 1 ? cachedData.data : [...prevReviews, ...cachedData.data]
         );
         setHasMore(cachedData.data.length === 10); // Assuming 10 reviews per page
         setLoading(false);
@@ -79,12 +78,12 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
       setError(null);
       try {
         const response = await fetch(
-          `/api/users/${user.username}/reviews?page=${pageNum}&sort=${sort}`,
+          `/api/users/${user.username}/reviews?page=${pageNum}&sort=${sort}`
         );
         if (!response.ok) throw new Error("Failed to fetch reviews");
         const data = await response.json();
         setReviews((prevReviews) =>
-          pageNum === 1 ? data.reviews : [...prevReviews, ...data.reviews],
+          pageNum === 1 ? data.reviews : [...prevReviews, ...data.reviews]
         );
         setHasMore(data.hasMore);
         setCache((prevCache) => ({
@@ -97,7 +96,7 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
         setLoading(false);
       }
     },
-    [user.username, sort, cache, getCacheKey],
+    [user.username, sort, cache, getCacheKey]
   );
 
   useEffect(() => {
@@ -121,14 +120,14 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
   const handleLike = async (
     reviewId: string,
     isLiked: boolean,
-    newLikes: number,
+    newLikes: number
   ) => {
     setReviews((prevReviews) =>
       prevReviews.map((review) =>
         review.id === reviewId
           ? { ...review, is_liked: isLiked, likes: newLikes }
-          : review,
-      ),
+          : review
+      )
     );
     // Update cache
     Object.keys(cache).forEach((key) => {
@@ -139,7 +138,7 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
           data: prevCache[key].data.map((review) =>
             review.id === reviewId
               ? { ...review, is_liked: isLiked, likes: newLikes }
-              : review,
+              : review
           ),
         },
       }));

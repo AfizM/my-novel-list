@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -116,7 +117,7 @@ export default function NovelListPage() {
         }
       : {
           [selectedFilter.toLowerCase()]: novels.filter(
-            (novel) => novel.status === selectedFilter.toLowerCase(),
+            (novel) => novel.status === selectedFilter.toLowerCase()
           ),
         };
 

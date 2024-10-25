@@ -43,7 +43,7 @@ interface ReviewCardProps {
     reviewId: string,
     commentId: string,
     isLiked: boolean,
-    likes: number,
+    likes: number
   ) => Promise<void>;
   showNovel?: boolean;
   showEditButton?: boolean;
@@ -97,7 +97,7 @@ export function ReviewCard({
           <Star
             key={i}
             className="w-4 h-4 text-[var(--orange-rating)] fill-[var(--orange-rating)]"
-          />,
+          />
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
@@ -107,7 +107,7 @@ export function ReviewCard({
               className="absolute top-0 left-0 w-4 h-4 text-[var(--orange-rating)] fill-[var(--orange-rating)]"
               style={{ clipPath: "inset(0 50% 0 0)" }}
             />
-          </span>,
+          </span>
         );
       } else {
         stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);

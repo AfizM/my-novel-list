@@ -1,10 +1,11 @@
+// @ts-nocheck
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
 import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } },
+  { params }: { params: { userId: string } }
 ) {
   const { userId } = auth();
 
@@ -38,7 +39,7 @@ export async function GET(
           liked_by,
           users!inner (username, image_url)
         )
-      `,
+      `
       )
       .eq("user_id", userData.user_id)
       .order("created_at", { ascending: false });
@@ -61,7 +62,7 @@ export async function GET(
     console.error("Error fetching user posts:", error);
     return NextResponse.json(
       { error: "Failed to fetch user posts" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

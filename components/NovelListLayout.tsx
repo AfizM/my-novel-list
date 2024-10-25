@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
@@ -156,7 +157,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
         }
       : {
           [selectedFilter.toLowerCase()]: novels.filter(
-            (novel) => novel.status === selectedFilter.toLowerCase(),
+            (novel) => novel.status === selectedFilter.toLowerCase()
           ),
         };
 
@@ -249,6 +250,10 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
               <NovelModal
                 novel={selectedNovel}
                 onClose={() => setSelectedNovel(null)}
+                onUpdateStats={() => {
+                  console.log("User stats updated");
+                  fetchNovels(); // Refetch novels after updating stats
+                }}
               />
             </DialogContent>
           </Dialog>

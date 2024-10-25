@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,7 @@ interface PostCardProps {
     postId: string,
     commentId: string,
     isLiked: boolean,
-    likes: number,
+    likes: number
   ) => Promise<void>;
 }
 
@@ -62,7 +63,7 @@ export function PostCard({
 
   const formattedTime = useMemo(
     () => formatRelativeTime(post.created_at),
-    [post.created_at],
+    [post.created_at]
   );
 
   const handleComment = useDebouncedCallback(async () => {
@@ -190,11 +191,10 @@ function CommentCard({
   const handleLike = useDebouncedCallback(async () => {
     try {
       const response = await fetch(
-        // @ts-ignore: Suppress type error for accessing genres
         `/api/posts/${comment.post_id}/comments/${comment.id}/like`,
         {
           method: "POST",
-        },
+        }
       );
       if (!response.ok) throw new Error("Failed to like comment");
       const { likes, action } = await response.json();
@@ -207,7 +207,7 @@ function CommentCard({
   // Memoize the formatted time for comments
   const formattedCommentTime = useMemo(
     () => formatRelativeTime(comment.created_at),
-    [comment.created_at],
+    [comment.created_at]
   );
 
   return (

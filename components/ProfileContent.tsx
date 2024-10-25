@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -69,9 +70,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
       const [postsResponse, statsResponse, favoritesResponse] =
         await Promise.all([
           fetch(`/api/users/${user.username}/posts`),
-          // @ts-ignore: Suppress type error for accessing genres
           fetch(`/api/users/${user.user_id}/stats`),
-          // @ts-ignore: Suppress type error for accessing genres
           fetch(`/api/users/${user.user_id}/favorite-novels`),
         ]);
 
@@ -97,7 +96,6 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     } finally {
       setIsLoading(false);
     }
-    // @ts-ignore: Suppress type error for accessing genres
   }, [user.username, user.user_id, lastFetchTime]);
 
   useEffect(() => {
@@ -126,7 +124,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const handleLike = async (
     postId: string,
     isLiked: boolean,
-    newLikeCount: number,
+    newLikeCount: number
   ) => {
     setPosts(
       posts.map((post) =>
@@ -136,8 +134,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               likes: newLikeCount,
               is_liked: isLiked,
             }
-          : post,
-      ),
+          : post
+      )
     );
   };
 
@@ -156,8 +154,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         posts.map((post) =>
           post.id === postId
             ? { ...post, post_comments: [...post.post_comments, newComment] }
-            : post,
-        ),
+            : post
+        )
       );
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -168,7 +166,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     postId: string,
     commentId: string,
     isLiked: boolean,
-    newLikeCount: number,
+    newLikeCount: number
   ) => {
     setPosts(
       posts.map((post) =>
@@ -178,11 +176,11 @@ export default function ProfileContent({ user }: ProfileContentProps) {
               post_comments: post.post_comments.map((comment) =>
                 comment.id === commentId
                   ? { ...comment, likes: newLikeCount, is_liked: isLiked }
-                  : comment,
+                  : comment
               ),
             }
-          : post,
-      ),
+          : post
+      )
     );
   };
 

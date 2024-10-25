@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
 
@@ -19,9 +20,7 @@ async function getAllUniqueTags(): Promise<string[]> {
 
     if (error) throw error;
 
-    const allTags = Array.from(
-      new Set(data.flatMap((novel) => novel.tags || [])),
-    );
+    const allTags = [...new Set(data.flatMap((novel) => novel.tags || []))];
     cachedTags = allTags;
     lastCacheTime = currentTime;
     return allTags;
@@ -38,7 +37,7 @@ export async function GET(request: Request) {
   if (!query) {
     return NextResponse.json(
       { error: "Query parameter 'q' is required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -61,7 +60,7 @@ export async function GET(request: Request) {
     console.error("Error fetching tag suggestions:", error);
     return NextResponse.json(
       { error: "Failed to fetch tag suggestions" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

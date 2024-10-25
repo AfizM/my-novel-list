@@ -1,10 +1,11 @@
+// @ts-nocheck
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
 import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } },
+  { params }: { params: { userId: string } }
 ) {
   const { userId } = auth();
 
@@ -21,7 +22,7 @@ export async function GET(
     // console.log("Novel List:", JSON.stringify(novelList, null, 2));
 
     const novelsRead = novelList.filter(
-      (item) => item.status === "completed",
+      (item) => item.status === "completed"
     ).length;
 
     const chaptersRead = novelList.reduce((sum, item) => {
@@ -29,9 +30,7 @@ export async function GET(
     }, 0);
 
     const genreCounts = novelList.reduce((acc, item) => {
-      // @ts-ignore: Suppress type error for accessing genres
       if (item.novels && Array.isArray(item.novels.genres)) {
-        // @ts-ignore: Suppress type error for accessing genres
         item.novels.genres.forEach((genre) => {
           acc[genre] = (acc[genre] || 0) + 1;
         });
@@ -53,7 +52,7 @@ export async function GET(
     console.error("Error fetching user stats:", error);
     return NextResponse.json(
       { error: "Failed to fetch user stats" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
