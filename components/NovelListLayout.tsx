@@ -116,16 +116,10 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
   const [novels, setNovels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [lastFetchTime, setLastFetchTime] = useState(0);
 
   const debouncedLoading = useDebounce(isLoading, 200);
 
   const fetchNovels = useCallback(async () => {
-    const now = Date.now();
-    if (now - lastFetchTime < CACHE_TIME) {
-      return; // Use cached data
-    }
-
     setIsLoading(true);
     setError(null);
     try {
@@ -135,14 +129,13 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
       }
       const data = await response.json();
       setNovels(data);
-      setLastFetchTime(now);
     } catch (error) {
       console.error("Error fetching novels:", error);
       setError("Failed to load novels. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [user.user_id, lastFetchTime]);
+  }, [user.user_id]);
 
   useEffect(() => {
     fetchNovels();
@@ -157,9 +150,17 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
         }
       : {
           [selectedFilter.toLowerCase()]: novels.filter(
-            (novel) => novel.status === selectedFilter.toLowerCase()
+            (novel) => novel.status === selectedFilter.toLowerCase(),
           ),
         };
+
+  const handleNovelUpdate = (updatedNovel) => {
+    setNovels((prevNovels) =>
+      prevNovels.map((novel) =>
+        novel.id === updatedNovel.id ? { ...novel, ...updatedNovel } : novel,
+      ),
+    );
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
@@ -180,7 +181,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                 </Button>
               ))}
             </div>
-            <Select>
+            {/* <Select>
               <SelectTrigger>
                 <SelectValue placeholder="Select genre" />
               </SelectTrigger>
@@ -190,7 +191,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                 <SelectItem value="romance">Romance</SelectItem>
                 <SelectItem value="action">Action</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </div>
 
@@ -250,10 +251,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
               <NovelModal
                 novel={selectedNovel}
                 onClose={() => setSelectedNovel(null)}
-                onUpdateStats={() => {
-                  console.log("User stats updated");
-                  fetchNovels(); // Refetch novels after updating stats
-                }}
+                onUpdateComplete={fetchNovels}
               />
             </DialogContent>
           </Dialog>

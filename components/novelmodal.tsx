@@ -25,9 +25,14 @@ type NovelModalProps = {
     original_language: string;
   } | null;
   onClose: () => void;
+  onUpdateComplete: () => void;
 };
 
-export function NovelModal({ novel, onClose }: NovelModalProps) {
+export function NovelModal({
+  novel,
+  onClose,
+  onUpdateComplete,
+}: NovelModalProps) {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [novelData, setNovelData] = useState(null);
   const [status, setStatus] = useState("reading");
@@ -100,6 +105,11 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
         throw new Error("Failed to save novel to list");
       }
 
+      const updatedNovel = await response.json();
+
+      // Call the onUpdate callback with the updated novel
+      onUpdateComplete();
+
       // Check for changes
       const hasStatusChanged = status !== initialStatus;
       const hasChapterProgressChanged =
@@ -138,10 +148,7 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
         }
       }
 
-      await refetchUserStats();
-
       toast.success(`${novel.name} list entry updated`);
-
       onClose();
     } catch (error) {
       console.error("Error saving novel to list:", error);
@@ -184,7 +191,7 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
               onClick={() => handleRatingClick(i, true)}
             />
           )}
-        </div>
+        </div>,
       );
     }
     return stars;
