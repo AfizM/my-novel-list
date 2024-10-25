@@ -103,6 +103,9 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
       const hasStatusChanged = status !== initialStatus;
       const hasChapterProgressChanged =
         chapterProgress !== initialChapterProgress;
+      const hasRatingChanged = rating !== initialRating;
+      const hasNotesChanged = notes !== initialNotes;
+      const hasFavoriteChanged = isFavorite !== initialIsFavorite;
 
       // Create post if there are any changes
       if (hasStatusChanged || hasChapterProgressChanged) {
@@ -188,10 +191,10 @@ export function NovelModal({ novel, onClose }: NovelModalProps) {
 
   const refetchUserStats = async () => {
     try {
-      // @ts-ignore: Suppress type error for accessing genres
       const response = await fetch(`/api/users/${novel.user_id}/stats`);
       if (!response.ok) throw new Error("Failed to fetch user stats");
       const data = await response.json();
+      onUpdateStats();
     } catch (error) {
       console.error("Error refetching user stats:", error);
     }

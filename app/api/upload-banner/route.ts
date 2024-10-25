@@ -9,11 +9,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-interface CloudinaryUploadResult {
-  secure_url: string;
-  // Add other properties if needed
-}
-
 export async function POST(request: Request) {
   const { userId } = auth();
 
@@ -31,28 +26,26 @@ export async function POST(request: Request) {
   const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
-    const result = await new Promise<CloudinaryUploadResult>(
-      (resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream(
-            {
-              resource_type: "image",
-              public_id: `user_banners/${userId}`,
-              overwrite: true,
-              format: "jpg",
-              transformation: [
-                { width: 1500, height: 500, crop: "fill" },
-                { quality: "auto:good" },
-              ],
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result as CloudinaryUploadResult);
-            },
-          )
-          .end(buffer);
-      },
-    );
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            resource_type: "image",
+            public_id: `user_banners/${userId}`,
+            overwrite: true,
+            format: "jpg",
+            transformation: [
+              { width: 1500, height: 500, crop: "fill" },
+              { quality: "auto:good" },
+            ],
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          },
+        )
+        .end(buffer);
+    });
 
     // Update user's banner URL in your database
     await updateUserBanner(userId, result.secure_url);

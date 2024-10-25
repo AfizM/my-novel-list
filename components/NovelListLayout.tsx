@@ -249,6 +249,10 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
               <NovelModal
                 novel={selectedNovel}
                 onClose={() => setSelectedNovel(null)}
+                onUpdateStats={() => {
+                  console.log("User stats updated");
+                  fetchNovels(); // Refetch novels after updating stats
+                }}
               />
             </DialogContent>
           </Dialog>

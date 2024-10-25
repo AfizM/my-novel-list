@@ -110,7 +110,6 @@ export default function ProfileLayout({
       <BannerUploadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        // @ts-ignore: Suppress type error for accessing genres
         userId={user.id}
       />
       <Toaster />

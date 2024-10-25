@@ -1,5 +1,5 @@
-// @ts-nocheck
 "use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
 import { ReviewCard } from "@/components/ReviewCard";

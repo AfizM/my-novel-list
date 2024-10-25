@@ -174,20 +174,13 @@ export default function Home() {
     );
   };
 
-  // Add this function
-  const handleTabChange = (value: string) => {
-    if (value === "following" || value === "global") {
-      setActiveTab(value);
-    }
-  };
-
   return (
     <div className="min-h-screen">
       <div className="w-full max-w-7xl mx-auto my-0 px-9 flex justify-center">
         <div className="w-full max-w-lg">
           <div className="flex justify-between items-center mb-6 mt-8">
             <h2 className="text-2xl font-bold">Activity</h2>
-            <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="following">Following</TabsTrigger>
                 <TabsTrigger value="global">Global</TabsTrigger>

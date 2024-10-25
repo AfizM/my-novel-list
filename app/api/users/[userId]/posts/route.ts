@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } },
+  { params }: { params: { username: string } },
 ) {
   const { userId } = auth();
 
