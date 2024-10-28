@@ -458,6 +458,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               original_language: novel.original_language,
             }}
             onClose={() => setIsModalOpen(false)}
+            onUpdateComplete={() => {}}
           />
         </DialogContent>
       </Dialog>

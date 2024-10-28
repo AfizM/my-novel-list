@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
@@ -195,17 +194,6 @@ export function NovelModal({
       );
     }
     return stars;
-  };
-
-  const refetchUserStats = async () => {
-    try {
-      const response = await fetch(`/api/users/${novel.user_id}/stats`);
-      if (!response.ok) throw new Error("Failed to fetch user stats");
-      const data = await response.json();
-      onUpdateStats();
-    } catch (error) {
-      console.error("Error refetching user stats:", error);
-    }
   };
 
   const toggleFavorite = () => {

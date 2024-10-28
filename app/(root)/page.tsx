@@ -1,6 +1,4 @@
-// @ts-nocheck
 "use client";
-
 import React, { useState, useEffect, useCallback } from "react";
 import { PostCard } from "@/components/PostCard";
 import { Input } from "@/components/ui/input";
@@ -10,7 +8,6 @@ import { useDebounce } from "@/hooks/useDebounce";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { toast } from "sonner";
-import { MultiSelect } from "@/components/ui/MultiSelect";
 
 interface Post {
   id: string;
@@ -47,7 +44,7 @@ const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"following" | "global">(
-    "following"
+    "following",
   );
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
@@ -115,7 +112,7 @@ export default function Home() {
   const handleLike = async (
     postId: string,
     isLiked: boolean,
-    likes: number
+    likes: number,
   ) => {
     setPosts(
       posts.map((post) =>
@@ -125,8 +122,8 @@ export default function Home() {
               likes,
               is_liked: isLiked,
             }
-          : post
-      )
+          : post,
+      ),
     );
   };
 
@@ -144,12 +141,18 @@ export default function Home() {
       setPosts(
         posts.map((post) =>
           post.id === postId
-            ? { ...post, post_comments: [...post.post_comments, newComment] }
-            : post
-        )
+            ? {
+                ...post,
+                post_comments: Array.isArray(post.post_comments)
+                  ? [...post.post_comments, newComment]
+                  : [newComment],
+              }
+            : post,
+        ),
       );
     } catch (error) {
       console.error("Error adding comment:", error);
+      toast.error("Failed to add comment. Please try again.");
     }
   };
 
@@ -157,7 +160,7 @@ export default function Home() {
     postId: string,
     commentId: string,
     isLiked: boolean,
-    likes: number
+    likes: number,
   ) => {
     setPosts(
       posts.map((post) =>
@@ -167,11 +170,11 @@ export default function Home() {
               post_comments: post.post_comments.map((comment) =>
                 comment.id === commentId
                   ? { ...comment, likes, is_liked: isLiked }
-                  : comment
+                  : comment,
               ),
             }
-          : post
-      )
+          : post,
+      ),
     );
   };
 
@@ -181,6 +184,7 @@ export default function Home() {
         <div className="w-full max-w-lg">
           <div className="flex justify-between items-center mb-6 mt-8">
             <h2 className="text-2xl font-bold">Activity</h2>
+            {/* @ts-ignore: Unreachable code error */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="following">Following</TabsTrigger>
