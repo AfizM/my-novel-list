@@ -49,40 +49,70 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [cache, setCache] = useState<{
-    data: Post[];
-    timestamp: number;
-  } | null>(null);
+    [key: string]: {
+      data: Post[];
+      hasMore: boolean;
+      timestamp: number;
+    };
+  }>({});
 
   const debouncedLoading = useDebounce(isLoading, 200);
 
-  const fetchPosts = useCallback(async () => {
-    if (cache && Date.now() - cache.timestamp < CACHE_TIME) {
-      setPosts(cache.data);
-      setIsLoading(false);
-      return;
-    }
+  const getCacheKey = useCallback(
+    (pageNum: number) => {
+      return `${activeTab}-${pageNum}`;
+    },
+    [activeTab],
+  );
 
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/posts");
-      if (!response.ok) throw new Error("Failed to fetch posts");
-      const data = await response.json();
-      setPosts(data);
-      setCache({ data, timestamp: Date.now() });
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-      setError("Failed to load posts. Please try again.");
-    } finally {
-      setIsLoading(false);
+  const fetchPosts = useCallback(
+    async (pageNum: number, isLoadMore = false) => {
+      if (!isLoadMore) {
+        setIsLoading(true);
+      }
+
+      try {
+        const response = await fetch(`/api/posts?page=${pageNum}`);
+        if (!response.ok) throw new Error("Failed to fetch posts");
+        const { posts: newPosts, hasMore: moreExists } = await response.json();
+
+        if (isLoadMore) {
+          setPosts((prev) => [...prev, ...newPosts]);
+        } else {
+          setPosts(newPosts);
+        }
+        setHasMore(moreExists);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setError("Failed to load posts. Please try again.");
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [],
+  );
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      setIsLoadingMore(true);
+      fetchPosts(nextPage, true);
     }
-  }, [cache]);
+  }, [page, isLoadingMore, fetchPosts]);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    setPage(1);
+    setPosts([]);
+    setHasMore(true);
+    fetchPosts(1, false);
+  }, [activeTab, fetchPosts]);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
@@ -207,22 +237,24 @@ export default function Home() {
           {error && (
             <div className="text-red-500 text-center mb-4 p-2 bg-red-100 rounded">
               {error}
-              <Button onClick={fetchPosts} className="ml-2">
+              <Button onClick={() => fetchPosts(page)} className="ml-2">
                 Retry
               </Button>
             </div>
           )}
 
-          {debouncedLoading
-            ? Array(3)
-                .fill(0)
-                .map((_, index) => (
-                  <div key={index} className="mb-4">
-                    <Skeleton height={100} className="mb-2" />
-                    <Skeleton count={3} />
-                  </div>
-                ))
-            : posts.map((post) => (
+          {debouncedLoading ? (
+            Array(3)
+              .fill(0)
+              .map((_, index) => (
+                <div key={index} className="mb-4">
+                  <Skeleton height={100} className="mb-2" />
+                  <Skeleton count={3} />
+                </div>
+              ))
+          ) : (
+            <>
+              {posts.map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}
@@ -231,6 +263,26 @@ export default function Home() {
                   onCommentLike={handleCommentLike}
                 />
               ))}
+
+              {hasMore && (
+                <div className="mt-6 mb-8 text-center">
+                  <Button
+                    onClick={handleLoadMore}
+                    disabled={isLoadingMore}
+                    variant="outline"
+                  >
+                    {isLoadingMore ? "Loading..." : "Load More"}
+                  </Button>
+                </div>
+              )}
+
+              {!hasMore && posts.length > 0 && (
+                <div className="text-center text-gray-500 mt-6 mb-8">
+                  No more posts to load
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

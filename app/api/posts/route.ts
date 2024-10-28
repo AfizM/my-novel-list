@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
 import { auth } from "@clerk/nextjs/server";
 
+const POSTS_PER_PAGE = 15;
+
 export async function POST(request: Request) {
   const { userId } = auth();
 
@@ -48,11 +50,18 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const { userId } = auth();
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const offset = (page - 1) * POSTS_PER_PAGE;
 
   try {
-    const { data: posts, error } = await supabase
+    const {
+      data: posts,
+      error,
+      count,
+    } = await supabase
       .from("posts")
       .select(
         `
@@ -78,12 +87,14 @@ export async function GET() {
           liked_by,
           created_at,
           users (
-           username,
+            username,
             image_url
           )
         )
       `,
+        { count: "exact" },
       )
+      .range(offset, offset + POSTS_PER_PAGE - 1)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -99,7 +110,11 @@ export async function GET() {
       })),
     }));
 
-    return NextResponse.json(postsWithLikeStatus);
+    return NextResponse.json({
+      posts: postsWithLikeStatus,
+      hasMore: count > offset + POSTS_PER_PAGE,
+      totalCount: count,
+    });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(
