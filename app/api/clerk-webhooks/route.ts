@@ -58,7 +58,8 @@ export async function POST(req: Request) {
   // Handle the webhook
   const eventType = evt.type;
   if (eventType === "user.created" || eventType === "user.updated") {
-    const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+    const { id, email_addresses, first_name, last_name, username, image_url } =
+      evt.data;
 
     const { error } = await supabase.from("users").upsert(
       {
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
         email: email_addresses[0]?.email_address,
         first_name,
         last_name,
+        username,
         image_url,
         updated_at: new Date().toISOString(),
       },
