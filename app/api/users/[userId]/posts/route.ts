@@ -3,11 +3,16 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
 import { auth } from "@clerk/nextjs/server";
 
+const POSTS_PER_PAGE = 15;
+
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: { userId: string } },
 ) {
   const { userId } = auth();
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const offset = (page - 1) * POSTS_PER_PAGE;
 
   const targetUsername = params.userId;
 
@@ -20,7 +25,7 @@ export async function GET(
 
     if (userError) throw userError;
 
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from("posts")
       .select(
         `
@@ -39,9 +44,11 @@ export async function GET(
           liked_by,
           users!inner (username, image_url)
         )
-      `
+      `,
+        { count: "exact" },
       )
       .eq("user_id", userData.user_id)
+      .range(offset, offset + POSTS_PER_PAGE - 1)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -57,12 +64,16 @@ export async function GET(
       })),
     }));
 
-    return NextResponse.json(postsWithLikeStatus);
+    return NextResponse.json({
+      posts: postsWithLikeStatus,
+      hasMore: count > offset + POSTS_PER_PAGE,
+      totalCount: count,
+    });
   } catch (error) {
     console.error("Error fetching user posts:", error);
     return NextResponse.json(
       { error: "Failed to fetch user posts" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

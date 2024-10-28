@@ -60,51 +60,77 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [error, setError] = useState<string | null>(null);
   const [lastFetchTime, setLastFetchTime] = useState(0);
 
+  // Add these to your existing state declarations
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   const debouncedLoading = useDebounce(isLoading, 200);
 
-  const fetchData = useCallback(async () => {
-    const now = Date.now();
-    if (now - lastFetchTime < CACHE_TIME) {
-      return; // Use cached data
-    }
+  const fetchData = useCallback(
+    async (pageNum = 1, isLoadMore = false) => {
+      if (!isLoadMore) {
+        setIsLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+      setError(null);
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const [postsResponse, statsResponse, favoritesResponse] =
-        await Promise.all([
-          fetch(`/api/users/${user.username}/posts`),
+      try {
+        const [statsResponse, favoritesResponse] = await Promise.all([
           fetch(`/api/users/${user.user_id}/stats`),
           fetch(`/api/users/${user.user_id}/favorite-novels`),
         ]);
 
-      if (!postsResponse.ok || !statsResponse.ok || !favoritesResponse.ok) {
-        throw new Error("Failed to fetch data");
+        const postsResponse = await fetch(
+          `/api/users/${user.username}/posts?page=${pageNum}`,
+        );
+
+        if (!postsResponse.ok || !statsResponse.ok || !favoritesResponse.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const [postsData, statsData, favoritesData] = await Promise.all([
+          postsResponse.json(),
+          statsResponse.json(),
+          favoritesResponse.json(),
+        ]);
+
+        if (isLoadMore) {
+          setPosts((prev) => [...prev, ...postsData.posts]);
+        } else {
+          setPosts(postsData.posts);
+        }
+        setHasMore(postsData.hasMore);
+        setUserStats(statsData);
+        setFavoriteNovels(favoritesData);
+        setLastFetchTime(Date.now());
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to load user data. Please try again.");
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
       }
+    },
+    [user.username, user.user_id],
+  );
 
-      const [postsData, statsData, favoritesData] = await Promise.all([
-        postsResponse.json(),
-        statsResponse.json(),
-        favoritesResponse.json(),
-      ]);
-
-      console.log("STATS DATA IS " + statsData.novelsRead);
-
-      setPosts(postsData);
-      setUserStats(statsData);
-      setFavoriteNovels(favoritesData);
-      setLastFetchTime(now);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setError("Failed to load user data. Please try again.");
-    } finally {
-      setIsLoading(false);
+  // Add handleLoadMore function
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchData(nextPage, true);
     }
-  }, [user.username, user.user_id, lastFetchTime]);
+  }, [page, isLoadingMore, hasMore, fetchData]);
 
+  // Update the initial useEffect
   useEffect(() => {
-    fetchData();
+    setPage(1);
+    setPosts([]);
+    setHasMore(true);
+    fetchData(1, false);
   }, [fetchData]);
 
   const handleCreatePost = async () => {
@@ -409,6 +435,24 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                   onCommentLike={handleCommentLike}
                 />
               ))}
+
+          {hasMore && !debouncedLoading && (
+            <div className="mt-6 mb-8 text-center">
+              <Button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                variant="outline"
+              >
+                {isLoadingMore ? "Loading..." : "Load More"}
+              </Button>
+            </div>
+          )}
+
+          {!hasMore && posts.length > 0 && (
+            <div className="text-center text-gray-500 mt-6 mb-8">
+              No more posts to load
+            </div>
+          )}
         </div>
       </div>
     </div>
