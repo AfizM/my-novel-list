@@ -138,7 +138,7 @@ export default function Home() {
             </div>
 
             <div className="flex space-x-6 w-full items-end">
-              <div className="flex-col w-full  max-w-72 ">
+              <div className="flex-col w-full max-w-[300px]">
                 <div className="ml-1 py-2 font-semibold">Sort</div>
                 <Select value={sort} onValueChange={setSort}>
                   <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
@@ -146,14 +146,14 @@ export default function Home() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="popular">Popular</SelectItem>
-                    <SelectItem value="recent">Recent</SelectItem>
                     <SelectItem value="rating">Rating</SelectItem>
+                    <SelectItem value="recent">Recent</SelectItem>
                     <SelectItem value="name">Name</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="flex-col w-full max-w-48 ">
+              <div className="flex-col w-full max-w-[300px]">
                 <div className="ml-1 py-2 font-semibold">Status</div>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
@@ -167,7 +167,7 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div className="flex-col w-full max-w-48 ">
+              <div className="flex-col w-full max-w-[300px]">
                 <div className="ml-1 py-2 text-base font-semibold">Genre</div>
                 <Select value={genre} onValueChange={setGenre}>
                   <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
