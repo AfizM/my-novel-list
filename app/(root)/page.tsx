@@ -40,8 +40,6 @@ interface Comment {
   };
 }
 
-const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
-
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"following" | "global">(
     "following",
@@ -53,22 +51,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [cache, setCache] = useState<{
-    [key: string]: {
-      data: Post[];
-      hasMore: boolean;
-      timestamp: number;
-    };
-  }>({});
 
   const debouncedLoading = useDebounce(isLoading, 200);
-
-  const getCacheKey = useCallback(
-    (pageNum: number) => {
-      return `${activeTab}-${pageNum}`;
-    },
-    [activeTab],
-  );
 
   const fetchPosts = useCallback(
     async (pageNum: number, isLoadMore = false) => {

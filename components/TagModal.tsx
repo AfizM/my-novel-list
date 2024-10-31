@@ -24,6 +24,7 @@ export function TagModal({
 }: TagModalProps) {
   const [newTag, setNewTag] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -61,6 +62,11 @@ export function TagModal({
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setNewTag(suggestion);
+    setShowSuggestions(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex flex-col min-h-0">
@@ -71,16 +77,19 @@ export function TagModal({
           <div className="relative">
             <Input
               value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
+              onChange={(e) => {
+                setNewTag(e.target.value);
+                setShowSuggestions(true);
+              }}
               placeholder="Enter new tag"
             />
-            {suggestions.length > 0 && (
+            {showSuggestions && suggestions.length > 0 && (
               <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1">
                 {suggestions.map((suggestion) => (
                   <li
                     key={suggestion}
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => setNewTag(suggestion)}
+                    onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion}
                   </li>
