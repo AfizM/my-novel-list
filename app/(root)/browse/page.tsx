@@ -18,6 +18,8 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDebounce } from "@/hooks/useDebounce";
 import { NOVEL_GENRES } from "@/lib/constants";
+import { FiltersPanel } from "@/components/FiltersPanel";
+import { cn } from "@/lib/utils";
 
 interface Novel {
   id: number;
@@ -57,6 +59,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [chapterCount, setChapterCount] = useState(0);
+  const [origin, setOrigin] = useState("any");
+  const [releaseFreq, setReleaseFreq] = useState(0);
 
   const debouncedSearch = useDebounce(search, 300);
   const debouncedLoading = useDebounce(loading, 200);
@@ -177,13 +183,26 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div className="flex-col w-full max-w-48 ml ">
+              <div className="flex-col w-full max-w-48 ml relative">
                 <Button
                   variant="outline"
-                  className="p-2 shadow-[0_2px_4px_0_var(--shadow-color)] ml-2 "
+                  className={cn(
+                    "p-2 shadow-[0_2px_4px_0_var(--shadow-color)] ml-2",
+                    isFiltersOpen && "bg-accent",
+                  )}
+                  onClick={() => setIsFiltersOpen(!isFiltersOpen)}
                 >
                   <SlidersHorizontal className="h-5 w-6" />
                 </Button>
+                <FiltersPanel
+                  isOpen={isFiltersOpen}
+                  onChapterChange={(value) => setChapterCount(value[0])}
+                  chapterCount={chapterCount}
+                  onReleaseFreqChange={(value) => setReleaseFreq(value[0])}
+                  releaseFreq={releaseFreq}
+                  onOriginChange={setOrigin}
+                  origin={origin}
+                />
               </div>
             </div>
           </div>
