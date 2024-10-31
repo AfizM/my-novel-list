@@ -48,6 +48,7 @@ export function NovelModal({
   const [initialNotes, setInitialNotes] = useState("");
   const [initialIsFavorite, setInitialIsFavorite] = useState(false);
   const [userNovelStatus, setUserNovelStatus] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchNovelListData = async () => {
@@ -219,6 +220,30 @@ export function NovelModal({
     setIsFavorite(!isFavorite);
   };
 
+  const handleDelete = async () => {
+    if (!novel) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/novel-list/${novel.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete novel from list");
+      }
+
+      toast.success(`${novel.name} removed from your list`);
+      onUpdateComplete();
+      onClose();
+    } catch (error) {
+      console.error("Error deleting novel from list:", error);
+      toast.error("Failed to remove novel from list. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <>
       <ProgressBar isLoading={isInitialLoading} />
@@ -295,8 +320,22 @@ export function NovelModal({
               </div>
             </div>
           </div>
-          <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={isLoading}>
+          <div className="flex justify-between items-center">
+            {novelData && (
+              <Button
+                variant="outline"
+                onClick={handleDelete}
+                disabled={isDeleting || isLoading}
+                className="hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
+              >
+                {isDeleting ? "Removing..." : "Delete"}
+              </Button>
+            )}
+            <Button
+              onClick={handleSave}
+              disabled={isLoading || isDeleting}
+              className={novelData ? "" : "ml-auto"}
+            >
               {isLoading ? "Saving..." : "Save"}
             </Button>
           </div>

@@ -76,9 +76,12 @@ export default function NovelPage({ params }: { params: { id: string } }) {
       if (response.ok) {
         const data = await response.json();
         setUserNovelStatus(data.status);
+      } else if (response.status === 404) {
+        setUserNovelStatus(null);
       }
     } catch (error) {
       console.error("Error fetching novel status:", error);
+      setUserNovelStatus(null);
     }
   }, [params.id, user]);
 
@@ -275,6 +278,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
   const handleUpdateComplete = () => {
     fetchUserNovelStatus();
+    setIsModalOpen(false);
   };
 
   if (debouncedLoading) {
@@ -491,9 +495,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               original_language: novel.original_language,
             }}
             onClose={() => setIsModalOpen(false)}
-            onUpdateComplete={() => {
-              fetchUserNovelStatus();
-            }}
+            onUpdateComplete={handleUpdateComplete}
           />
         </DialogContent>
       </Dialog>

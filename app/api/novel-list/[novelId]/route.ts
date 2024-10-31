@@ -40,3 +40,33 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { novelId: string } },
+) {
+  const { userId } = auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const novelId = params.novelId;
+
+  try {
+    const { error } = await supabase
+      .from("novel_list")
+      .delete()
+      .eq("user_id", userId)
+      .eq("novel_id", novelId);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting novel from list:", error);
+    return NextResponse.json(
+      { error: "Failed to delete novel from list" },
+      { status: 500 },
+    );
+  }
+}
