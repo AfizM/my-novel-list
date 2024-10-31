@@ -59,6 +59,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [userReview, setUserReview] = useState<any>(null);
+  const [userNovelStatus, setUserNovelStatus] = useState<string | null>(null);
   const [cache, setCache] = useState<{
     novel: Novel | null;
     timestamp: number;
@@ -66,6 +67,24 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
 
   const debouncedLoading = useDebounce(isLoading, 200);
+
+  const fetchUserNovelStatus = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(`/api/novel-list/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUserNovelStatus(data.status);
+      }
+    } catch (error) {
+      console.error("Error fetching novel status:", error);
+    }
+  }, [params.id, user]);
+
+  useEffect(() => {
+    fetchUserNovelStatus();
+  }, [fetchUserNovelStatus]);
 
   const fetchNovel = useCallback(async () => {
     if (cache && Date.now() - cache.timestamp < CACHE_TIME) {
@@ -254,6 +273,10 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleUpdateComplete = () => {
+    fetchUserNovelStatus();
+  };
+
   if (debouncedLoading) {
     return <NovelSkeleton />;
   }
@@ -281,8 +304,18 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               className="mt-2.5 w-full relative max-w-48"
               onClick={() => setIsModalOpen(true)}
             >
-              Add to list
-              <ChevronDown className="absolute right-2" />
+              {userNovelStatus ? (
+                <>
+                  {userNovelStatus.charAt(0).toUpperCase() +
+                    userNovelStatus.slice(1)}
+                  <ChevronDown className="absolute right-2" />
+                </>
+              ) : (
+                <>
+                  Add to list
+                  <ChevronDown className="absolute right-2" />
+                </>
+              )}
             </Button>
           </div>
 
@@ -458,7 +491,9 @@ export default function NovelPage({ params }: { params: { id: string } }) {
               original_language: novel.original_language,
             }}
             onClose={() => setIsModalOpen(false)}
-            onUpdateComplete={() => {}}
+            onUpdateComplete={() => {
+              fetchUserNovelStatus();
+            }}
           />
         </DialogContent>
       </Dialog>

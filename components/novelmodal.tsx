@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
   Select,
@@ -47,6 +47,7 @@ export function NovelModal({
   const [initialRating, setInitialRating] = useState(0);
   const [initialNotes, setInitialNotes] = useState("");
   const [initialIsFavorite, setInitialIsFavorite] = useState(false);
+  const [userNovelStatus, setUserNovelStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchNovelListData = async () => {
@@ -75,6 +76,24 @@ export function NovelModal({
     };
 
     fetchNovelListData();
+  }, [novel]);
+
+  useEffect(() => {
+    const fetchUserNovelStatus = async () => {
+      if (!novel) return;
+
+      try {
+        const response = await fetch(`/api/novel-list/${novel.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUserNovelStatus(data.status);
+        }
+      } catch (error) {
+        console.error("Error fetching novel status:", error);
+      }
+    };
+
+    fetchUserNovelStatus();
   }, [novel]);
 
   if (!novel) return null;
