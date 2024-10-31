@@ -66,8 +66,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log("Query results:", { count, sampleData: data?.slice(0, 2) });
-
     return NextResponse.json({ data, count });
   } catch (error) {
     console.error("Unexpected error:", error);
