@@ -10,6 +10,8 @@ export async function GET(request: Request) {
   const search = searchParams.get("search");
   const offset = parseInt(searchParams.get("offset") || "0");
   const limit = parseInt(searchParams.get("limit") || "20");
+  const origin = searchParams.get("origin");
+  const minChapters = parseInt(searchParams.get("min_chapters") || "0");
 
   let query = supabase.from("novels").select("*", { count: "exact" });
 
@@ -23,6 +25,14 @@ export async function GET(request: Request) {
 
   if (search) {
     query = query.or(`name.ilike.%${search}%,assoc_names.cs.{${search}}`);
+  }
+
+  if (origin && origin !== "any") {
+    query = query.eq("original_language", origin.toLowerCase());
+  }
+
+  if (minChapters > 0) {
+    query = query.gte("chapters_count", minChapters);
   }
 
   if (sort) {
@@ -46,13 +56,26 @@ export async function GET(request: Request) {
 
   query = query.range(offset, offset + limit - 1);
 
-  const { data, count, error } = await query;
+  console.log("Final query:", query);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const { data, count, error } = await query;
+
+    if (error) {
+      console.error("Query error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    console.log("Query results:", { count, sampleData: data?.slice(0, 2) });
+
+    return NextResponse.json({ data, count });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch novels" },
+      { status: 500 },
+    );
   }
-
-  return NextResponse.json({ data, count });
 }
 
 export async function POST(request: Request) {

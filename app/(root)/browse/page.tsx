@@ -62,7 +62,6 @@ export default function Home() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [chapterCount, setChapterCount] = useState(0);
   const [origin, setOrigin] = useState("any");
-  const [releaseFreq, setReleaseFreq] = useState(0);
 
   const debouncedSearch = useDebounce(search, 300);
   const debouncedLoading = useDebounce(loading, 200);
@@ -83,7 +82,7 @@ export default function Home() {
     setOffset(0);
     setHasMore(true);
     fetchNovels(0);
-  }, [sort, status, genre, debouncedSearch]);
+  }, [sort, status, genre, debouncedSearch, origin, chapterCount]);
 
   useEffect(() => {
     if (offset > 0 && loadingMore) {
@@ -104,6 +103,8 @@ export default function Home() {
       search: debouncedSearch,
       offset: currentOffset.toString(),
       limit: "20",
+      origin: origin !== "any" ? origin : "",
+      min_chapters: chapterCount > 0 ? chapterCount.toString() : "",
     });
     try {
       const response = await fetch(`/api/novels?${params}`);
@@ -198,8 +199,6 @@ export default function Home() {
                   isOpen={isFiltersOpen}
                   onChapterChange={(value) => setChapterCount(value[0])}
                   chapterCount={chapterCount}
-                  onReleaseFreqChange={(value) => setReleaseFreq(value[0])}
-                  releaseFreq={releaseFreq}
                   onOriginChange={setOrigin}
                   origin={origin}
                 />

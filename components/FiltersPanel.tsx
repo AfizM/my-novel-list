@@ -12,11 +12,8 @@ import { Slider } from "@/components/ui/slider";
 
 interface FiltersPanelProps {
   isOpen: boolean;
-
   onChapterChange: (value: number[]) => void;
   chapterCount: number;
-  onReleaseFreqChange: (value: number[]) => void;
-  releaseFreq: number;
   onOriginChange: (value: string) => void;
   origin: string;
 }
@@ -27,8 +24,7 @@ export function FiltersPanel({
   isOpen,
   onChapterChange,
   chapterCount,
-  onReleaseFreqChange,
-  releaseFreq,
+
   onOriginChange,
   origin,
 }: FiltersPanelProps) {
@@ -37,7 +33,7 @@ export function FiltersPanel({
   return (
     <div className="absolute right-0 top-[calc(100%+0.5rem)] w-[300px] p-4 border rounded-lg bg-background shadow-md space-y-6 animate-in slide-in-from-top-2 z-50">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Country of Origin</label>
+        <label className="text-sm font-medium">Original Language</label>
         <Select value={origin} onValueChange={onOriginChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select origin" />
@@ -53,25 +49,14 @@ export function FiltersPanel({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Chapters ({chapterCount})</label>
+        <label className="text-sm font-medium">
+          Minimum Chapters ({chapterCount > 0 ? chapterCount : "Any"})
+        </label>
         <Slider
           defaultValue={[chapterCount]}
           max={5000}
-          step={1}
-          onValueChange={(value) => onChapterChange(value)}
-          className="py-4"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
-          Release Frequency ({releaseFreq} chapters/month)
-        </label>
-        <Slider
-          defaultValue={[releaseFreq]}
-          max={1000}
-          step={1}
-          onValueChange={(value) => onReleaseFreqChange(value)}
+          step={10}
+          onValueCommit={(value) => onChapterChange(value)}
           className="py-4"
         />
       </div>
