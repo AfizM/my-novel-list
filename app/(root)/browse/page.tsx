@@ -10,13 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LayoutGridIcon, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useInView } from "react-intersection-observer";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDebounce } from "@/hooks/useDebounce";
+import { NOVEL_GENRES } from "@/lib/constants";
 
 interface Novel {
   id: number;
@@ -165,12 +166,13 @@ export default function Home() {
                   <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
                     <SelectValue placeholder="Any" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
                     <SelectItem value="Any">Any</SelectItem>
-                    <SelectItem value="Action">Action</SelectItem>
-                    <SelectItem value="Adventure">Adventure</SelectItem>
-                    <SelectItem value="Fantasy">Fantasy</SelectItem>
-                    <SelectItem value="Mystery">Mystery</SelectItem>
+                    {NOVEL_GENRES.map((genre) => (
+                      <SelectItem key={genre} value={genre}>
+                        {genre}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

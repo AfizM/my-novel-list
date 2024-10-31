@@ -17,8 +17,8 @@ export async function GET(request: Request) {
     query = query.eq("complete_original", status === "Completed");
   }
 
-  if (genre) {
-    query = query.contains("genres", [genre]);
+  if (genre && genre !== "Any") {
+    query = query.contains("genres", [genre.toLowerCase()]);
   }
 
   if (search) {
