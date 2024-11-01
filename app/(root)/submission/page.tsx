@@ -18,7 +18,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-// import Select from "react-select";
+
+import { MultiSelect } from "@/components/ui/MultiSelect";
 import {
   Select,
   SelectContent,
@@ -26,14 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MultiSelect } from "@/components/ui/MultiSelect";
 
 const novelSchema = z.object({
   name: z.string().min(1, "Name is required"),
   assoc_names: z.array(z.string()).optional(),
   original_language: z
     .string()
-    .min(10, "Original language must be at least 10 characters"),
+    .min(3, "Original language must be at least 3 characters"),
   authors: z.array(z.string()).min(1, "At least one author is required"),
   genres: z.array(z.string()).min(1, "At least one genre is required"),
   tags: z.array(z.string()).optional(),
@@ -56,7 +56,7 @@ const novelSchema = z.object({
   licensed: z.boolean().optional(),
   original_publisher: z
     .string()
-    .min(10, "Original publisher must be at least 10 characters"),
+    .min(3, "Original publisher must be at least 3 characters"),
   english_publisher: z.string().optional(),
   complete_original: z.boolean().optional(),
   chapters_original_current: z.string().optional(),
@@ -82,6 +82,12 @@ const genreOptions = [
   // Add more genres as needed
 ];
 
+const languageOptions = [
+  { value: "Chinese", label: "Chinese" },
+  { value: "Japanese", label: "Japanese" },
+  { value: "Korean", label: "Korean" },
+];
+
 export default function SubmissionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -90,9 +96,21 @@ export default function SubmissionPage() {
     defaultValues: {
       name: "",
       assoc_names: [],
+      original_language: "",
       authors: [],
       genres: [],
       tags: [],
+      cover_image_url: "",
+      start_year: undefined,
+      licensed: false,
+      original_publisher: "",
+      english_publisher: "",
+      complete_original: false,
+      chapters_original_current: "",
+      complete_translated: false,
+      chapter_latest_translated: "",
+      release_freq: undefined,
+      description: "",
     },
   });
 
@@ -151,14 +169,19 @@ export default function SubmissionPage() {
                     <FormControl>
                       <Input
                         placeholder="Enter authors (comma-separated)"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value.split(",").map((s) => s.trim()),
-                          )
-                        }
+                        type="text"
+                        value={field.value?.join(", ") || ""}
+                        onChange={(e) => {
+                          const inputValue = e.target.value;
+                          const authors = inputValue ? [inputValue] : [];
+                          field.onChange(authors);
+                        }}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Enter authors separated by commas (e.g., &ldquo;fuyuhara
+                      patora, other author&rdquo;)
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -172,7 +195,7 @@ export default function SubmissionPage() {
                     <FormLabel>Original Publisher</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter original publisher (min 10 characters)"
+                        placeholder="Enter original publisher (min 3 characters)"
                         {...field}
                       />
                     </FormControl>
@@ -187,12 +210,23 @@ export default function SubmissionPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Original Language</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter original language (min 10 characters)"
-                        {...field}
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                          <SelectValue placeholder="Select a language" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {languageOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
