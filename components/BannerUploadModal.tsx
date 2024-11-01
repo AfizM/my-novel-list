@@ -20,19 +20,24 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isValidFile, setIsValidFile] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
+    setIsValidFile(false);
     if (selectedFile) {
       if (selectedFile.size > 6 * 1024 * 1024) {
         toast.error("File too large. Please select an image smaller than 6MB.");
+        setFile(null);
         return;
       }
       if (!["image/jpeg", "image/png"].includes(selectedFile.type)) {
         toast.error("Invalid file type. Please select a JPEG or PNG image.");
+        setFile(null);
         return;
       }
       setFile(selectedFile);
+      setIsValidFile(true);
     }
   };
 
@@ -76,6 +81,7 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
               type="file"
               accept="image/jpeg,image/png"
               onChange={handleFileChange}
+              className="hover:cursor-pointer"
             />
             {file && (
               <p className="mt-2 text-sm text-gray-600">
@@ -83,7 +89,10 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
               </p>
             )}
           </div>
-          <Button onClick={handleUpload} disabled={!file || isUploading}>
+          <Button
+            onClick={handleUpload}
+            disabled={!file || !isValidFile || isUploading}
+          >
             {isUploading ? "Uploading..." : "Upload"}
           </Button>
         </div>
