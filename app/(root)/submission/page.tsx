@@ -80,8 +80,14 @@ const languageOptions = [
   { value: "Korean", label: "Korean" },
 ];
 
+const isValidImageUrl = (url: string) => {
+  const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"];
+  return imageExtensions.some((ext) => url.toLowerCase().endsWith(ext));
+};
+
 export default function SubmissionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
 
   const form = useForm<NovelFormValues>({
     resolver: zodResolver(novelSchema),
@@ -273,33 +279,46 @@ export default function SubmissionPage() {
                           {...field}
                           onChange={(e) => {
                             field.onChange(e.target.value);
+                            setImageLoadFailed(false);
                           }}
                         />
-                        {field.value && (
-                          <div className="relative w-40 h-60 mt-2">
-                            <img
-                              src={field.value}
-                              alt="Cover preview"
-                              className="rounded-md object-cover w-full h-full"
-                              onError={(e) => {
-                                e.currentTarget.src =
-                                  "/img/placeholder-cover.jpg"; // Add a placeholder image
-                                toast.error(
-                                  "Failed to load image. Please check the URL.",
-                                );
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-2 right-2"
-                              onClick={() => field.onChange("")}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        )}
+                        {field.value &&
+                          isValidImageUrl(field.value) &&
+                          !imageLoadFailed && (
+                            <div className="relative w-40 h-60 mt-2">
+                              <img
+                                src={field.value}
+                                alt="Cover preview"
+                                className="rounded-md object-cover w-full h-full"
+                                onError={(e) => {
+                                  e.currentTarget.onerror = null;
+                                  setImageLoadFailed(true);
+                                  if (field.value) {
+                                    toast.error(
+                                      "Failed to load image. Please check the URL.",
+                                      {
+                                        id: "image-error",
+                                        duration: 2000,
+                                        dismissible: true,
+                                      },
+                                    );
+                                  }
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                className="absolute top-2 right-2"
+                                onClick={() => {
+                                  field.onChange("");
+                                  setImageLoadFailed(false);
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          )}
                       </div>
                     </FormControl>
                     <FormDescription>

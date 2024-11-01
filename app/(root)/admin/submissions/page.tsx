@@ -15,7 +15,6 @@ import { toast } from "sonner";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -23,6 +22,7 @@ import {
 } from "@/components/ui/pagination";
 import { SubmissionModal } from "@/components/SubmissionModal";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const capitalizeFirstLetter = (string: string) => {
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
@@ -44,7 +44,6 @@ interface Submission {
 }
 
 export default function AdminSubmissionsPage() {
-  const { user } = useUser();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -124,12 +123,62 @@ export default function AdminSubmissionsPage() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container mx-auto py-8">
+        <Skeleton className="h-8 w-48 mb-4 mx-auto" />
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center">
+                <Skeleton className="h-4 w-20 mx-auto" />
+              </TableHead>
+              <TableHead className="text-center">
+                <Skeleton className="h-4 w-24 mx-auto" />
+              </TableHead>
+              <TableHead className="text-center">
+                <Skeleton className="h-4 w-16 mx-auto" />
+              </TableHead>
+              <TableHead className="text-center">
+                <Skeleton className="h-4 w-28 mx-auto" />
+              </TableHead>
+              <TableHead className="text-center">
+                <Skeleton className="h-4 w-20 mx-auto" />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(5)].map((_, index) => (
+              <TableRow key={index}>
+                <TableCell className="text-center">
+                  <Skeleton className="h-4 w-32 mx-auto" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-4 w-28 mx-auto" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-5 w-20 mx-auto rounded-full" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-4 w-24 mx-auto" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-8 w-16" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-4">Novel Submissions</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">Novel Submissions</h1>
       <Table>
         <TableHeader>
           <TableRow>
