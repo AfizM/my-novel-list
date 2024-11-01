@@ -76,7 +76,7 @@ export function MultiSelect({ options, selected, onChange }) {
       <PopoverContent className="w-full p-0">
         <Command>
           <CommandEmpty>No genre found.</CommandEmpty>
-          <CommandGroup>
+          <CommandGroup className="max-h-[200px] overflow-y-auto">
             {options.map((option) => (
               <CommandItem
                 key={option.value}

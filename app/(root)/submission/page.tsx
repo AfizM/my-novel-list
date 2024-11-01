@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NOVEL_GENRES } from "@/lib/constants";
 
 const novelSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -68,19 +69,10 @@ const novelSchema = z.object({
 
 type NovelFormValues = z.infer<typeof novelSchema>;
 
-const genreOptions = [
-  { value: "action", label: "Action" },
-  { value: "adventure", label: "Adventure" },
-  { value: "comedy", label: "Comedy" },
-  { value: "drama", label: "Drama" },
-  { value: "fantasy", label: "Fantasy" },
-  { value: "horror", label: "Horror" },
-  { value: "mystery", label: "Mystery" },
-  { value: "romance", label: "Romance" },
-  { value: "sci-fi", label: "Science Fiction" },
-  { value: "thriller", label: "Thriller" },
-  // Add more genres as needed
-];
+const genreOptions = NOVEL_GENRES.map((genre) => ({
+  value: genre.toLowerCase(),
+  label: genre,
+}));
 
 const languageOptions = [
   { value: "Chinese", label: "Chinese" },
@@ -259,7 +251,7 @@ export default function SubmissionPage() {
                     <FormControl>
                       <Textarea
                         placeholder="Enter novel description (min 10 characters)"
-                        className="resize-none"
+                        className="resize-none shadow-[0_2px_4px_0_var(--shadow-color)]"
                         {...field}
                       />
                     </FormControl>

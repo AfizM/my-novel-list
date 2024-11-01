@@ -26,6 +26,21 @@ export async function PUT(
     const { status, feedback, ...submissionData } = await request.json();
 
     if (status === "approved") {
+      // First fetch the highest ID from the novels table
+      const { data: maxIdResult, error: maxIdError } = await supabase
+        .from("novels")
+        .select("id")
+        .order("id", { ascending: false })
+        .limit(1);
+
+      if (maxIdError) throw maxIdError;
+
+      // Calculate the next ID (handle case where table might be empty)
+      const nextId =
+        maxIdResult && maxIdResult.length > 0
+          ? Number(maxIdResult[0].id) + 1
+          : 1;
+
       // Fetch the submission
       const { data: submission, error: submissionError } = await supabase
         .from("novel_submissions")
@@ -37,6 +52,7 @@ export async function PUT(
 
       // Extract only the fields that should go into the novels table
       const novelData = {
+        id: nextId, // Add the calculated ID
         name: submission.name,
         original_language: submission.original_language,
         authors: submission.authors,
