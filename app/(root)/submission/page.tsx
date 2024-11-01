@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { ImageUpload } from "@/components/ImageUpload";
 // import Select from "react-select";
 import {
   Select,
@@ -38,7 +37,15 @@ const novelSchema = z.object({
   authors: z.array(z.string()).min(1, "At least one author is required"),
   genres: z.array(z.string()).min(1, "At least one genre is required"),
   tags: z.array(z.string()).optional(),
-  cover_image_url: z.string().optional(),
+  cover_image_url: z
+    .string()
+    .url("Please enter a valid image URL")
+    .refine((url) => {
+      // Only allow jpg, jpeg, and png
+      const imageExtensions = [".jpg", ".jpeg", ".png"];
+      return imageExtensions.some((ext) => url.toLowerCase().endsWith(ext));
+    }, "URL must end with a valid image extension (.jpg, .jpeg, .png)")
+    .optional(),
   start_year: z.number().int().positive().optional(),
   licensed: z.boolean().optional(),
   original_publisher: z
@@ -226,14 +233,46 @@ export default function SubmissionPage() {
                 name="cover_image_url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cover Image</FormLabel>
+                    <FormLabel>Cover Image URL</FormLabel>
                     <FormControl>
-                      <ImageUpload
-                        value={field.value}
-                        onChange={field.onChange}
-                        onRemove={() => field.onChange("")}
-                      />
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e.target.value);
+                          }}
+                        />
+                        {field.value && (
+                          <div className="relative w-40 h-60 mt-2">
+                            <img
+                              src={field.value}
+                              alt="Cover preview"
+                              className="rounded-md object-cover w-full h-full"
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  "/img/placeholder-cover.jpg"; // Add a placeholder image
+                                toast.error(
+                                  "Failed to load image. Please check the URL.",
+                                );
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={() => field.onChange("")}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
+                    <FormDescription>
+                      Enter a direct URL to an image file (.jpg, .jpeg, .png)
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
