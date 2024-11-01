@@ -41,10 +41,16 @@ const novelSchema = z.object({
     .string()
     .url("Please enter a valid image URL")
     .refine((url) => {
-      // Only allow jpg, jpeg, and png
-      const imageExtensions = [".jpg", ".jpeg", ".png"];
+      const imageExtensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".avif",
+      ];
       return imageExtensions.some((ext) => url.toLowerCase().endsWith(ext));
-    }, "URL must end with a valid image extension (.jpg, .jpeg, .png)")
+    }, "URL must end with a valid image extension (.jpg, .jpeg, .png, .gif, .webp, .avif)")
     .optional(),
   start_year: z.number().int().positive().optional(),
   licensed: z.boolean().optional(),
@@ -271,7 +277,8 @@ export default function SubmissionPage() {
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Enter a direct URL to an image file (.jpg, .jpeg, .png)
+                      Enter a direct URL to an image file (.jpg, .jpeg, .png,
+                      .gif, .webp, .avif)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
