@@ -66,6 +66,11 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
         onSuccess(data.bannerUrl);
       }
       onClose();
+
+      // Add a small delay before refreshing to ensure the toast is visible
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload banner. Please try again.");

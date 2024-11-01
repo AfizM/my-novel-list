@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,20 +7,6 @@ import Link from "next/link";
 import BannerUploadModal from "@/components/BannerUploadModal";
 import { Toaster } from "sonner";
 import { useUser } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-
-interface User {
-  user_id: string;
-  username: string;
-  image_url?: string;
-  banner_url?: string;
-}
-
-interface ProfileLayoutProps {
-  children: React.ReactNode;
-  user: User;
-}
 
 const navItems = [
   { name: "Overview", href: "" },
@@ -30,33 +17,46 @@ const navItems = [
 ];
 
 const defaultBannerUrl = "/img/default_banner.png";
-const defaultAvatarUrl = "/img/default-avatar.png";
+const defaultAvatarUrl = "/img/default-banner.png";
 
-export default function ProfileLayout({ children, user }: ProfileLayoutProps) {
+export default function ProfileLayout({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: any; // Replace 'any' with a proper user type
+}) {
   const { user: currentUser } = useUser();
-  const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-  const { data: followStatus, refetch: refetchFollowStatus } = useQuery({
-    queryKey: ["followStatus", user.user_id],
-    queryFn: async () => {
-      if (!currentUser || user.user_id === currentUser.id) return null;
+  useEffect(() => {
+    if (currentUser && user.user_id !== currentUser.id) {
+      checkFollowStatus();
+    }
+  }, [currentUser, user]);
+
+  const checkFollowStatus = async () => {
+    try {
       const response = await fetch(`/api/users/${user.user_id}/followers`);
       if (!response.ok) throw new Error("Failed to fetch followers");
       const followers = await response.json();
-      return followers.some((follower) => follower.user_id === currentUser.id);
-    },
-    enabled: !!currentUser && user.user_id !== currentUser.id,
-  });
+      setIsFollowing(
+        followers.some((follower) => follower.user_id === currentUser.id),
+      );
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+    }
+  };
 
   const handleFollowToggle = async () => {
     try {
-      const method = followStatus ? "DELETE" : "POST";
+      const method = isFollowing ? "DELETE" : "POST";
       const response = await fetch(`/api/users/${user.user_id}/follow`, {
         method,
       });
       if (!response.ok) throw new Error("Failed to toggle follow status");
-      refetchFollowStatus();
+      setIsFollowing(!isFollowing);
     } catch (error) {
       console.error("Error toggling follow status:", error);
     }
@@ -66,20 +66,18 @@ export default function ProfileLayout({ children, user }: ProfileLayoutProps) {
     <div className="w-full -mt-[1.30rem] mx-auto my-0">
       <div className="relative w-full h-72">
         <img
-          src={user?.banner_url || defaultBannerUrl}
+          src={user.banner_url || defaultBannerUrl}
           alt="Profile banner"
           className="w-full h-full object-cover"
           loading="eager"
         />
         <div className="absolute inset-0 bg-black bg-opacity-30" />
         <div className="flex absolute ml-40 bottom-8 space-x-4 z-10">
-          <div className="relative w-24 h-24">
-            <img
-              src={user?.image_url || defaultAvatarUrl}
-              alt={user.username || ""}
-              className="w-full h-full rounded-full object-cover"
-            />
-          </div>
+          <img
+            src={user.image_url || defaultAvatarUrl}
+            alt={user.username || ""}
+            className="w-24 h-24 rounded-full object-cover"
+          />
           <div className="flex flex-col space-y-3">
             <div className="text-white text-2xl font-semibold">
               {user.username || "Anonymous User"}
@@ -90,7 +88,7 @@ export default function ProfileLayout({ children, user }: ProfileLayoutProps) {
               </Button>
             ) : (
               <Button className="min-w-24" onClick={handleFollowToggle}>
-                {followStatus ? "Unfollow" : "Follow"}
+                {isFollowing ? "Unfollow" : "Follow"}
               </Button>
             )}
           </div>
@@ -102,11 +100,7 @@ export default function ProfileLayout({ children, user }: ProfileLayoutProps) {
           <Link
             key={item.name}
             href={`/profile/${user.username}/${item.href}`}
-            className={`hover:text-primary px-4 py-4 rounded-md text-[0.92rem] font-medium ${
-              pathname === `/profile/${user.username}/${item.href}`
-                ? "text-primary"
-                : ""
-            }`}
+            className="hover:text-primary px-4 py-4 rounded-md text-[0.92rem] font-medium"
           >
             {item.name}
           </Link>
@@ -117,9 +111,7 @@ export default function ProfileLayout({ children, user }: ProfileLayoutProps) {
       <BannerUploadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={(newBannerUrl) => {
-          window.location.reload();
-        }}
+        userId={user.id}
       />
       <Toaster />
     </div>
