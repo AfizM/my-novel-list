@@ -10,37 +10,43 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const url = new URL(request.url);
-  const page = parseInt(url.searchParams.get("page") || "1");
-
   try {
-    // Check if the user is an admin
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("is_admin")
-      .eq("user_id", userId)
-      .single();
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = 10;
+    const offset = (page - 1) * limit;
 
-    if (userError || !userData.is_admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Fetch submissions with pagination
-    const {
-      data: submissions,
-      error,
-      count,
-    } = await supabase
+    // Join with users table to get username
+    const { data: submissions, error } = await supabase
       .from("novel_submissions")
-      .select("*", { count: "exact" })
-      .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1)
-      .order("created_at", { ascending: false });
+      .select(
+        `
+        *,
+        profiles:user_id (
+          username
+        )
+      `,
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
-    const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
+    // Transform the data to include username directly
+    const transformedSubmissions = submissions.map((submission) => ({
+      ...submission,
+      username: submission.profiles?.username || "Unknown User",
+    }));
 
-    return NextResponse.json({ submissions, totalPages });
+    // Get total count for pagination
+    const { count } = await supabase
+      .from("novel_submissions")
+      .select("*", { count: "exact", head: true });
+
+    return NextResponse.json({
+      submissions: transformedSubmissions,
+      totalPages: Math.ceil((count || 0) / limit),
+    });
   } catch (error) {
     console.error("Error fetching submissions:", error);
     return NextResponse.json(

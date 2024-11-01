@@ -22,14 +22,25 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { SubmissionModal } from "@/components/SubmissionModal";
+import { cn } from "@/lib/utils";
+
+const capitalizeFirstLetter = (string: string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+};
 
 interface Submission {
   id: string;
   name: string;
-  user_id: string;
+  username: string;
   status: string;
   created_at: string;
   description: string;
+  original_language: string;
+  authors: string[];
+  genres: string[];
+  original_publisher: string;
+  complete_original: boolean;
+  cover_image_url?: string;
 }
 
 export default function AdminSubmissionsPage() {
@@ -122,42 +133,73 @@ export default function AdminSubmissionsPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>User ID</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-center">Name</TableHead>
+            <TableHead className="text-center">Submitted By</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-center">Submitted On</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {submissions.map((submission) => (
             <TableRow key={submission.id}>
-              <TableCell>{submission.name}</TableCell>
-              <TableCell>{submission.user_id}</TableCell>
-              <TableCell>{submission.status}</TableCell>
-              <TableCell>
-                {new Date(submission.created_at).toLocaleString()}
+              <TableCell className="text-center">{submission.name}</TableCell>
+              <TableCell className="text-center">
+                {submission.username}
               </TableCell>
-              <TableCell>
-                <Button onClick={() => handleEdit(submission)} className="mr-2">
-                  Edit
-                </Button>
-                {submission.status === "pending" && (
-                  <>
-                    <Button
-                      onClick={() => handleApprove(submission.id)}
-                      className="mr-2"
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      onClick={() => handleReject(submission.id)}
-                      variant="destructive"
-                    >
-                      Reject
-                    </Button>
-                  </>
-                )}
+              <TableCell className="text-center">
+                <span
+                  className={cn(
+                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                    {
+                      "bg-yellow-100 text-yellow-800":
+                        submission.status === "pending",
+                      "bg-green-100 text-green-800":
+                        submission.status === "approved",
+                      "bg-red-100 text-red-800":
+                        submission.status === "rejected",
+                    },
+                  )}
+                >
+                  {capitalizeFirstLetter(submission.status)}
+                </span>
+              </TableCell>
+              <TableCell className="text-center whitespace-nowrap">
+                {new Date(submission.created_at).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Button
+                    onClick={() => handleEdit(submission)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    View
+                  </Button>
+                  {submission.status === "pending" && (
+                    <>
+                      <Button
+                        onClick={() => handleApprove(submission.id)}
+                        size="sm"
+                        variant="default"
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        onClick={() => handleReject(submission.id)}
+                        size="sm"
+                        variant="destructive"
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -196,7 +238,6 @@ export default function AdminSubmissionsPage() {
         <SubmissionModal
           submission={selectedSubmission}
           onClose={() => setSelectedSubmission(null)}
-          onUpdate={fetchSubmissions}
         />
       )}
     </div>
