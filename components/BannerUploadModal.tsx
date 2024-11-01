@@ -12,11 +12,13 @@ import { toast } from "sonner";
 interface BannerUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (bannerUrl: string) => void;
 }
 
 const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
   isOpen,
   onClose,
+  onSuccess,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -60,7 +62,15 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
 
       const data = await response.json();
       toast.success("Banner uploaded successfully.");
+      if (onSuccess) {
+        onSuccess(data.bannerUrl);
+      }
       onClose();
+
+      // Add a small delay before refreshing to ensure the toast is visible
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload banner. Please try again.");
