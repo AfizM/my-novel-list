@@ -8,15 +8,22 @@ export default async function FavoritesPage({
 }: {
   params: { username: string };
 }) {
-  const user = await getUserByUsername(params.username);
+  const userData = await getUserByUsername(params.username);
 
-  if (!user) {
+  if (!userData) {
     notFound();
   }
 
+  const serializedUser = {
+    user_id: userData.user_id,
+    username: userData.username,
+    image_url: userData.image_url || null,
+    banner_url: userData.banner_url || null,
+  };
+
   return (
-    <ProfileLayout user={user}>
-      <FavoritesPageContent user={user} />
+    <ProfileLayout user={serializedUser}>
+      <FavoritesPageContent user={userData} />
     </ProfileLayout>
   );
 }

@@ -8,15 +8,23 @@ export default async function UserProfilePage({
 }: {
   params: { username: string };
 }) {
-  const user = await getUserByUsername(params.username);
+  const userData = await getUserByUsername(params.username);
 
-  if (!user) {
+  if (!userData) {
     notFound();
   }
 
+  // Serialize the user data
+  const serializedUser = {
+    user_id: userData.user_id,
+    username: userData.username,
+    image_url: userData.image_url || null,
+    banner_url: userData.banner_url || null,
+  };
+
   return (
-    <ProfileLayout user={user}>
-      <ProfileContent user={user} />
+    <ProfileLayout user={serializedUser}>
+      <ProfileContent user={userData} />
     </ProfileLayout>
   );
 }
