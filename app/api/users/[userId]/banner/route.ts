@@ -22,7 +22,13 @@ export async function GET(
 
     if (error) throw error;
 
-    return NextResponse.json({ bannerUrl: data?.banner_url });
+    return new NextResponse(JSON.stringify({ bannerUrl: data?.banner_url }), {
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
   } catch (error) {
     console.error("Error fetching user banner:", error);
     return NextResponse.json(

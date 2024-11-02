@@ -16,7 +16,6 @@ const navItems = [
   { name: "Social", href: "social" },
 ];
 
-const defaultBannerUrl = "/img/default_banner.png";
 const defaultAvatarUrl = "/img/default-banner.png";
 
 export default function ProfileLayout({
@@ -66,7 +65,7 @@ export default function ProfileLayout({
     <div className="w-full -mt-[1.30rem] mx-auto my-0">
       <div className="relative w-full h-72">
         <img
-          src={user.banner_url || defaultBannerUrl}
+          src={user.banner_url}
           alt="Profile banner"
           className="w-full h-full object-cover"
           loading="eager"

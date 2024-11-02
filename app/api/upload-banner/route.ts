@@ -32,13 +32,13 @@ export async function POST(request: Request) {
         .upload_stream(
           {
             resource_type: "image",
-            public_id: `user_banners/${userId}`,
-            overwrite: true,
+            public_id: `user_banners/user_${userId}_${Date.now()}`,
             format: "jpg",
             transformation: [
               { width: 1500, height: 500, crop: "fill" },
               { quality: "auto:good" },
             ],
+            invalidate: true,
           },
           (error, result) => {
             if (error) reject(error);
