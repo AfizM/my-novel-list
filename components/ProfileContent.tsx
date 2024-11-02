@@ -13,6 +13,12 @@ import {
   MessageCircle,
   Flag,
   Edit,
+  BookOpenCheck,
+  BookMarked,
+  Sparkles,
+  Trophy,
+  ScrollText,
+  BookText,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -312,16 +318,29 @@ export default function ProfileContent({ user }: ProfileContentProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             {[
-              { label: "Novels Read", key: "novelsRead", icon: <BookOpen /> },
+              {
+                label: "Novels Read",
+                key: "novelsRead",
+                icon: (
+                  <BookOpenCheck className="h-5 w-5 text-green-500 dark:text-green-400" />
+                ),
+                bgColor: "bg-green-50 dark:bg-green-500/10",
+              },
               {
                 label: "Chapters Read",
                 key: "chaptersRead",
-                icon: <Bookmark />,
+                icon: (
+                  <ScrollText className="h-5 w-5 text-amber-500 dark:text-amber-400" />
+                ),
+                bgColor: "bg-amber-50 dark:bg-amber-500/10",
               },
               {
                 label: "Favorite Genre",
                 key: "favoriteGenre",
-                icon: <Heart />,
+                icon: (
+                  <Sparkles className="h-5 w-5 text-rose-500 dark:text-rose-400" />
+                ),
+                bgColor: "bg-rose-50 dark:bg-rose-500/10",
               },
             ].map((stat, index) => (
               <Card key={stat.label}>
@@ -329,13 +348,15 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                   <CardTitle className="text-sm font-medium">
                     {stat.label}
                   </CardTitle>
-                  {stat.icon}
+                  <div className={`rounded-full p-2 ${stat.bgColor}`}>
+                    {stat.icon}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {debouncedLoading ? (
                     <Skeleton className="h-8 w-20" />
                   ) : (
-                    <div className="text-xl font-bold">
+                    <div className="text-[1.34rem] font-bold">
                       {userStats && userStats[stat.key] !== undefined
                         ? stat.key === "favoriteGenre"
                           ? capitalizeFirstLetter(userStats[stat.key])
