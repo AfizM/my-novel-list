@@ -26,7 +26,11 @@ export async function GET(request: Request) {
           name,
           cover_image_url
         ),
-        users (
+        users:users!posts_user_id_fkey (
+          username,
+          image_url
+        ),
+        target:users!posts_target_user_id_fkey (
           username,
           image_url
         ),
@@ -36,7 +40,7 @@ export async function GET(request: Request) {
           likes,
           liked_by,
           created_at,
-          users (
+          users!inner (
             username,
             image_url
           )
@@ -75,6 +79,8 @@ export async function GET(request: Request) {
 
     const postsWithLikeStatus = posts.map((post) => ({
       ...post,
+      users: post.users, // Keep the author info
+      target: undefined, // Remove target from response
       is_liked: post.liked_by?.includes(userId) || false,
       liked_by: undefined,
       post_comments: post.post_comments.map((comment) => ({
@@ -106,7 +112,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { content, novel_id } = await request.json();
+    const { content, novel_id, target_user_id } = await request.json();
 
     // Validate that the content isn't just HTML tags without text
     const strippedContent = content.replace(/<[^>]*>/g, "").trim();
@@ -121,9 +127,10 @@ export async function POST(request: Request) {
       .from("posts")
       .insert({
         user_id: userId,
-        content, // This will store the HTML content
+        content,
         novel_id,
         liked_by: [],
+        target_user_id: target_user_id || userId,
       })
       .select(
         `
@@ -133,12 +140,17 @@ export async function POST(request: Request) {
         liked_by,
         created_at,
         novel_id,
+        target_user_id,
         novels (
           id,
           name,
           cover_image_url
         ),
-        users (
+        users:users!posts_user_id_fkey (
+          username,
+          image_url
+        ),
+        target:users!posts_target_user_id_fkey (
           username,
           image_url
         )
@@ -148,9 +160,11 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    // Add post_comments array to match the expected Post interface
+    // Format the response to match the expected structure
     const postWithComments = {
       ...data,
+      users: data.users, // Keep the author info as users
+      target: undefined, // Remove target from final response
       post_comments: [],
       is_liked: false,
     };

@@ -147,7 +147,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: newPostContent,
-          // Strip HTML if content is empty
+          target_user_id: user.user_id,
           hasContent: newPostContent.replace(/<[^>]*>/g, "").trim().length > 0,
         }),
       });

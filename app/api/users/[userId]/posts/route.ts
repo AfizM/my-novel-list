@@ -30,7 +30,14 @@ export async function GET(
       .select(
         `
         *,
-        users!inner (username, image_url),
+        author:users!posts_user_id_fkey (
+          username,
+          image_url
+        ),
+        target:users!posts_target_user_id_fkey (
+          username,
+          image_url
+        ),
         novels (
           id,
           name,
@@ -42,19 +49,27 @@ export async function GET(
           created_at,
           likes,
           liked_by,
-          users!inner (username, image_url)
+          users!inner (
+            username,
+            image_url
+          )
         )
       `,
         { count: "exact" },
       )
-      .eq("user_id", userData.user_id)
+      .or(
+        `user_id.eq.${userData.user_id},target_user_id.eq.${userData.user_id}`,
+      )
       .range(offset, offset + POSTS_PER_PAGE - 1)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    const postsWithLikeStatus = data.map((post) => ({
+    const transformedPosts = data.map((post) => ({
       ...post,
+      users: post.author,
+      author: undefined,
+      target: undefined,
       is_liked: post.liked_by?.includes(userId) || false,
       liked_by: undefined,
       post_comments: post.post_comments.map((comment) => ({
@@ -65,7 +80,7 @@ export async function GET(
     }));
 
     return NextResponse.json({
-      posts: postsWithLikeStatus,
+      posts: transformedPosts,
       hasMore: count > offset + POSTS_PER_PAGE,
       totalCount: count,
     });
