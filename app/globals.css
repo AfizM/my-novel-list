@@ -333,3 +333,8 @@ html body[data-scroll-locked] {
     @apply text-primary underline decoration-primary;
   }
 }
+
+.ProseMirror u {
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.2em;
+}

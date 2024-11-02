@@ -1,17 +1,17 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import Underline from "@tiptap/extension-underline";
 import { Spoiler } from "@/lib/extensions/SpoilerExtension";
 import { Button } from "./ui/button";
 import {
   Bold,
   Italic,
-  Link as LinkIcon,
   Image as ImageIcon,
   Eye,
   EyeOff,
+  Underline as UnderlineIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +28,11 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-primary underline decoration-primary cursor-pointer",
-        },
+      StarterKit.configure({
+        heading: false,
+        codeBlock: false,
       }),
+      Underline.configure({}),
       Image.configure({
         HTMLAttributes: {
           class: "rounded-md max-w-full h-auto",
@@ -68,13 +66,6 @@ export function RichTextEditor({
     }
   };
 
-  const addLink = () => {
-    const url = window.prompt("Enter URL");
-    if (url && editor) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
-  };
-
   if (!editor) return null;
 
   return (
@@ -99,10 +90,10 @@ export function RichTextEditor({
         <Button
           variant="ghost"
           size="sm"
-          onClick={addLink}
-          className={cn(editor.isActive("link") && "bg-muted")}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={cn(editor.isActive("underline") && "bg-muted")}
         >
-          <LinkIcon className="h-4 w-4" />
+          <UnderlineIcon className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="sm" onClick={addImage}>
           <ImageIcon className="h-4 w-4" />
