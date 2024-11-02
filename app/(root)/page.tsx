@@ -241,7 +241,10 @@ export default function Home() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={handleCreatePost}
+                    onClick={() => {
+                      handleCreatePost();
+                      setIsInputFocused(false);
+                    }}
                     disabled={!newPostContent.trim()}
                   >
                     Post
@@ -255,9 +258,8 @@ export default function Home() {
               >
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={currentUser?.imageUrl} alt="Your avatar" />
-                  <AvatarFallback>You</AvatarFallback>
                 </Avatar>
-                <div className="text-muted-foreground flex-1">
+                <div className="text-muted-foreground flex-1 text-[0.94rem]">
                   Share your thoughts...
                 </div>
               </div>

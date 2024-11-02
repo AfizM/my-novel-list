@@ -374,3 +374,44 @@ html body[data-scroll-locked] {
 .prose::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/40;
 }
+
+.ProseMirror p {
+  font-size: 0.9rem !important;
+  line-height: 1.5;
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+  font-size: 0.9rem !important;
+}
+
+.ProseMirror-focused {
+  outline: none;
+}
+
+.ProseMirror {
+  min-height: 80px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.ProseMirror::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ProseMirror::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.ProseMirror::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
+}
+
+.ProseMirror::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/40;
+}

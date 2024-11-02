@@ -40,6 +40,7 @@ export function RichTextEditor({
       }),
       Placeholder.configure({
         placeholder,
+        emptyEditorClass: "is-editor-empty",
       }),
       Spoiler,
     ],
@@ -47,6 +48,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: "prose prose-sm dark:prose-invert max-w-none focus:outline-none",
+        style: "font-size: 0.9rem",
       },
     },
     onUpdate: ({ editor }) => {
@@ -111,7 +113,10 @@ export function RichTextEditor({
           )}
         </Button>
       </div>
-      <EditorContent editor={editor} className="p-3" />
+      <EditorContent
+        editor={editor}
+        className="p-2 max-h-[150px] overflow-y-auto"
+      />
     </div>
   );
 }

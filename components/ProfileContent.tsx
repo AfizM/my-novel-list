@@ -417,7 +417,10 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                     </Button>
                     <Button
                       size="sm"
-                      onClick={handleCreatePost}
+                      onClick={() => {
+                        handleCreatePost();
+                        setIsInputFocused(false);
+                      }}
                       disabled={!newPostContent.trim()}
                     >
                       Post
@@ -429,7 +432,9 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                   className="p-4 cursor-text hover:bg-accent/50 transition-colors"
                   onClick={() => setIsInputFocused(true)}
                 >
-                  <div className="text-muted-foreground">Write a status...</div>
+                  <div className="text-muted-foreground text-[0.94rem]">
+                    Write a status...
+                  </div>
                 </Card>
               )}
             </div>
