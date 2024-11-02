@@ -124,48 +124,150 @@ export default function AdminSubmissionsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto p-4 md:p-8">
         <Skeleton className="h-8 w-48 mb-4 mx-auto" />
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center min-w-[200px]">
+                  <Skeleton className="h-4 w-20 mx-auto" />
+                </TableHead>
+                <TableHead className="text-center min-w-[150px]">
+                  <Skeleton className="h-4 w-24 mx-auto" />
+                </TableHead>
+                <TableHead className="text-center min-w-[100px]">
+                  <Skeleton className="h-4 w-16 mx-auto" />
+                </TableHead>
+                <TableHead className="text-center min-w-[150px]">
+                  <Skeleton className="h-4 w-28 mx-auto" />
+                </TableHead>
+                <TableHead className="text-center min-w-[200px]">
+                  <Skeleton className="h-4 w-20 mx-auto" />
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-32 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-28 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-5 w-20 mx-auto rounded-full" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-24 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Skeleton className="h-8 w-16" />
+                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-8 w-16" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 md:p-8">
+      <h1 className="text-2xl md:text-2xl font-bold mb-4 text-center">
+        Novel Submissions
+      </h1>
+      <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-center">
-                <Skeleton className="h-4 w-20 mx-auto" />
+              <TableHead className="text-center min-w-[200px]">Name</TableHead>
+              <TableHead className="text-center min-w-[150px]">
+                Submitted By
               </TableHead>
-              <TableHead className="text-center">
-                <Skeleton className="h-4 w-24 mx-auto" />
+              <TableHead className="text-center min-w-[100px]">
+                Status
               </TableHead>
-              <TableHead className="text-center">
-                <Skeleton className="h-4 w-16 mx-auto" />
+              <TableHead className="text-center min-w-[150px]">
+                Submitted On
               </TableHead>
-              <TableHead className="text-center">
-                <Skeleton className="h-4 w-28 mx-auto" />
-              </TableHead>
-              <TableHead className="text-center">
-                <Skeleton className="h-4 w-20 mx-auto" />
+              <TableHead className="text-center min-w-[200px]">
+                Actions
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[...Array(5)].map((_, index) => (
-              <TableRow key={index}>
-                <TableCell className="text-center">
-                  <Skeleton className="h-4 w-32 mx-auto" />
+            {submissions.map((submission) => (
+              <TableRow key={submission.id}>
+                <TableCell className="text-center text-sm md:text-base">
+                  {submission.name}
+                </TableCell>
+                <TableCell className="text-center text-sm md:text-base">
+                  {submission.username}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Skeleton className="h-4 w-28 mx-auto" />
+                  <span
+                    className={cn(
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-xs md:text-sm font-medium",
+                      {
+                        "bg-yellow-100 text-yellow-800":
+                          submission.status === "pending",
+                        "bg-green-100 text-green-800":
+                          submission.status === "approved",
+                        "bg-red-100 text-red-800":
+                          submission.status === "rejected",
+                      },
+                    )}
+                  >
+                    {capitalizeFirstLetter(submission.status)}
+                  </span>
+                </TableCell>
+                <TableCell className="text-center whitespace-nowrap text-sm md:text-base">
+                  {new Date(submission.created_at).toLocaleDateString(
+                    undefined,
+                    {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    },
+                  )}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Skeleton className="h-5 w-20 mx-auto rounded-full" />
-                </TableCell>
-                <TableCell className="text-center">
-                  <Skeleton className="h-4 w-24 mx-auto" />
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-20" />
-                    <Skeleton className="h-8 w-16" />
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-2">
+                    <Button
+                      onClick={() => handleEdit(submission)}
+                      size="sm"
+                      variant="outline"
+                      className="w-full md:w-auto"
+                    >
+                      View
+                    </Button>
+                    {submission.status === "pending" && (
+                      <>
+                        <Button
+                          onClick={() => handleApprove(submission.id)}
+                          size="sm"
+                          variant="default"
+                          className="w-full md:w-auto bg-green-600 hover:bg-green-700"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => handleReject(submission.id)}
+                          size="sm"
+                          variant="destructive"
+                          className="w-full md:w-auto"
+                        >
+                          Reject
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -173,116 +275,39 @@ export default function AdminSubmissionsPage() {
           </TableBody>
         </Table>
       </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-4 text-center">Novel Submissions</h1>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-center">Name</TableHead>
-            <TableHead className="text-center">Submitted By</TableHead>
-            <TableHead className="text-center">Status</TableHead>
-            <TableHead className="text-center">Submitted On</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {submissions.map((submission) => (
-            <TableRow key={submission.id}>
-              <TableCell className="text-center">{submission.name}</TableCell>
-              <TableCell className="text-center">
-                {submission.username}
-              </TableCell>
-              <TableCell className="text-center">
-                <span
-                  className={cn(
-                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                    {
-                      "bg-yellow-100 text-yellow-800":
-                        submission.status === "pending",
-                      "bg-green-100 text-green-800":
-                        submission.status === "approved",
-                      "bg-red-100 text-red-800":
-                        submission.status === "rejected",
-                    },
-                  )}
-                >
-                  {capitalizeFirstLetter(submission.status)}
-                </span>
-              </TableCell>
-              <TableCell className="text-center whitespace-nowrap">
-                {new Date(submission.created_at).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </TableCell>
-              <TableCell className="text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <Button
-                    onClick={() => handleEdit(submission)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    View
-                  </Button>
-                  {submission.status === "pending" && (
-                    <>
-                      <Button
-                        onClick={() => handleApprove(submission.id)}
-                        size="sm"
-                        variant="default"
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        onClick={() => handleReject(submission.id)}
-                        size="sm"
-                        variant="destructive"
-                      >
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-            />
-          </PaginationItem>
-          {[...Array(totalPages)].map((_, index) => (
-            <PaginationItem key={index}>
-              <PaginationLink
+      <div className="mt-4 overflow-x-auto">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
                 href="#"
-                isActive={currentPage === index + 1}
-                onClick={() => handlePageChange(index + 1)}
-              >
-                {index + 1}
-              </PaginationLink>
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              />
             </PaginationItem>
-          ))}
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={() =>
-                handlePageChange(Math.min(totalPages, currentPage + 1))
-              }
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+            <div className="flex overflow-x-auto px-2">
+              {[...Array(totalPages)].map((_, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === index + 1}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+            </div>
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={() =>
+                  handlePageChange(Math.min(totalPages, currentPage + 1))
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
       {selectedSubmission && (
         <SubmissionModal
           submission={selectedSubmission}

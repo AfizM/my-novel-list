@@ -23,16 +23,17 @@ const Navbar = () => {
   const { openUserProfile, signOut } = useClerk();
 
   const navItems = [
-    { name: "Social", href: "/" },
     { name: "Browse", href: "/browse" },
+    { name: "Social", href: "/" },
     { name: "Submission", href: "/submission" },
   ];
 
   const signedInNavItems = [
     { name: "Home", href: "/" },
+    { name: "Browse", href: "/browse" },
     { name: "Profile", href: `/profile/${user?.username}` },
     { name: "Novel List", href: `/profile/${user?.username}/novellist` },
-    { name: "Browse", href: "/browse" },
+
     { name: "Submission", href: "/submission" },
   ];
 
