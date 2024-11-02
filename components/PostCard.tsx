@@ -2,12 +2,25 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  MoreVertical,
+  Trash2,
+  MoreHorizontal,
+} from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { Textarea } from "./ui/textarea";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface Post {
   id: string;
@@ -50,6 +63,8 @@ interface PostCardProps {
     isLiked: boolean,
     likes: number,
   ) => Promise<void>;
+  onDelete: (postId: string) => Promise<void>;
+  currentUserId: string;
 }
 
 export function PostCard({
@@ -57,6 +72,8 @@ export function PostCard({
   onLike,
   onComment,
   onCommentLike,
+  onDelete,
+  currentUserId,
 }: PostCardProps) {
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
@@ -89,10 +106,26 @@ export function PostCard({
     }
   }, 300);
 
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete post");
+
+      await onDelete(post.id);
+      toast.success("Post deleted successfully");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to delete post");
+    }
+  };
+
   return (
     <>
       <div
-        className="mt-3 border shadow-md rounded-lg  p-4 mb-3"
+        className="mt-3 border shadow-md rounded-lg p-4 mb-3 group"
         style={{ fontSize: "0.9rem" }}
       >
         <div className="flex">
@@ -122,8 +155,32 @@ export function PostCard({
                   </Link>
                 </div>
               </div>
-              <div className="text-gray-500" style={{ fontSize: "0.8rem" }}>
-                {formattedTime}
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                {post.user_id === currentUserId && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 hover:bg-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-32">
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+                <span className="text-gray-500" style={{ fontSize: "0.8rem" }}>
+                  {formatRelativeTime(post.created_at)}
+                </span>
               </div>
             </div>
             <div

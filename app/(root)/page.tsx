@@ -268,6 +268,10 @@ export default function Home() {
     );
   };
 
+  const handlePostDelete = async (postId: string) => {
+    setPosts(posts.filter((post) => post.id !== postId));
+  };
+
   return (
     <div className="min-h-screen">
       <div className="w-full max-w-7xl mx-auto my-0 px-4 sm:px-6 lg:px-9">
@@ -397,6 +401,8 @@ export default function Home() {
                   onLike={handleLike}
                   onComment={handleComment}
                   onCommentLike={handleCommentLike}
+                  onDelete={handlePostDelete}
+                  currentUserId={currentUser?.id}
                 />
               ))}
 
