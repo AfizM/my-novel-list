@@ -284,8 +284,8 @@ export function NovelModal({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="reading">Reading</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="planning">Planning</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

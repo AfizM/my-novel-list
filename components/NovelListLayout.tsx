@@ -176,7 +176,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <div className="space-y-2">
-              {["All", "Planning", "Reading", "Completed"].map((filter) => (
+              {["All", "Reading", "Planning", "Completed"].map((filter) => (
                 <Button
                   key={filter}
                   variant={selectedFilter === filter ? "default" : "outline"}
