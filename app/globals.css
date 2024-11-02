@@ -313,7 +313,7 @@ html body[data-scroll-locked] {
 .spoiler {
   background-color: black;
   color: transparent;
-  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .spoiler:hover {

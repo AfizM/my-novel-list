@@ -3,6 +3,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Spoiler } from "@/lib/extensions/SpoilerExtension";
 import { Button } from "./ui/button";
 import {
   Bold,
@@ -42,6 +43,7 @@ export function RichTextEditor({
       Placeholder.configure({
         placeholder,
       }),
+      Spoiler,
     ],
     content,
     editorProps: {
@@ -55,11 +57,8 @@ export function RichTextEditor({
   });
 
   const toggleSpoiler = () => {
-    const selection = editor?.state.selection;
-    if (!selection || !editor) return;
-
-    const attrs = { class: "spoiler" };
-    editor.chain().focus().setMark("span", attrs).run();
+    if (!editor) return;
+    editor.chain().focus().toggleSpoiler().run();
   };
 
   const addImage = () => {
@@ -108,8 +107,13 @@ export function RichTextEditor({
         <Button variant="ghost" size="sm" onClick={addImage}>
           <ImageIcon className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="sm" onClick={toggleSpoiler}>
-          {editor.isActive("span", { class: "spoiler" }) ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleSpoiler}
+          className={cn(editor.isActive("spoiler") && "bg-muted")}
+        >
+          {editor.isActive("spoiler") ? (
             <EyeOff className="h-4 w-4" />
           ) : (
             <Eye className="h-4 w-4" />

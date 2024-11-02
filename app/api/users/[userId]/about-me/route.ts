@@ -33,7 +33,7 @@ export async function PUT(
       "li",
       "blockquote",
     ],
-    ALLOWED_ATTR: ["href", "src", "class", "alt"],
+    ALLOWED_ATTR: ["href", "src", "class", "alt", "spoiler"],
   });
 
   try {
