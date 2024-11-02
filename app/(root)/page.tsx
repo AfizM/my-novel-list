@@ -46,13 +46,9 @@ interface Comment {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"following" | "global">(() => {
-    if (typeof window !== "undefined") {
-      const userSession = localStorage.getItem("clerk-user");
-      return userSession ? "following" : "global";
-    }
-    return "global";
-  });
+  const [activeTab, setActiveTab] = useState<"following" | "global">(
+    "following",
+  );
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -64,8 +60,6 @@ export default function Home() {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
-
-  const debouncedLoading = useDebounce(isLoading, 200);
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isTabSwitching, setIsTabSwitching] = useState(false);
@@ -144,6 +138,34 @@ export default function Home() {
       fetchPosts(1, false);
     }
   }, [currentUser, fetchPosts]);
+
+  useEffect(() => {
+    // If user is logged out, force global tab
+    if (!currentUser) {
+      setActiveTab("global");
+      return;
+    }
+
+    // If user is logged in, check localStorage
+    const savedTab = localStorage.getItem("activity-tab");
+
+    // If no saved preference or invalid value, default to following
+    if (!savedTab || (savedTab !== "following" && savedTab !== "global")) {
+      setActiveTab("following");
+      localStorage.setItem("activity-tab", "following");
+      return;
+    }
+
+    // Use saved preference
+    setActiveTab(savedTab as "following" | "global");
+  }, [currentUser]);
+
+  useEffect(() => {
+    // Only save tab preference if user is logged in
+    if (currentUser) {
+      localStorage.setItem("activity-tab", activeTab);
+    }
+  }, [activeTab, currentUser]);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
