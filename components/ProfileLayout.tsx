@@ -112,64 +112,74 @@ export default function ProfileLayout({ children, user }) {
           loading="eager"
         />
         <div className="absolute inset-0 bg-black bg-opacity-30" />
-        <div className="flex absolute ml-40 bottom-8 space-x-4 z-10">
-          <img
-            src={userData.image_url}
-            alt={userData.username || ""}
-            className="w-24 h-24 rounded-full object-cover"
-          />
-          <div className="flex flex-col space-y-3">
-            <div className="text-white text-2xl font-semibold">
-              {userData.username || "Anonymous User"}
+
+        {/* Updated profile info section */}
+        <div className="absolute bottom-8 w-full px-4 sm:px-8 md:px-40">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:space-x-4">
+            <img
+              src={userData.image_url}
+              alt={userData.username || ""}
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover "
+            />
+            <div className="flex flex-col space-y-2 mt-2 sm:mt-0">
+              <div className="text-white text-xl sm:text-2xl font-semibold">
+                {userData.username || "Anonymous User"}
+              </div>
+              {currentUser && user.user_id === currentUser.id ? (
+                <Button
+                  className="w-full max-w-32 sm:w-32"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  Edit Banner
+                </Button>
+              ) : currentUser ? (
+                <Button
+                  className="w-full max-w-32 sm:w-32"
+                  onClick={handleFollowToggle}
+                  disabled={isFollowLoading || isFollowActionInProgress}
+                >
+                  {isFollowLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Spinner className="h-4 w-4" />
+                      Loading...
+                    </span>
+                  ) : isFollowActionInProgress ? (
+                    <span className="flex items-center gap-2">
+                      <Spinner className="h-4 w-4" />
+                      {isFollowing ? "Unfollowing..." : "Following..."}
+                    </span>
+                  ) : isFollowing ? (
+                    "Unfollow"
+                  ) : (
+                    "Follow"
+                  )}
+                </Button>
+              ) : null}
             </div>
-            {currentUser && user.user_id === currentUser.id ? (
-              <Button className="min-w-24" onClick={() => setIsModalOpen(true)}>
-                Edit Banner
-              </Button>
-            ) : currentUser ? (
-              <Button
-                className="min-w-24"
-                onClick={handleFollowToggle}
-                disabled={isFollowLoading || isFollowActionInProgress}
-              >
-                {isFollowLoading ? (
-                  <span className="flex items-center gap-2">
-                    <Spinner className="h-4 w-4" />
-                    Loading...
-                  </span>
-                ) : isFollowActionInProgress ? (
-                  <span className="flex items-center gap-2">
-                    <Spinner className="h-4 w-4" />
-                    {isFollowing ? "Unfollowing..." : "Following..."}
-                  </span>
-                ) : isFollowing ? (
-                  "Unfollow"
-                ) : (
-                  "Follow"
-                )}
-              </Button>
-            ) : null}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-center space-x-4 border-b-2">
-        {navItems.map((item) => {
-          const href = `/profile/${userData.username}/${item.href}`;
-          const isActive = pathname === href;
+      {/* Navigation section */}
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+        <div className="flex justify-center space-x-4 border-b-2 min-w-max px-4">
+          {navItems.map((item) => {
+            const href = `/profile/${userData.username}/${item.href}`;
+            const isActive = pathname === href;
 
-          return (
-            <Link
-              key={item.name}
-              href={href}
-              className={`px-4 py-4 rounded-md text-[0.92rem] font-medium transition-colors ${
-                isActive ? "text-primary" : "hover:text-primary"
-              }`}
-            >
-              {item.name}
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={item.name}
+                href={href}
+                className={`px-4 py-4 rounded-md text-[0.92rem] font-medium transition-colors whitespace-nowrap ${
+                  isActive ? "text-primary" : "hover:text-primary"
+                }`}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {children}
