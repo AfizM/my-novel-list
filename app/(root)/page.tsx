@@ -181,12 +181,13 @@ export default function Home() {
 
       const newPost: Post = await response.json();
 
-      // Optimistically update the UI
+      // Optimistically update the UI with user_id included
       setPosts((prevPosts) => [
         {
           ...newPost,
           post_comments: [], // Ensure post_comments is initialized
           users: newPost.users,
+          user_id: currentUser?.id,
         },
         ...prevPosts,
       ]);
