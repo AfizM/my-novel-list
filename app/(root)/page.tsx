@@ -8,6 +8,10 @@ import { useDebounce } from "@/hooks/useDebounce";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { toast } from "sonner";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useUser } from "@clerk/nextjs";
 
 interface Post {
   id: string;
@@ -51,6 +55,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const { user: currentUser } = useUser();
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const debouncedLoading = useDebounce(isLoading, 200);
 
@@ -214,16 +220,49 @@ export default function Home() {
             </Tabs>
           </div>
 
-          <div className="flex space-x-2 mb-6">
-            <Input
-              placeholder="Write a status..."
-              value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
-            />
-            <Button onClick={handleCreatePost} disabled={isLoading}>
-              Post
-            </Button>
-          </div>
+          <Card className="mb-6">
+            {isInputFocused ? (
+              <div className="p-4">
+                <RichTextEditor
+                  content={newPostContent}
+                  onChange={setNewPostContent}
+                  placeholder="Share your thoughts..."
+                />
+                <div className="flex justify-end space-x-2 mt-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setIsInputFocused(false);
+                      setNewPostContent("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleCreatePost}
+                    disabled={!newPostContent.trim()}
+                  >
+                    Post
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="p-4 cursor-text hover:bg-accent/50 transition-colors flex items-center gap-3"
+                onClick={() => setIsInputFocused(true)}
+              >
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={currentUser?.imageUrl} alt="Your avatar" />
+                  <AvatarFallback>You</AvatarFallback>
+                </Avatar>
+                <div className="text-muted-foreground flex-1">
+                  Share your thoughts...
+                </div>
+              </div>
+            )}
+          </Card>
 
           {error && (
             <div className="text-red-500 text-center mb-4 p-2 bg-red-100 rounded">
