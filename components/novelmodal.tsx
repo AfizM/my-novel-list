@@ -277,33 +277,32 @@ export function NovelModal({
             <div className="w-full sm:w-2/3 space-y-4 sm:space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
                 <label className="text-sm font-medium sm:w-1/3">Status:</label>
-                <Select
-                  value={status}
-                  onValueChange={setStatus}
-                  className="sm:w-2/3"
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="reading">Reading</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="planning">Planning</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="w-full sm:w-2/3">
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="reading">Reading</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="planning">Planning</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
                 <label className="text-sm font-medium sm:w-1/3">
                   Chapters read:
                 </label>
-                <Input
-                  type="number"
-                  placeholder="Chapter progress"
-                  value={chapterProgress}
-                  onChange={(e) => setChapterProgress(e.target.value)}
-                  className="sm:w-2/3"
-                />
+                <div className="w-full sm:w-2/3">
+                  <Input
+                    type="number"
+                    placeholder="Chapter progress"
+                    value={chapterProgress}
+                    onChange={(e) => setChapterProgress(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
