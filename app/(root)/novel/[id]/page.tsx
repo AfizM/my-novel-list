@@ -85,6 +85,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     timestamp: number;
   } | null>(null);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isReviewsLoading, setIsReviewsLoading] = useState(true);
 
   const debouncedLoading = useDebounce(isLoading, 200);
 
@@ -152,6 +153,7 @@ export default function NovelPage({ params }: { params: { id: string } }) {
   }, [page]);
 
   const fetchReviews = async () => {
+    setIsReviewsLoading(true);
     try {
       const response = await fetch(
         `/api/reviews/${parseInt(params.id)}?page=${page}&limit=10`,
@@ -170,6 +172,8 @@ export default function NovelPage({ params }: { params: { id: string } }) {
     } catch (error) {
       console.error("Error fetching reviews:", error);
       toast.error("Failed to fetch reviews. Please try again.");
+    } finally {
+      setIsReviewsLoading(false);
     }
   };
 
@@ -485,7 +489,11 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
         {/* Reviews */}
         <div>
-          {reviews.length > 0 ? (
+          {isReviewsLoading ? (
+            <div className="mt-4">
+              <Skeleton className="h-32 w-full" />
+            </div>
+          ) : reviews.length > 0 ? (
             <>
               {reviews.map((review) => (
                 <ReviewCard
