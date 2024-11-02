@@ -213,7 +213,7 @@ function CommentCard({
 
   return (
     <div
-      className="border  shadow-md rounded-lg p-2 w-11/12 mx-auto"
+      className="border  shadow-md rounded-lg p-4 w-11/12 mx-auto"
       style={{ fontSize: "0.85rem" }}
     >
       <div className="flex justify-between items-start mb-1">

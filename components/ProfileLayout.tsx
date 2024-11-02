@@ -16,10 +16,10 @@ const navItems = [
 ];
 
 // Add this to track if the page has been loaded before
-const hasLoadedBefore =
-  typeof window !== "undefined"
-    ? sessionStorage.getItem("profileLoaded")
-    : null;
+// const hasLoadedBefore =
+//   typeof window !== "undefined"
+//     ? sessionStorage.getItem("profileLoaded")
+//     : null;
 
 export default function ProfileLayout({ children, user }) {
   const pathname = usePathname();
@@ -29,15 +29,15 @@ export default function ProfileLayout({ children, user }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [bannerKey, setBannerKey] = useState(Date.now());
 
-  useEffect(() => {
-    // Check if this is the first load
-    if (!hasLoadedBefore) {
-      // Set the flag in sessionStorage
-      sessionStorage.setItem("profileLoaded", "true");
-      // Refresh the page
-      window.location.reload();
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Check if this is the first load
+  //   if (!hasLoadedBefore) {
+  //     // Set the flag in sessionStorage
+  //     sessionStorage.setItem("profileLoaded", "true");
+  //     // Refresh the page
+  //     window.location.reload();
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (currentUser && user.user_id !== currentUser.id) {

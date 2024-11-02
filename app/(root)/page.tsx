@@ -101,7 +101,6 @@ export default function Home() {
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
 
-    setIsLoading(true);
     try {
       const response = await fetch("/api/posts", {
         method: "POST",
@@ -112,14 +111,22 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to create post");
 
       const newPost: Post = await response.json();
-      setPosts([newPost, ...posts]);
+
+      // Optimistically update the UI
+      setPosts((prevPosts) => [
+        {
+          ...newPost,
+          post_comments: [], // Ensure post_comments is initialized
+          users: newPost.users,
+        },
+        ...prevPosts,
+      ]);
+
       setNewPostContent("");
       toast.success("Post created successfully!");
     } catch (error) {
       console.error("Error creating post:", error);
       toast.error("Failed to create post. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
