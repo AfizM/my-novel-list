@@ -185,7 +185,7 @@ const Navbar = () => {
                         <LogOut className="h-5 w-5" />
                         <span>Sign Out</span>
                       </Button>
-                      <div className="mt-4 -ml-1">
+                      <div className="mt-4 -ml-[0.74rem]">
                         <ModeToggle />
                       </div>
                     </div>
