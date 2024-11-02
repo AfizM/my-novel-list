@@ -228,92 +228,101 @@ export default function Home() {
         <div className="w-full max-w-lg mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 mt-8">
             <h2 className="text-2xl font-bold">Activity</h2>
-            {isAdmin ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="w-full sm:w-auto"
-                >
-                  <TabsList className="w-full sm:w-auto">
-                    <TabsTrigger
-                      value="following"
-                      className="flex-1 sm:flex-none"
-                    >
-                      Following
-                    </TabsTrigger>
-                    <TabsTrigger value="global" className="flex-1 sm:flex-none">
-                      Global
-                    </TabsTrigger>
+            {currentUser &&
+              (isAdmin ? (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="w-full sm:w-auto"
+                  >
+                    <TabsList className="w-full sm:w-auto">
+                      <TabsTrigger
+                        value="following"
+                        className="flex-1 sm:flex-none"
+                      >
+                        Following
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="global"
+                        className="flex-1 sm:flex-none"
+                      >
+                        Global
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 text-sm w-full sm:w-auto"
+                    onClick={() => router.push("/admin/submissions")}
+                  >
+                    <Badge variant="secondary" className="h-5 px-1.5">
+                      Admin
+                    </Badge>
+                    Pending Submissions
+                  </Button>
+                </div>
+              ) : (
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList>
+                    <TabsTrigger value="following">Following</TabsTrigger>
+                    <TabsTrigger value="global">Global</TabsTrigger>
                   </TabsList>
                 </Tabs>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2 text-sm w-full sm:w-auto"
-                  onClick={() => router.push("/admin/submissions")}
-                >
-                  <Badge variant="secondary" className="h-5 px-1.5">
-                    Admin
-                  </Badge>
-                  Pending Submissions
-                </Button>
-              </div>
-            ) : (
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger value="following">Following</TabsTrigger>
-                  <TabsTrigger value="global">Global</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
+              ))}
           </div>
 
-          <Card className="mb-6">
-            {isInputFocused ? (
-              <div className="p-4">
-                <RichTextEditor
-                  content={newPostContent}
-                  onChange={setNewPostContent}
-                  placeholder="Share your thoughts..."
-                />
-                <div className="flex justify-end space-x-2 mt-4">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setIsInputFocused(false);
-                      setNewPostContent("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      handleCreatePost();
-                      setIsInputFocused(false);
-                    }}
-                    disabled={!newPostContent.trim()}
-                  >
-                    Post
-                  </Button>
+          {currentUser && (
+            <Card className="mb-6">
+              {isInputFocused ? (
+                <div className="p-4">
+                  <RichTextEditor
+                    content={newPostContent}
+                    onChange={setNewPostContent}
+                    placeholder="Share your thoughts..."
+                  />
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsInputFocused(false);
+                        setNewPostContent("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        handleCreatePost();
+                        setIsInputFocused(false);
+                      }}
+                      disabled={!newPostContent.trim()}
+                    >
+                      Post
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div
-                className="p-4 cursor-text hover:bg-accent/50 transition-colors flex items-center gap-3"
-                onClick={() => setIsInputFocused(true)}
-              >
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={currentUser?.imageUrl} alt="Your avatar" />
-                </Avatar>
-                <div className="text-muted-foreground flex-1 text-[0.94rem]">
-                  Share your thoughts...
+              ) : (
+                <div
+                  className="p-4 cursor-text hover:bg-accent/50 transition-colors flex items-center gap-3"
+                  onClick={() => setIsInputFocused(true)}
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage
+                      src={currentUser?.imageUrl}
+                      alt="Your avatar"
+                    />
+                  </Avatar>
+                  <div className="text-muted-foreground flex-1 text-[0.94rem]">
+                    Share your thoughts...
+                  </div>
                 </div>
-              </div>
-            )}
-          </Card>
+              )}
+            </Card>
+          )}
 
           {error && (
             <div className="text-red-500 text-center mb-4 p-2 bg-red-100 rounded">

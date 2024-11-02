@@ -249,7 +249,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 ">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Left column content */}
         <div className="lg:col-span-2">
           {/* About me section */}
           <div className="flex flex-col space-y-2 mb-8">
@@ -392,54 +393,61 @@ export default function ProfileContent({ user }: ProfileContentProps) {
 
         {/* Activity section */}
         <div className="lg:col-span-2 flex flex-col space-y-4">
-          <div className="text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
+          <div
+            className={`text-[1.24rem] font-semibold leading-none tracking-tight ${
+              currentUser ? "mb-2" : "-mb-2"
+            }`}
+          >
             Activity
           </div>
           <div className="flex flex-col space-y-4">
-            <div className="flex flex-col space-y-4">
-              {isInputFocused ? (
-                <Card className="p-4">
-                  <RichTextEditor
-                    content={newPostContent}
-                    onChange={setNewPostContent}
-                    placeholder="Write a status..."
-                  />
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setIsInputFocused(false);
-                        setNewPostContent("");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        handleCreatePost();
-                        setIsInputFocused(false);
-                      }}
-                      disabled={!newPostContent.trim()}
-                    >
-                      Post
-                    </Button>
-                  </div>
-                </Card>
-              ) : (
-                <Card
-                  className="p-4 cursor-text hover:bg-accent/50 transition-colors"
-                  onClick={() => setIsInputFocused(true)}
-                >
-                  <div className="text-muted-foreground text-[0.94rem]">
-                    Write a status...
-                  </div>
-                </Card>
-              )}
-            </div>
+            {currentUser && (
+              <div className="flex flex-col space-y-4">
+                {isInputFocused ? (
+                  <Card className="p-4">
+                    <RichTextEditor
+                      content={newPostContent}
+                      onChange={setNewPostContent}
+                      placeholder="Write a status..."
+                    />
+                    <div className="flex justify-end space-x-2 mt-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setIsInputFocused(false);
+                          setNewPostContent("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          handleCreatePost();
+                          setIsInputFocused(false);
+                        }}
+                        disabled={!newPostContent.trim()}
+                      >
+                        Post
+                      </Button>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card
+                    className="p-4 cursor-text hover:bg-accent/50 transition-colors"
+                    onClick={() => setIsInputFocused(true)}
+                  >
+                    <div className="text-muted-foreground text-[0.94rem]">
+                      Write a status...
+                    </div>
+                  </Card>
+                )}
+              </div>
+            )}
           </div>
 
+          {/* Posts display section */}
           {debouncedLoading
             ? Array(3)
                 .fill(0)
@@ -459,6 +467,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                 />
               ))}
 
+          {/* Load more section */}
           {hasMore && !debouncedLoading && (
             <div className="mt-6 mb-8 text-center">
               <Button onClick={handleLoadMore} disabled={isLoadingMore}>
