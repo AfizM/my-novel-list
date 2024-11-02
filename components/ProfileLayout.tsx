@@ -6,6 +6,8 @@ import { useUser } from "@clerk/nextjs";
 import BannerUploadModal from "@/components/BannerUploadModal";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
 
 const navItems = [
   { name: "Overview", href: "" },
@@ -28,6 +30,9 @@ export default function ProfileLayout({ children, user }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [bannerKey, setBannerKey] = useState(Date.now());
+  const [isFollowLoading, setIsFollowLoading] = useState(true);
+  const [isFollowActionInProgress, setIsFollowActionInProgress] =
+    useState(false);
 
   // useEffect(() => {
   //   // Check if this is the first load
@@ -52,6 +57,7 @@ export default function ProfileLayout({ children, user }) {
   }, [user, userData, updateUserData]);
 
   const checkFollowStatus = async () => {
+    setIsFollowLoading(true);
     try {
       const response = await fetch(`/api/users/${user.user_id}/followers`);
       if (!response.ok) throw new Error("Failed to fetch followers");
@@ -61,10 +67,15 @@ export default function ProfileLayout({ children, user }) {
       );
     } catch (error) {
       console.error("Error checking follow status:", error);
+    } finally {
+      setIsFollowLoading(false);
     }
   };
 
   const handleFollowToggle = async () => {
+    if (isFollowActionInProgress) return;
+
+    setIsFollowActionInProgress(true);
     try {
       const method = isFollowing ? "DELETE" : "POST";
       const response = await fetch(`/api/users/${user.user_id}/follow`, {
@@ -72,8 +83,17 @@ export default function ProfileLayout({ children, user }) {
       });
       if (!response.ok) throw new Error("Failed to toggle follow status");
       setIsFollowing(!isFollowing);
+
+      toast.success(
+        isFollowing
+          ? `Unfollowed ${userData.username}`
+          : `Following ${userData.username}`,
+      );
     } catch (error) {
       console.error("Error toggling follow status:", error);
+      toast.error("Failed to update follow status");
+    } finally {
+      setIsFollowActionInProgress(false);
     }
   };
 
@@ -106,11 +126,29 @@ export default function ProfileLayout({ children, user }) {
               <Button className="min-w-24" onClick={() => setIsModalOpen(true)}>
                 Edit Banner
               </Button>
-            ) : (
-              <Button className="min-w-24" onClick={handleFollowToggle}>
-                {isFollowing ? "Unfollow" : "Follow"}
+            ) : currentUser ? (
+              <Button
+                className="min-w-24"
+                onClick={handleFollowToggle}
+                disabled={isFollowLoading || isFollowActionInProgress}
+              >
+                {isFollowLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner className="h-4 w-4" />
+                    Loading...
+                  </span>
+                ) : isFollowActionInProgress ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner className="h-4 w-4" />
+                    {isFollowing ? "Unfollowing..." : "Following..."}
+                  </span>
+                ) : isFollowing ? (
+                  "Unfollow"
+                ) : (
+                  "Follow"
+                )}
               </Button>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
