@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle } from "lucide-react";
@@ -7,6 +7,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { Textarea } from "./ui/textarea";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface Post {
   id: string;
@@ -60,6 +61,7 @@ export function PostCard({
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const formattedTime = useMemo(
     () => formatRelativeTime(post.created_at),
@@ -124,9 +126,11 @@ export function PostCard({
                 {formattedTime}
               </div>
             </div>
-            <div className="mb-3 whitespace-pre-wrap break-words">
-              {post.content}
-            </div>
+            <div
+              ref={contentRef}
+              className="mb-3 prose prose-sm dark:prose-invert max-w-none break-words overflow-y-auto max-h-[300px] pr-2"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
             <div className="flex justify-end items-center space-x-2">
               <Button
                 variant="ghost"

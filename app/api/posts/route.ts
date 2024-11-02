@@ -14,9 +14,23 @@ export async function POST(request: Request) {
   try {
     const { content, novel_id } = await request.json();
 
+    // Validate that the content isn't just HTML tags without text
+    const strippedContent = content.replace(/<[^>]*>/g, "").trim();
+    if (!strippedContent) {
+      return NextResponse.json(
+        { error: "Content cannot be empty" },
+        { status: 400 },
+      );
+    }
+
     const { data, error } = await supabase
       .from("posts")
-      .insert({ user_id: userId, content, novel_id, liked_by: [] })
+      .insert({
+        user_id: userId,
+        content, // This will store the HTML content
+        novel_id,
+        liked_by: [],
+      })
       .select(
         `
         id,
@@ -40,7 +54,14 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json(data);
+    // Add post_comments array to match the expected Post interface
+    const postWithComments = {
+      ...data,
+      post_comments: [],
+      is_liked: false,
+    };
+
+    return NextResponse.json(postWithComments);
   } catch (error) {
     console.error("Error creating post:", error);
     return NextResponse.json(

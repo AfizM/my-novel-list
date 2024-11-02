@@ -327,7 +327,13 @@ html body[data-scroll-locked] {
     @apply max-w-none;
   }
   .prose img {
-    @apply rounded-md my-2;
+    @apply rounded-md my-2 max-w-full h-auto;
+  }
+  .prose p {
+    @apply mb-3;
+  }
+  .prose .spoiler {
+    @apply bg-black text-transparent hover:bg-transparent hover:text-inherit transition-all duration-200;
   }
   .prose a {
     @apply text-primary underline decoration-primary;
@@ -337,4 +343,34 @@ html body[data-scroll-locked] {
 .ProseMirror u {
   text-decoration-thickness: 0.1em;
   text-underline-offset: 0.2em;
+}
+
+/* Add styles for the post input */
+.post-input-card {
+  @apply transition-all duration-200;
+}
+
+.post-input-card:hover {
+  @apply shadow-md;
+}
+
+/* Add this to your existing styles */
+.prose {
+  @apply max-w-none;
+}
+
+.prose::-webkit-scrollbar {
+  width: 6px;
+}
+
+.prose::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.prose::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
+}
+
+.prose::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/40;
 }

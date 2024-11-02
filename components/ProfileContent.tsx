@@ -139,7 +139,11 @@ export default function ProfileContent({ user }: ProfileContentProps) {
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newPostContent }),
+        body: JSON.stringify({
+          content: newPostContent,
+          // Strip HTML if content is empty
+          hasContent: newPostContent.replace(/<[^>]*>/g, "").trim().length > 0,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to create post");
@@ -392,33 +396,43 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             Activity
           </div>
           <div className="flex flex-col space-y-4">
-            <Input
-              placeholder="Write a status..."
-              value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
-              onFocus={() => setIsInputFocused(true)}
-            />
-            {isInputFocused && (
-              <div className="flex justify-end space-x-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setIsInputFocused(false);
-                    setNewPostContent("");
-                  }}
+            <div className="flex flex-col space-y-4">
+              {isInputFocused ? (
+                <Card className="p-4">
+                  <RichTextEditor
+                    content={newPostContent}
+                    onChange={setNewPostContent}
+                    placeholder="Write a status..."
+                  />
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsInputFocused(false);
+                        setNewPostContent("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleCreatePost}
+                      disabled={!newPostContent.trim()}
+                    >
+                      Post
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <Card
+                  className="p-4 cursor-text hover:bg-accent/50 transition-colors"
+                  onClick={() => setIsInputFocused(true)}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleCreatePost}
-                  disabled={!newPostContent.trim()}
-                >
-                  Post
-                </Button>
-              </div>
-            )}
+                  <div className="text-muted-foreground">Write a status...</div>
+                </Card>
+              )}
+            </div>
           </div>
 
           {debouncedLoading
