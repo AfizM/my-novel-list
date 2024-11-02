@@ -309,3 +309,27 @@ html body[data-scroll-locked] {
   --removed-body-scroll-bar-size: 0 !important;
   margin-right: 0 !important;
 }
+
+.spoiler {
+  background-color: black;
+  color: transparent;
+  cursor: pointer;
+}
+
+.spoiler:hover {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Add Prose styles for the rich text content */
+@layer base {
+  .prose {
+    @apply max-w-none;
+  }
+  .prose img {
+    @apply rounded-md my-2;
+  }
+  .prose a {
+    @apply text-primary underline decoration-primary;
+  }
+}

@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 interface User {
   user_id: string;
@@ -261,10 +262,10 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                   <Skeleton className="h-[100px] w-full" />
                 ) : isEditing ? (
                   <div className="flex flex-col space-y-2">
-                    <Textarea
-                      value={aboutMe}
-                      onChange={(e) => setAboutMe(e.target.value)}
-                      className="min-h-[100px]"
+                    <RichTextEditor
+                      content={aboutMe}
+                      onChange={setAboutMe}
+                      placeholder="Tell us about yourself..."
                     />
                     <div className="flex justify-end space-x-2">
                       <Button
@@ -280,9 +281,12 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-[0.9rem] whitespace-pre-wrap break-words">
-                    {aboutMe || "No about me information provided."}
-                  </p>
+                  <div
+                    className="prose prose-sm dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: aboutMe || "No about me information provided.",
+                    }}
+                  />
                 )}
               </CardContent>
               {currentUser?.username === user.username &&

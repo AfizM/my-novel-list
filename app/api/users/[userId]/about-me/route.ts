@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-server";
 import { auth } from "@clerk/nextjs/server";
+import DOMPurify from "isomorphic-dompurify";
 
 export async function PUT(
   request: Request,
@@ -12,8 +13,28 @@ export async function PUT(
   }
 
   const username = params.userId;
-
   const { about_me } = await request.json();
+
+  // Sanitize HTML content
+  const sanitizedContent = DOMPurify.sanitize(about_me, {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "a",
+      "img",
+      "span",
+      "h1",
+      "h2",
+      "h3",
+      "ul",
+      "ol",
+      "li",
+      "blockquote",
+    ],
+    ALLOWED_ATTR: ["href", "src", "class", "alt"],
+  });
 
   try {
     const { data: userData, error: userError } = await supabase
@@ -32,7 +53,7 @@ export async function PUT(
 
     const { error } = await supabase
       .from("users")
-      .update({ about_me })
+      .update({ about_me: sanitizedContent })
       .eq("user_id", userId);
 
     if (error) throw error;
