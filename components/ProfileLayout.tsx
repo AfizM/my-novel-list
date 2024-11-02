@@ -89,13 +89,12 @@ export default function ProfileLayout({ children, user }) {
           src={userData.banner_url}
           alt="Profile banner"
           className="w-full h-full object-cover"
-          priority
           loading="eager"
         />
         <div className="absolute inset-0 bg-black bg-opacity-30" />
         <div className="flex absolute ml-40 bottom-8 space-x-4 z-10">
           <img
-            src={userData.image_url || defaultAvatarUrl}
+            src={userData.image_url}
             alt={userData.username || ""}
             className="w-24 h-24 rounded-full object-cover"
           />
@@ -139,7 +138,6 @@ export default function ProfileLayout({ children, user }) {
       <BannerUploadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        userId={user.id}
         onSuccess={handleBannerSuccess}
       />
     </div>

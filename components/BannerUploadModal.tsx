@@ -19,7 +19,6 @@ interface BannerUploadModalProps {
 const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
   isOpen,
   onClose,
-  onSuccess,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
