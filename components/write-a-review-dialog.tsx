@@ -86,7 +86,7 @@ export default function WriteReviewDialog({
 
   const handleSubmitReview = async () => {
     try {
-      const url = "/api/reviews"; // Always POST to the same endpoint
+      const url = "/api/reviews";
 
       const response = await fetch(url, {
         method: "POST",
@@ -116,6 +116,9 @@ export default function WriteReviewDialog({
           ? "Review updated successfully"
           : "Review submitted successfully",
       );
+
+      // Simple page refresh after successful submission
+      window.location.reload();
     } catch (error) {
       console.error("Error submitting review:", error);
       toast.error("Failed to submit review. Please try again.");
