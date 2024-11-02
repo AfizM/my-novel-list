@@ -70,7 +70,9 @@ export default function Home() {
       }
 
       try {
-        const response = await fetch(`/api/posts?page=${pageNum}`);
+        const response = await fetch(
+          `/api/posts?page=${pageNum}&tab=${activeTab}`,
+        );
         if (!response.ok) throw new Error("Failed to fetch posts");
         const { posts: newPosts, hasMore: moreExists } = await response.json();
 
@@ -88,7 +90,7 @@ export default function Home() {
         setIsLoadingMore(false);
       }
     },
-    [],
+    [activeTab],
   );
 
   const handleLoadMore = useCallback(() => {

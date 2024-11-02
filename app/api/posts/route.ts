@@ -4,94 +4,23 @@ import { auth } from "@clerk/nextjs/server";
 
 const POSTS_PER_PAGE = 15;
 
-export async function POST(request: Request) {
-  const { userId } = auth();
-
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const { content, novel_id } = await request.json();
-
-    // Validate that the content isn't just HTML tags without text
-    const strippedContent = content.replace(/<[^>]*>/g, "").trim();
-    if (!strippedContent) {
-      return NextResponse.json(
-        { error: "Content cannot be empty" },
-        { status: 400 },
-      );
-    }
-
-    const { data, error } = await supabase
-      .from("posts")
-      .insert({
-        user_id: userId,
-        content, // This will store the HTML content
-        novel_id,
-        liked_by: [],
-      })
-      .select(
-        `
-        id,
-        content,
-        likes,
-        liked_by,
-        created_at,
-        novel_id,
-        novels (
-          id,
-          name,
-          cover_image_url
-        ),
-        users (
-          username,
-          image_url
-        )
-      `,
-      )
-      .single();
-
-    if (error) throw error;
-
-    // Add post_comments array to match the expected Post interface
-    const postWithComments = {
-      ...data,
-      post_comments: [],
-      is_liked: false,
-    };
-
-    return NextResponse.json(postWithComments);
-  } catch (error) {
-    console.error("Error creating post:", error);
-    return NextResponse.json(
-      { error: "Failed to create post" },
-      { status: 500 },
-    );
-  }
-}
-
 export async function GET(request: Request) {
   const { userId } = auth();
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
+  const tab = searchParams.get("tab") || "global";
   const offset = (page - 1) * POSTS_PER_PAGE;
 
   try {
-    const {
-      data: posts,
-      error,
-      count,
-    } = await supabase
-      .from("posts")
-      .select(
-        `
+    let query = supabase.from("posts").select(
+      `
         id,
         content,
         likes,
         liked_by,
         created_at,
         novel_id,
+        user_id,
         novels (
           id,
           name,
@@ -113,8 +42,32 @@ export async function GET(request: Request) {
           )
         )
       `,
-        { count: "exact" },
-      )
+      { count: "exact" },
+    );
+
+    // If tab is "following" and user is logged in, filter by followed users
+    if (tab === "following" && userId) {
+      const { data: followedUsers } = await supabase
+        .from("user_relationships")
+        .select("following_id")
+        .eq("follower_id", userId);
+
+      if (followedUsers && followedUsers.length > 0) {
+        const followedUserIds = followedUsers.map(
+          (relation) => relation.following_id,
+        );
+        query = query.in("user_id", [userId, ...followedUserIds]);
+      } else {
+        // If user follows no one, only show their own posts
+        query = query.eq("user_id", userId);
+      }
+    }
+
+    const {
+      data: posts,
+      error,
+      count,
+    } = await query
       .range(offset, offset + POSTS_PER_PAGE - 1)
       .order("created_at", { ascending: false });
 
