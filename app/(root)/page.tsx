@@ -63,10 +63,16 @@ export default function Home() {
 
   const debouncedLoading = useDebounce(isLoading, 200);
 
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isTabSwitching, setIsTabSwitching] = useState(false);
+
   const fetchPosts = useCallback(
     async (pageNum: number, isLoadMore = false) => {
       if (!isLoadMore) {
-        setIsLoading(true);
+        setIsInitialLoading(true);
+        setIsTabSwitching(true);
+      } else {
+        setIsLoadingMore(true);
       }
 
       try {
@@ -86,8 +92,9 @@ export default function Home() {
         console.error("Error fetching posts:", error);
         setError("Failed to load posts. Please try again.");
       } finally {
-        setIsLoading(false);
+        setIsInitialLoading(false);
         setIsLoadingMore(false);
+        setIsTabSwitching(false);
       }
     },
     [activeTab],
@@ -335,7 +342,7 @@ export default function Home() {
             </div>
           )}
 
-          {debouncedLoading ? (
+          {isInitialLoading ? (
             Array(3)
               .fill(0)
               .map((_, index) => (
@@ -356,7 +363,7 @@ export default function Home() {
                 />
               ))}
 
-              {hasMore && (
+              {!isTabSwitching && hasMore && (
                 <div className="mt-6 mb-8 text-center">
                   <Button onClick={handleLoadMore} disabled={isLoadingMore}>
                     {isLoadingMore ? "Loading..." : "Load More"}
@@ -364,9 +371,17 @@ export default function Home() {
                 </div>
               )}
 
-              {!hasMore && posts.length > 0 && (
+              {!isTabSwitching && !hasMore && posts.length > 0 && (
                 <div className="text-center text-gray-500 mt-6 mb-8">
                   No more posts to load
+                </div>
+              )}
+
+              {!isTabSwitching && posts.length === 0 && (
+                <div className="text-center text-gray-500 mt-6 mb-8">
+                  {activeTab === "following"
+                    ? "No posts from people you follow yet. Try following more people!"
+                    : "No posts found."}
                 </div>
               )}
             </>
