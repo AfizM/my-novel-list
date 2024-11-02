@@ -15,18 +15,41 @@ const navItems = [
   { name: "Social", href: "social" },
 ];
 
+// Add this to track if the page has been loaded before
+const hasLoadedBefore =
+  typeof window !== "undefined"
+    ? sessionStorage.getItem("profileLoaded")
+    : null;
+
 export default function ProfileLayout({ children, user }) {
   const pathname = usePathname();
-  const { userData } = useUserData();
+  const { userData, updateUserData } = useUserData();
   const { user: currentUser } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [bannerKey, setBannerKey] = useState(Date.now());
+
+  useEffect(() => {
+    // Check if this is the first load
+    if (!hasLoadedBefore) {
+      // Set the flag in sessionStorage
+      sessionStorage.setItem("profileLoaded", "true");
+      // Refresh the page
+      window.location.reload();
+    }
+  }, []);
 
   useEffect(() => {
     if (currentUser && user.user_id !== currentUser.id) {
       checkFollowStatus();
     }
   }, [currentUser, user]);
+
+  useEffect(() => {
+    if (user && JSON.stringify(user) !== JSON.stringify(userData)) {
+      updateUserData(user);
+    }
+  }, [user, userData, updateUserData]);
 
   const checkFollowStatus = async () => {
     try {
@@ -54,10 +77,15 @@ export default function ProfileLayout({ children, user }) {
     }
   };
 
+  const handleBannerSuccess = (bannerUrl: string) => {
+    setBannerKey(Date.now());
+  };
+
   return (
     <div className="w-full -mt-[1.30rem] mx-auto my-0">
       <div className="relative w-full h-72">
         <img
+          key={bannerKey}
           src={userData.banner_url}
           alt="Profile banner"
           className="w-full h-full object-cover"
@@ -112,6 +140,7 @@ export default function ProfileLayout({ children, user }) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         userId={user.id}
+        onSuccess={handleBannerSuccess}
       />
     </div>
   );

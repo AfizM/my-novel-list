@@ -14,20 +14,33 @@ export interface User {
 export async function getUserByUsername(
   username: string,
 ): Promise<User | null> {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("username", username)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username)
+      .single();
 
-  if (error || !data) {
+    if (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    // Add cache-busting parameter to banner_url and image_url
+    if (data.banner_url) {
+      data.banner_url = `${data.banner_url}?t=${Date.now()}`;
+    }
+    if (data.image_url) {
+      data.image_url = `${data.image_url}?t=${Date.now()}`;
+    }
+
+    return data as User;
+  } catch (error) {
+    console.error("Unexpected error in getUserByUsername:", error);
     return null;
   }
-
-  // Add cache-busting parameter to banner_url
-  if (data.banner_url) {
-    data.banner_url = `${data.banner_url}?t=${Date.now()}`;
-  }
-
-  return data as User;
 }

@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
 interface User {
   user_id: string;
@@ -25,9 +25,15 @@ export function UserProvider({
 }) {
   const [userData, setUserData] = useState(initialUserData);
 
-  const updateUserData = (data: Partial<User>) => {
-    setUserData((prev) => ({ ...prev, ...data }));
-  };
+  const updateUserData = useCallback((data: Partial<User>) => {
+    setUserData((prev) => {
+      const updated = { ...prev, ...data };
+      if (updated.banner_url && !updated.banner_url.includes("?t=")) {
+        updated.banner_url = `${updated.banner_url}?t=${Date.now()}`;
+      }
+      return updated;
+    });
+  }, []);
 
   return (
     <UserContext.Provider value={{ userData, updateUserData }}>

@@ -47,12 +47,12 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
 
   const handleUpload = async () => {
     if (!file) return;
-
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
 
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+
       const response = await fetch("/api/upload-banner", {
         method: "POST",
         body: formData,
@@ -62,15 +62,13 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
         throw new Error("Upload failed");
       }
 
-      const data = await response.json();
-      const newBannerUrl = `${data.bannerUrl}?t=${Date.now()}`;
-
-      if (onSuccess) {
-        onSuccess(newBannerUrl);
-      }
-      updateUserData({ banner_url: newBannerUrl });
+      const { bannerUrl } = await response.json();
+      updateUserData({ banner_url: `${bannerUrl}?t=${Date.now()}` });
       onClose();
-      toast.success("Banner uploaded successfully.");
+      toast.success("Banner uploaded successfully");
+
+      // Add full page refresh
+      window.location.reload();
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload banner. Please try again.");
