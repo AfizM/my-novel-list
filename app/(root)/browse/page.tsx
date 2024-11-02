@@ -125,8 +125,8 @@ export default function Home() {
       {/* Filters */}
       <div className="mb-8">
         <div className="flex flex-col space-y-4">
-          <div className="flex mb-4 space-x-6">
-            <div className="flex-col w-full max-w-[300px]">
+          <div className="flex flex-col lg:flex-row lg:space-x-6 space-y-4 lg:space-y-0">
+            <div className="flex-col w-full lg:max-w-[300px]">
               <div className="ml-1 py-2 font-semibold">Search</div>
               <Input
                 type="search"
@@ -137,8 +137,8 @@ export default function Home() {
               />
             </div>
 
-            <div className="flex space-x-6 w-full items-end">
-              <div className="flex-col w-full max-w-[300px]">
+            <div className="flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0 w-full">
+              <div className="flex-col w-full md:max-w-[300px]">
                 <div className="ml-1 py-2 font-semibold">Sort</div>
                 <Select value={sort} onValueChange={setSort}>
                   <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
@@ -153,7 +153,7 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div className="flex-col w-full max-w-[300px]">
+              <div className="flex-col w-full lg:max-w-[300px]">
                 <div className="ml-1 py-2 font-semibold">Status</div>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
@@ -167,7 +167,7 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div className="flex-col w-full max-w-[300px]">
+              <div className="flex-col w-full lg:max-w-[300px]">
                 <div className="ml-1 py-2 text-base font-semibold">Genre</div>
                 <Select value={genre} onValueChange={setGenre}>
                   <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
@@ -184,11 +184,14 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div className="flex-col w-full max-w-48 ml relative">
+              <div className="flex-col w-full lg:w-auto lg:max-w-48 relative">
+                <div className="ml-1 py-2 font-semibold lg:opacity-0">
+                  Filters
+                </div>
                 <Button
                   variant="outline"
                   className={cn(
-                    "p-2 shadow-[0_2px_4px_0_var(--shadow-color)] ml-2",
+                    "p-2 shadow-[0_2px_4px_0_var(--shadow-color)]",
                     isFiltersOpen && "bg-accent",
                   )}
                   onClick={() => setIsFiltersOpen(!isFiltersOpen)}
