@@ -250,30 +250,39 @@ export function NovelModal({
       {!isInitialLoading ? (
         <div className="flex flex-col space-y-6 pt-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">{novel.name}</h2>
-            <button onClick={toggleFavorite} className="focus:outline-none">
+            <h2 className="text-xl sm:text-2xl font-bold line-clamp-1">
+              {novel.name}
+            </h2>
+            <button
+              onClick={toggleFavorite}
+              className="focus:outline-none shrink-0"
+            >
               {isFavorite ? (
-                <Heart className="h-6 w-6 text-red-500 fill-current" />
+                <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-red-500 fill-current" />
               ) : (
-                <Heart className="h-6 w-6 text-gray-400" />
+                <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
               )}
             </button>
           </div>
-          <div className="flex space-x-6">
-            <div className="w-1/3">
+
+          <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-6 sm:space-y-0">
+            <div className="w-full sm:w-1/3 flex justify-center sm:block">
               <img
                 src={novel.cover_image_url}
                 alt={novel.name}
-                width={200}
-                height={300}
-                className="rounded-md"
+                className="w-32 sm:w-full max-w-[200px] h-auto rounded-md shadow-md"
               />
             </div>
-            <div className="w-2/3 space-y-6">
-              <div className="flex items-center">
-                <label className="w-1/3 text-sm font-medium">Status:</label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="w-2/3">
+
+            <div className="w-full sm:w-2/3 space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+                <label className="text-sm font-medium sm:w-1/3">Status:</label>
+                <Select
+                  value={status}
+                  onValueChange={setStatus}
+                  className="sm:w-2/3"
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -284,8 +293,8 @@ export function NovelModal({
                 </Select>
               </div>
 
-              <div className="flex items-center">
-                <label className="w-1/3 text-sm font-medium">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+                <label className="text-sm font-medium sm:w-1/3">
                   Chapters read:
                 </label>
                 <Input
@@ -293,15 +302,15 @@ export function NovelModal({
                   placeholder="Chapter progress"
                   value={chapterProgress}
                   onChange={(e) => setChapterProgress(e.target.value)}
-                  className="w-2/3"
+                  className="sm:w-2/3"
                 />
               </div>
 
-              <div className="flex items-center">
-                <label className="w-1/3 text-sm font-medium">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+                <label className="text-sm font-medium sm:w-1/3">
                   Overall rating:
                 </label>
-                <div className="flex items-center w-2/3">
+                <div className="flex items-center sm:w-2/3">
                   {renderStars()}
                   <span className="ml-2 text-sm">
                     {rating > 0 ? `${rating}/5` : "Not rated"}
@@ -309,18 +318,21 @@ export function NovelModal({
                 </div>
               </div>
 
-              <div className="flex items-start">
-                <label className="w-1/3 text-sm font-medium pt-2">Notes:</label>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+                <label className="text-sm font-medium sm:w-1/3 sm:pt-2">
+                  Notes:
+                </label>
                 <Textarea
                   placeholder="Add your notes here"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-2/3 min-h-28"
+                  className="sm:w-2/3 min-h-28"
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-between items-center">
+
+          <div className="flex justify-between items-center pt-2">
             {novelData && (
               <Button
                 variant="outline"
@@ -339,7 +351,7 @@ export function NovelModal({
               {isLoading ? "Saving..." : "Save"}
             </Button>
           </div>
-          {error && <p className="text-red-500">{error}</p>}
+          {error && <p className="text-red-500 text-sm">{error}</p>}
         </div>
       ) : null}
     </>
