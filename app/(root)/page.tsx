@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { PostCard } from "@/components/PostCard";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -10,8 +9,10 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 interface Post {
   id: string;
@@ -57,6 +58,8 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const { user: currentUser } = useUser();
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
 
   const debouncedLoading = useDebounce(isLoading, 200);
 
@@ -103,6 +106,20 @@ export default function Home() {
     setHasMore(true);
     fetchPosts(1, false);
   }, [activeTab, fetchPosts]);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch("/api/admin/check");
+        const { isAdmin } = await response.json();
+        setIsAdmin(isAdmin);
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
@@ -207,17 +224,49 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <div className="w-full max-w-7xl mx-auto my-0 px-9 flex justify-center">
-        <div className="w-full max-w-lg">
-          <div className="flex justify-between items-center mb-6 mt-8">
+      <div className="w-full max-w-7xl mx-auto my-0 px-4 sm:px-6 lg:px-9">
+        <div className="w-full max-w-lg mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 mt-8">
             <h2 className="text-2xl font-bold">Activity</h2>
-            {/* @ts-ignore: Unreachable code error */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="following">Following</TabsTrigger>
-                <TabsTrigger value="global">Global</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {isAdmin ? (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full sm:w-auto"
+                >
+                  <TabsList className="w-full sm:w-auto">
+                    <TabsTrigger
+                      value="following"
+                      className="flex-1 sm:flex-none"
+                    >
+                      Following
+                    </TabsTrigger>
+                    <TabsTrigger value="global" className="flex-1 sm:flex-none">
+                      Global
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 text-sm w-full sm:w-auto"
+                  onClick={() => router.push("/admin/submissions")}
+                >
+                  <Badge variant="secondary" className="h-5 px-1.5">
+                    Admin
+                  </Badge>
+                  Pending Submissions
+                </Button>
+              </div>
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                  <TabsTrigger value="following">Following</TabsTrigger>
+                  <TabsTrigger value="global">Global</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
           </div>
 
           <Card className="mb-6">
