@@ -46,9 +46,13 @@ interface Comment {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"following" | "global">(
-    "following",
-  );
+  const [activeTab, setActiveTab] = useState<"following" | "global">(() => {
+    if (typeof window !== "undefined") {
+      const userSession = localStorage.getItem("clerk-user");
+      return userSession ? "following" : "global";
+    }
+    return "global";
+  });
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -129,6 +133,17 @@ export default function Home() {
 
     checkAdminStatus();
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setActiveTab("global");
+      // Reset posts when logging out
+      setPosts([]);
+      setPage(1);
+      setHasMore(true);
+      fetchPosts(1, false);
+    }
+  }, [currentUser, fetchPosts]);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;

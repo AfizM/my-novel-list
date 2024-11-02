@@ -97,3 +97,70 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export async function POST(request: Request) {
+  const { userId } = auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { content, novel_id } = await request.json();
+
+    // Validate that the content isn't just HTML tags without text
+    const strippedContent = content.replace(/<[^>]*>/g, "").trim();
+    if (!strippedContent) {
+      return NextResponse.json(
+        { error: "Content cannot be empty" },
+        { status: 400 },
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("posts")
+      .insert({
+        user_id: userId,
+        content, // This will store the HTML content
+        novel_id,
+        liked_by: [],
+      })
+      .select(
+        `
+        id,
+        content,
+        likes,
+        liked_by,
+        created_at,
+        novel_id,
+        novels (
+          id,
+          name,
+          cover_image_url
+        ),
+        users (
+          username,
+          image_url
+        )
+      `,
+      )
+      .single();
+
+    if (error) throw error;
+
+    // Add post_comments array to match the expected Post interface
+    const postWithComments = {
+      ...data,
+      post_comments: [],
+      is_liked: false,
+    };
+
+    return NextResponse.json(postWithComments);
+  } catch (error) {
+    console.error("Error creating post:", error);
+    return NextResponse.json(
+      { error: "Failed to create post" },
+      { status: 500 },
+    );
+  }
+}
