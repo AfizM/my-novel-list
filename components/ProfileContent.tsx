@@ -461,11 +461,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
 
           {hasMore && !debouncedLoading && (
             <div className="mt-6 mb-8 text-center">
-              <Button
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                variant="outline"
-              >
+              <Button onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? "Loading..." : "Load More"}
               </Button>
             </div>

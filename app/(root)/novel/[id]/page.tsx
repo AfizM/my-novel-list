@@ -1,7 +1,14 @@
 // @ts-nocheck
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { Star, ChevronDown, SquarePen, Eye, PlusCircle } from "lucide-react";
+import {
+  Star,
+  ChevronDown,
+  SquarePen,
+  Eye,
+  PlusCircle,
+  BookOpenText,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -47,6 +54,19 @@ interface Novel {
 }
 
 const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
+
+const NoReviewsPlaceholder = () => (
+  <div className="flex flex-col items-center justify-center p-8 mt-4 text-center border rounded-lg bg-gray-50 dark:bg-gray-800">
+    <BookOpenText className="w-16 h-16 mb-4 text-gray-400" />
+    <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
+      No Reviews Yet
+    </h3>
+    <p className="mb-4 text-sm text-gray-500 dark:text-gray-400 max-w-md">
+      Be the first to share your thoughts about this novel! Your review helps
+      others discover great stories.
+    </p>
+  </div>
+);
 
 export default function NovelPage({ params }: { params: { id: string } }) {
   const { user } = useUser();
@@ -465,21 +485,30 @@ export default function NovelPage({ params }: { params: { id: string } }) {
 
         {/* Reviews */}
         <div>
-          {reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              onLike={handleLike}
-              onComment={handleComment}
-              onCommentLike={handleCommentLike}
-              showEditButton={review.user_id === user?.id}
-              onEdit={handleEditReview}
-            />
-          ))}
-          {hasMore && (
-            <Button onClick={() => setPage((prevPage) => prevPage + 1)}>
-              Load More Reviews
-            </Button>
+          {reviews.length > 0 ? (
+            <>
+              {reviews.map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  onLike={handleLike}
+                  onComment={handleComment}
+                  onCommentLike={handleCommentLike}
+                  showEditButton={review.user_id === user?.id}
+                  onEdit={handleEditReview}
+                />
+              ))}
+              {hasMore && (
+                <Button
+                  onClick={() => setPage((prevPage) => prevPage + 1)}
+                  className="mt-4"
+                >
+                  Load More Reviews
+                </Button>
+              )}
+            </>
+          ) : (
+            <NoReviewsPlaceholder />
           )}
         </div>
       </div>
