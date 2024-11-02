@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useUserData } from "@/contexts/UserContext";
 
 interface BannerUploadModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isValidFile, setIsValidFile] = useState(false);
+  const { updateUserData } = useUserData();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -61,16 +63,14 @@ const BannerUploadModal: React.FC<BannerUploadModalProps> = ({
       }
 
       const data = await response.json();
-      toast.success("Banner uploaded successfully.");
-      if (onSuccess) {
-        onSuccess(data.bannerUrl);
-      }
-      onClose();
+      const newBannerUrl = `${data.bannerUrl}?t=${Date.now()}`;
 
-      // Add a small delay before refreshing to ensure the toast is visible
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      if (onSuccess) {
+        onSuccess(newBannerUrl);
+      }
+      updateUserData({ banner_url: newBannerUrl });
+      onClose();
+      toast.success("Banner uploaded successfully.");
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload banner. Please try again.");

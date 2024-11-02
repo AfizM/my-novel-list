@@ -2,6 +2,7 @@ import ProfileLayout from "@/components/ProfileLayout";
 import FavoritesPageContent from "@/components/FavoritesPageContent";
 import { getUserByUsername } from "@/lib/users";
 import { notFound } from "next/navigation";
+import ProfileWrapper from "@/components/ProfileWrapper";
 
 export default async function FavoritesPage({
   params,
@@ -14,9 +15,5 @@ export default async function FavoritesPage({
     notFound();
   }
 
-  return (
-    <ProfileLayout user={user}>
-      <FavoritesPageContent user={user} />
-    </ProfileLayout>
-  );
+  return <FavoritesPageContent user={user} />;
 }

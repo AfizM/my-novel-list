@@ -2,6 +2,7 @@ import ProfileLayout from "@/components/ProfileLayout";
 import NovelListLayout from "@/components/NovelListLayout";
 import { getUserByUsername } from "@/lib/users";
 import { notFound } from "next/navigation";
+import ProfileWrapper from "@/components/ProfileWrapper";
 
 export default async function UserNovelListPage({
   params,
@@ -14,9 +15,5 @@ export default async function UserNovelListPage({
     notFound();
   }
 
-  return (
-    <ProfileLayout user={user}>
-      <NovelListLayout user={user} />
-    </ProfileLayout>
-  );
+  return <NovelListLayout user={user} />;
 }

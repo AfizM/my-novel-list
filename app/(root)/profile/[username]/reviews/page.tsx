@@ -1,4 +1,4 @@
-import ProfileLayout from "@/components/ProfileLayout";
+import ProfileWrapper from "@/components/ProfileWrapper";
 import ReviewsPageContent from "@/components/ReviewsPageContent";
 import { getUserByUsername } from "@/lib/users";
 import { notFound } from "next/navigation";
@@ -14,9 +14,5 @@ export default async function ReviewsPage({
     notFound();
   }
 
-  return (
-    <ProfileLayout user={user}>
-      <ReviewsPageContent user={user} />
-    </ProfileLayout>
-  );
+  return <ReviewsPageContent user={user} />;
 }

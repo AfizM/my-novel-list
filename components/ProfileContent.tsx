@@ -20,12 +20,12 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface User {
-  id: string;
+  user_id: string;
   username: string;
-  firstName: string;
-  lastName: string;
-  imageUrl: string;
-  about_me: string | null;
+  image_url: string;
+  banner_url: string;
+  about_me?: string;
+  id?: string;
 }
 
 interface ProfileContentProps {
