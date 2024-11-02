@@ -415,3 +415,20 @@ html body[data-scroll-locked] {
 .ProseMirror::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/40;
 }
+
+/* Add these styles */
+.cl-userButtonPopover {
+  @apply z-[100];
+}
+
+.cl-userButtonPopoverCard {
+  @apply z-[100] shadow-md border border-border;
+}
+
+.cl-userButtonPopoverActions {
+  @apply z-[100];
+}
+
+.cl-userButtonPopoverFooter {
+  @apply z-[100];
+}

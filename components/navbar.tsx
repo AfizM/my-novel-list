@@ -14,10 +14,13 @@ import {
 } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { NotificationBell } from "@/components/NotificationBell";
+import { useClerk } from "@clerk/nextjs";
+import { LogOut } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useUser();
+  const { openUserProfile, signOut } = useClerk();
 
   const navItems = [
     { name: "Social", href: "/" },
@@ -95,6 +98,7 @@ const Navbar = () => {
                 appearance={{
                   elements: {
                     avatarBox: "h-9 w-9",
+                    userButtonPopover: "z-[100]",
                   },
                 }}
               />
@@ -110,21 +114,82 @@ const Navbar = () => {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right">
+              <SheetContent side="right" className="w-[300px]">
                 <div className="flex flex-col space-y-4 mt-4">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className=" hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                  <Button variant="outline" className="w-full">
-                    Sign In
-                  </Button>
-                  <Button className="w-full">Sign Up</Button>
+                  <SignedOut>
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        onClick={() => setIsOpen(false)}
+                        className="hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                    <SignInButton>
+                      <Button
+                        onClick={() => setIsOpen(false)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Sign In
+                      </Button>
+                    </SignInButton>
+                    <SignUpButton>
+                      <Button
+                        onClick={() => setIsOpen(false)}
+                        className="w-full"
+                      >
+                        Sign Up
+                      </Button>
+                    </SignUpButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <div className="flex flex-col space-y-4">
+                      {signedInNavItems.map((item) => (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className="hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="pt-4 mt-4 border-t space-y-4">
+                      <Button
+                        variant="ghost"
+                        className="w-full flex items-center gap-2 justify-start px-3"
+                        onClick={() => {
+                          openUserProfile();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <img
+                          src={user?.imageUrl}
+                          alt="Profile"
+                          className="h-8 w-8 rounded-full"
+                        />
+                        <span>Manage Account</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full flex items-center gap-2 justify-start px-3 text-destructive hover:text-destructive"
+                        onClick={() => {
+                          signOut();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-5 w-5" />
+                        <span>Sign Out</span>
+                      </Button>
+                      <div className="mt-4 -ml-1">
+                        <ModeToggle />
+                      </div>
+                    </div>
+                  </SignedIn>
                 </div>
               </SheetContent>
             </Sheet>
