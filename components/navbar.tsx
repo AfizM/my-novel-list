@@ -33,7 +33,6 @@ const Navbar = () => {
     { name: "Browse", href: "/browse" },
     { name: "Profile", href: `/profile/${user?.username}` },
     { name: "Novel List", href: `/profile/${user?.username}/novellist` },
-
     { name: "Submission", href: "/submission" },
   ];
 
@@ -42,8 +41,8 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center ">
-            <Link href="/" className="text-2xl font-bold hover:text-primary ">
+          <div className="flex-1">
+            <Link href="/" className="text-2xl font-bold hover:text-primary">
               <div className="flex items-center">
                 <img src="/img/logo.png" alt="" width="35" height="20" />
                 <div className="ml-[2px]">MyNovelList</div>
@@ -52,9 +51,9 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center justify-center flex-1  ">
+          <div className="hidden nav:flex items-center justify-center">
             <SignedOut>
-              <div className="flex ml-[57px]">
+              <div className="flex ">
                 {navItems.map((item) => (
                   <Link
                     key={item.name}
@@ -67,7 +66,7 @@ const Navbar = () => {
               </div>
             </SignedOut>
             <SignedIn>
-              <div className="flex mr-[87px]">
+              <div className="flex">
                 {signedInNavItems.map((item) => (
                   <Link
                     key={item.name}
@@ -82,7 +81,7 @@ const Navbar = () => {
           </div>
 
           {/* Auth Buttons */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden nav:flex items-center justify-end flex-1">
             <SignedOut>
               <SignInButton>
                 <Button variant="outline" className="mr-2">
@@ -94,7 +93,6 @@ const Navbar = () => {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              {/* <NotificationBell /> */}
               <UserButton
                 appearance={{
                   elements: {
@@ -108,7 +106,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="nav:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
