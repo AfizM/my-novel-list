@@ -33,6 +33,21 @@ export async function GET(
           id,
           name,
           cover_image_url
+        ),
+        users (
+          username,
+          image_url
+        ),
+        review_comments (
+          id,
+          comment,
+          created_at,
+          likes,
+          liked_by,
+          users (
+            username,
+            image_url
+          )
         )
       `,
         { count: "exact" },
@@ -60,6 +75,12 @@ export async function GET(
       ...review,
       is_liked: review.liked_by?.includes(userId) || false,
       liked_by: undefined,
+      review_comments:
+        review.review_comments?.map((comment) => ({
+          ...comment,
+          is_liked: comment.liked_by?.includes(userId) || false,
+          liked_by: undefined,
+        })) || [],
     }));
 
     return NextResponse.json({

@@ -21,7 +21,7 @@ interface Review {
     username: string;
     image_url: string;
   };
-  review_comments: ReviewComment[];
+  review_comments?: ReviewComment[];
 }
 
 interface ReviewComment {
@@ -153,15 +153,18 @@ export function ReviewCard({
             <Avatar className="w-8 h-8">
               <AvatarImage
                 src={review.users?.image_url || ""}
-                alt="User avatar"
+                alt={`${review.users?.username}'s avatar`}
               />
+              <AvatarFallback>
+                {review.users?.username?.[0] || "U"}
+              </AvatarFallback>
             </Avatar>
             <div className="ml-2">
               <Link
-                href={`/profile/${review.users?.username || "#"}`}
+                href={`/profile/${review.users?.username}`}
                 className="font-semibold hover:underline text-primary"
               >
-                {review.users?.username || "Unknown User"}
+                {review.users?.username}
               </Link>
               <div className="flex items-center mt-1">
                 {renderStars(review.rating)}
@@ -212,7 +215,7 @@ export function ReviewCard({
               onClick={() => setShowCommentsAndReply(!showCommentsAndReply)}
             >
               <MessageCircle className="w-4 h-4 mr-1" />
-              <span>{review.review_comments.length}</span>
+              <span>{review.review_comments?.length || 0}</span>
             </Button>
             {/* {showEditButton && (
               <Button variant="ghost" size="sm" onClick={onEdit}>
@@ -226,7 +229,8 @@ export function ReviewCard({
 
       {showCommentsAndReply && (
         <div className="mt-4 flex flex-col space-y-3">
-          {review.review_comments && review.review_comments.length > 0 ? (
+          {Array.isArray(review.review_comments) &&
+          review.review_comments.length > 0 ? (
             review.review_comments.map((comment) => (
               <ReviewCommentCard
                 key={comment.id}

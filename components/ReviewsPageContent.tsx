@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { ReviewCard } from "@/components/ReviewCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 
 interface Review {
@@ -32,6 +31,17 @@ interface Review {
     name: string;
     cover_image_url: string;
   };
+  review_comments: {
+    id: string;
+    comment: string;
+    created_at: string;
+    likes: number;
+    is_liked: boolean;
+    users: {
+      username: string;
+      image_url: string;
+    };
+  }[];
 }
 
 interface ReviewsPageContentProps {
@@ -41,87 +51,56 @@ interface ReviewsPageContentProps {
   };
 }
 
-const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
-
 export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [sort, setSort] = useState("recent");
-  const { ref, inView } = useInView();
-  const [cache, setCache] = useState<{
-    [key: string]: { data: Review[]; timestamp: number };
-  }>({});
+  const [isReviewsLoading, setIsReviewsLoading] = useState(true);
 
-  const debouncedLoading = useDebounce(loading, 200);
+  const fetchReviews = async (pageNum = 1) => {
+    setIsReviewsLoading(true);
+    try {
+      const response = await fetch(
+        `/api/users/${user.username}/reviews?page=${pageNum}&sort=${sort}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch reviews");
+      const data = await response.json();
 
-  const getCacheKey = useCallback(
-    (pageNum: number) => {
-      return `${user.username}-${sort}-${pageNum}`;
-    },
-    [user.username, sort],
-  );
+      // Ensure reviews have the correct structure
+      const formattedReviews = data.reviews.map((review) => ({
+        ...review,
+        review_comments: review.review_comments || [],
+        users: review.users || { username: "Unknown User", image_url: "" },
+      }));
 
-  const fetchReviews = useCallback(
-    async (pageNum = 1) => {
-      const cacheKey = getCacheKey(pageNum);
-      const cachedData = cache[cacheKey];
-
-      if (cachedData && Date.now() - cachedData.timestamp < CACHE_TIME) {
-        setReviews((prevReviews) =>
-          pageNum === 1
-            ? cachedData.data
-            : [...prevReviews, ...cachedData.data],
-        );
-        setHasMore(cachedData.data.length === 10); // Assuming 10 reviews per page
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(
-          `/api/users/${user.username}/reviews?page=${pageNum}&sort=${sort}`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch reviews");
-        const data = await response.json();
-        setReviews((prevReviews) =>
-          pageNum === 1 ? data.reviews : [...prevReviews, ...data.reviews],
-        );
-        setHasMore(data.hasMore);
-        setCache((prevCache) => ({
-          ...prevCache,
-          [cacheKey]: { data: data.reviews, timestamp: Date.now() },
-        }));
-      } catch (err) {
-        setError("An error occurred while fetching reviews. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user.username, sort, cache, getCacheKey],
-  );
+      setReviews((prevReviews) =>
+        pageNum === 1
+          ? formattedReviews
+          : [...prevReviews, ...formattedReviews],
+      );
+      console.log(reviews);
+      setHasMore(data.hasMore);
+    } catch (err) {
+      setError("An error occurred while fetching reviews. Please try again.");
+    } finally {
+      setIsReviewsLoading(false);
+    }
+  };
 
   useEffect(() => {
     setPage(1);
     setReviews([]);
     fetchReviews(1);
-  }, [user.username, sort, fetchReviews]);
-
-  useEffect(() => {
-    if (inView && hasMore && !loading) {
-      setPage((prevPage) => prevPage + 1);
-    }
-  }, [inView, hasMore, loading]);
+  }, [user.username, sort]);
 
   useEffect(() => {
     if (page > 1) {
       fetchReviews(page);
     }
-  }, [page, fetchReviews]);
+  }, [page]);
 
   const handleLike = async (
     reviewId: string,
@@ -135,20 +114,58 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
           : review,
       ),
     );
-    // Update cache
-    Object.keys(cache).forEach((key) => {
-      setCache((prevCache) => ({
-        ...prevCache,
-        [key]: {
-          ...prevCache[key],
-          data: prevCache[key].data.map((review) =>
-            review.id === reviewId
-              ? { ...review, is_liked: isLiked, likes: newLikes }
-              : review,
-          ),
-        },
-      }));
-    });
+  };
+
+  const handleComment = async (reviewId: string, newComment: string) => {
+    try {
+      const response = await fetch(`/api/reviews/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ review_id: reviewId, comment: newComment }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add comment");
+      const addedComment = await response.json();
+
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                review_comments: [
+                  ...(review.review_comments || []),
+                  addedComment,
+                ],
+              }
+            : review,
+        ),
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      throw error;
+    }
+  };
+
+  const handleCommentLike = async (
+    reviewId: string,
+    commentId: string,
+    isLiked: boolean,
+    newLikes: number,
+  ) => {
+    setReviews((prevReviews) =>
+      prevReviews.map((review) =>
+        review.id === reviewId
+          ? {
+              ...review,
+              review_comments: review.review_comments?.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, is_liked: isLiked, likes: newLikes }
+                  : comment,
+              ),
+            }
+          : review,
+      ),
+    );
   };
 
   return (
@@ -169,50 +186,38 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
         </Select>
       </div>
       <div className="space-y-6">
-        {reviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={{
-              ...review,
-              users: {
-                username: user.username,
-                image_url: user.image_url || "",
-              },
-              review_comments: [],
-            }}
-            onLike={handleLike}
-            onComment={() => {}}
-            onCommentLike={() => {}}
-            showNovel={true}
-          />
-        ))}
-        {debouncedLoading &&
-          Array(1)
-            .fill(0)
-            .map((_, index) => (
-              <div key={`skeleton-${index}`} className="space-y-3">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[400px]" />
-                <Skeleton className="h-20 w-full" />
-              </div>
+        {isReviewsLoading && page === 1 ? (
+          <div className="mt-4">
+            <Skeleton className="h-32 w-full" />
+          </div>
+        ) : reviews.length > 0 ? (
+          <>
+            {reviews.map((review) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                onLike={handleLike}
+                onComment={handleComment}
+                onCommentLike={handleCommentLike}
+                showNovel={true}
+              />
             ))}
+            {hasMore && (
+              <Button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={isReviewsLoading}
+                className="mt-4"
+              >
+                {isReviewsLoading ? "Loading..." : "Load More Reviews"}
+              </Button>
+            )}
+          </>
+        ) : (
+          <div className="text-center text-gray-500 mt-8">
+            No reviews found.
+          </div>
+        )}
       </div>
-      {error && (
-        <div className="text-red-500 text-center mt-4 p-2 bg-red-100 rounded">
-          {error}
-          <Button onClick={() => fetchReviews(page)} className="ml-2">
-            Retry
-          </Button>
-        </div>
-      )}
-      {!debouncedLoading && !error && hasMore && (
-        <div ref={ref} className="h-10" />
-      )}
-      {!hasMore && (
-        <div className="text-center mt-4 text-gray-500">
-          No more reviews to load
-        </div>
-      )}
     </div>
   );
 }
