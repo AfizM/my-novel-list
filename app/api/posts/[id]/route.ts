@@ -32,7 +32,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Delete the post
+    // Delete comments first
+    const { error: commentsError } = await supabase
+      .from("post_comments")
+      .delete()
+      .eq("post_id", postId);
+
+    if (commentsError) throw commentsError;
+
+    // Then delete the post
     const { error: deleteError } = await supabase
       .from("posts")
       .delete()

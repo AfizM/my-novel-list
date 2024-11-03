@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { toast } from "sonner";
 
 interface User {
   user_id: string;
@@ -246,6 +247,15 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     } catch (error) {
       console.error("Error updating about me:", error);
       // Handle error (e.g., show an error message to the user)
+    }
+  };
+
+  const handlePostDelete = async (postId: string) => {
+    try {
+      setPosts(posts.filter((post) => post.id !== postId));
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to delete post");
     }
   };
 
@@ -485,6 +495,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                   onLike={handleLike}
                   onComment={handleComment}
                   onCommentLike={handleCommentLike}
+                  onDelete={handlePostDelete}
+                  currentUserId={currentUser?.id}
                 />
               ))}
 

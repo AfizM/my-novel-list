@@ -10,6 +10,8 @@ export async function GET(request: Request) {
   const page = parseInt(searchParams.get("page") || "1");
   const tab = searchParams.get("tab") || "global";
   const offset = (page - 1) * POSTS_PER_PAGE;
+  console.log("userId", userId);
+  console.log("TABBBB", tab);
 
   try {
     let query = supabase.from("posts").select(

@@ -21,6 +21,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Post {
   id: string;
@@ -169,11 +180,36 @@ export function PostCard({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-32">
                       <DropdownMenuItem
-                        onClick={handleDelete}
+                        onClick={(e) => e.preventDefault()}
                         className="text-red-600 focus:text-red-600 focus:bg-red-50"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <div className="flex items-center">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </div>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete your post and all its
+                                comments.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={handleDelete}
+                                className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
