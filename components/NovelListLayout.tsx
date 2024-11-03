@@ -77,7 +77,7 @@ const NovelItem = ({ novel, onSelect, isCurrentUser }) => {
       <TableCell className="w-[560px]">
         <div className="grid grid-cols-[auto,1fr,auto] gap-3 items-center">
           <div
-            className="relative cursor-pointer"
+            className={`relative ${isCurrentUser ? "cursor-pointer" : ""}`}
             onClick={() => isCurrentUser && onSelect(novel)}
           >
             <Avatar className="w-10 h-10">
