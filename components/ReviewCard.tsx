@@ -49,6 +49,7 @@ interface ReviewCardProps {
   showNovel?: boolean;
   showEditButton?: boolean;
   onEdit?: () => void;
+  currentUserId?: string | null;
 }
 
 export function ReviewCard({
@@ -59,6 +60,7 @@ export function ReviewCard({
   showNovel,
   showEditButton,
   onEdit,
+  currentUserId,
 }: ReviewCardProps) {
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
@@ -85,13 +87,13 @@ export function ReviewCard({
   }, 300);
 
   const handleLike = useDebouncedCallback(async () => {
+    if (!currentUserId) {
+      toast.error("Please sign in to like reviews");
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/reviews/${review.id}/like`, {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Failed to like review");
-      const { likes, action } = await response.json();
-      onLike(review.id, action === "liked", likes);
+      await onLike(review.id, !review.is_liked, review.likes);
     } catch (error) {
       console.error("Error liking review:", error);
     }

@@ -59,6 +59,7 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
   const [hasMore, setHasMore] = useState(true);
   const [sort, setSort] = useState("recent");
   const [isReviewsLoading, setIsReviewsLoading] = useState(true);
+  const [pendingLikes, setPendingLikes] = useState<Set<string>>(new Set());
 
   const fetchReviews = async (pageNum = 1) => {
     setIsReviewsLoading(true);
@@ -105,15 +106,64 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
   const handleLike = async (
     reviewId: string,
     isLiked: boolean,
-    newLikes: number,
+    likes: number,
   ) => {
-    setReviews((prevReviews) =>
-      prevReviews.map((review) =>
-        review.id === reviewId
-          ? { ...review, is_liked: isLiked, likes: newLikes }
-          : review,
-      ),
-    );
+    if (pendingLikes.has(reviewId)) return;
+
+    try {
+      setPendingLikes((prev) => new Set(prev).add(reviewId));
+
+      // Optimistic update
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                is_liked: !review.is_liked,
+                likes: review.is_liked ? review.likes - 1 : review.likes + 1,
+              }
+            : review,
+        ),
+      );
+
+      const response = await fetch(`/api/reviews/${reviewId}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to update like");
+
+      const data = await response.json();
+
+      // Update with server response
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                is_liked: data.action === "liked",
+                likes: data.likes,
+              }
+            : review,
+        ),
+      );
+    } catch (error) {
+      // Revert on error
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review.id === reviewId
+            ? { ...review, is_liked: isLiked, likes: likes }
+            : review,
+        ),
+      );
+      toast.error("Failed to update like");
+    } finally {
+      setPendingLikes((prev) => {
+        const next = new Set(prev);
+        next.delete(reviewId);
+        return next;
+      });
+    }
   };
 
   const handleComment = async (reviewId: string, newComment: string) => {
@@ -200,6 +250,7 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
                 onComment={handleComment}
                 onCommentLike={handleCommentLike}
                 showNovel={true}
+                currentUserId={user.user_id}
               />
             ))}
             {hasMore && (
