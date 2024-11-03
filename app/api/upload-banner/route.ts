@@ -51,7 +51,16 @@ export async function POST(request: Request) {
     // Update user's banner URL in the database
     await updateUserBanner(userId, result.secure_url);
 
-    return NextResponse.json({ bannerUrl: result.secure_url });
+    return NextResponse.json(
+      { bannerUrl: result.secure_url },
+      {
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+    );
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
