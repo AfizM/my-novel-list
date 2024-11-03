@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Star } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { NovelListSkeleton } from "@/components/NovelListSkeleton";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -63,7 +63,12 @@ const NovelItem = ({ novel, onSelect, isCurrentUser }) => {
           <span>{novel.name}</span>
         </div>
       </TableCell>
-      <TableCell className="text-center">{novel.rating}</TableCell>
+      <TableCell className="text-center">
+        <div className="flex items-center justify-center gap-1">
+          {novel.rating}
+          <Star className="w-4 h-4 fill-primary text-primary" />
+        </div>
+      </TableCell>
       <TableCell className="text-center">
         <span className="text-sm">{novel.chapter_progress}</span>
       </TableCell>
@@ -89,7 +94,7 @@ const NovelTable = ({ novels, title, onSelectNovel, isCurrentUser }) => {
             <TableHead className="pl-[4.2rem]">Title</TableHead>
             <TableHead>Score</TableHead>
             <TableHead>Chapters</TableHead>
-            <TableHead>Country</TableHead>
+            <TableHead>Language</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
