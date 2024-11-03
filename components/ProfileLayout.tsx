@@ -165,7 +165,10 @@ export default function ProfileLayout({ children, user }) {
         <div className="flex justify-center space-x-4 border-b-2 min-w-max px-4">
           {navItems.map((item) => {
             const href = `/profile/${userData.username}/${item.href}`;
-            const isActive = pathname === href;
+            const isActive =
+              pathname === href ||
+              (item.name === "Overview" &&
+                pathname === `/profile/${userData.username}`);
 
             return (
               <Link

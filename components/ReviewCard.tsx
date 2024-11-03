@@ -144,9 +144,6 @@ export function ReviewCard({
                 src={review.users?.image_url || ""}
                 alt="User avatar"
               />
-              <AvatarFallback>
-                {review.users?.username?.[0] || "U"}
-              </AvatarFallback>
             </Avatar>
             <div className="ml-2">
               <Link
