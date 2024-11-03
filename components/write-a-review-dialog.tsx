@@ -76,6 +76,7 @@ export default function WriteReviewDialog({
     existingReview?.review_description || "",
   );
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const allRatingsProvided = Object.values(ratings).every(
@@ -85,6 +86,9 @@ export default function WriteReviewDialog({
   }, [ratings, reviewText]);
 
   const handleSubmitReview = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       const url = "/api/reviews";
 
@@ -122,6 +126,8 @@ export default function WriteReviewDialog({
     } catch (error) {
       console.error("Error submitting review:", error);
       toast.error("Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -187,9 +193,13 @@ export default function WriteReviewDialog({
           <Button
             type="submit"
             onClick={handleSubmitReview}
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSubmitting}
           >
-            {existingReview ? "Update" : "Post"}
+            {isSubmitting
+              ? "Submitting..."
+              : existingReview
+              ? "Update"
+              : "Post"}
           </Button>
         </DialogFooter>
       </DialogContent>

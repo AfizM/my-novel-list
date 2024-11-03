@@ -7,6 +7,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { Textarea } from "./ui/textarea";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface Review {
   id: string;
@@ -62,14 +63,24 @@ export function ReviewCard({
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   const formattedTime = formatRelativeTime(review.created_at);
 
   const handleComment = useDebouncedCallback(async () => {
-    if (comment.trim()) {
-      await onComment(review.id, comment);
-      setComment("");
-      setIsCommenting(false);
+    if (comment.trim() && !isSubmittingComment) {
+      setIsSubmittingComment(true);
+      try {
+        await onComment(review.id, comment);
+        setComment("");
+        setIsCommenting(false);
+        toast.success("Comment posted successfully");
+      } catch (error) {
+        console.error("Error posting comment:", error);
+        toast.error("Failed to post comment. Please try again.");
+      } finally {
+        setIsSubmittingComment(false);
+      }
     }
   }, 300);
 
@@ -232,6 +243,7 @@ export function ReviewCard({
             comment={comment}
             setComment={setComment}
             handleComment={handleComment}
+            isLoading={isSubmittingComment}
           />
         </div>
       )}
@@ -316,10 +328,12 @@ function CommentInput({
   comment,
   setComment,
   handleComment,
+  isLoading,
 }: {
   comment: string;
   setComment: (comment: string) => void;
   handleComment: () => void;
+  isLoading: boolean;
 }) {
   return (
     <div className="w-11/12 mx-auto rounded" style={{ fontSize: "0.85rem" }}>
@@ -329,6 +343,7 @@ function CommentInput({
         onChange={(e) => setComment(e.target.value)}
         placeholder="Write a reply..."
         rows={2}
+        disabled={isLoading}
       />
       <div className="flex justify-end mt-2">
         <Button
@@ -336,14 +351,16 @@ function CommentInput({
           onClick={handleComment}
           className="mr-2"
           style={{ fontSize: "0.8rem" }}
+          disabled={isLoading}
         >
-          Post
+          {isLoading ? "Posting..." : "Post"}
         </Button>
         <Button
           size="sm"
           variant="outline"
           onClick={() => setComment("")}
           style={{ fontSize: "0.8rem" }}
+          disabled={isLoading}
         >
           Cancel
         </Button>
