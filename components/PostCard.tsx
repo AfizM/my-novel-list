@@ -91,6 +91,7 @@ export function PostCard({
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [isCommentLoading, setIsCommentLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formattedTime = useMemo(
     () => formatRelativeTime(post.created_at),
@@ -128,7 +129,10 @@ export function PostCard({
   }, 300);
 
   const handleDelete = async () => {
+    if (isDeleting) return;
+
     try {
+      setIsDeleting(true);
       const response = await fetch(`/api/posts/${post.id}`, {
         method: "DELETE",
       });
@@ -140,6 +144,8 @@ export function PostCard({
     } catch (error) {
       console.error("Error deleting post:", error);
       toast.error("Failed to delete post");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -214,8 +220,16 @@ export function PostCard({
                               <AlertDialogAction
                                 onClick={handleDelete}
                                 className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                                disabled={isDeleting}
                               >
-                                Delete
+                                {isDeleting ? (
+                                  <div className="flex items-center">
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                    Deleting...
+                                  </div>
+                                ) : (
+                                  "Delete"
+                                )}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
