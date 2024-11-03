@@ -141,7 +141,9 @@ export default function SubmissionPage() {
     <div className="min-h-screen">
       <div className="w-full max-w-7xl mx-auto my-0 px-9 flex justify-center">
         <div className="w-full max-w-lg">
-          <h2 className="text-2xl font-bold mb-6 mt-8">Submit a Novel</h2>
+          <h2 className="text-2xl font-bold mb-6 mt-8">
+            Novel Submission Form
+          </h2>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -213,7 +215,7 @@ export default function SubmissionPage() {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)]">
+                        <SelectTrigger className="shadow-[0_2px_4px_0_var(--shadow-color)] text-muted-foreground font-normal">
                           <SelectValue placeholder="Select a language" />
                         </SelectTrigger>
                       </FormControl>
