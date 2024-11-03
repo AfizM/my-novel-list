@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+export const revalidate = 0;
 import React, { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { PostCard } from "@/components/PostCard";

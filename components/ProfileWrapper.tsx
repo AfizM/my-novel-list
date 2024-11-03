@@ -1,4 +1,5 @@
 "use client";
+export const revalidate = 0;
 import { UserProvider } from "@/contexts/UserContext";
 import ProfileLayout from "./ProfileLayout";
 
