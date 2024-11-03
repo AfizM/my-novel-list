@@ -73,6 +73,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  const [isUpdatingAboutMe, setIsUpdatingAboutMe] = useState(false);
+
   const debouncedLoading = useDebounce(isLoading, 200);
 
   const fetchData = useCallback(
@@ -228,6 +230,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   };
 
   const handleUpdateAboutMe = async () => {
+    setIsUpdatingAboutMe(true);
     try {
       const response = await fetch(`/api/users/${user.username}/about-me`, {
         method: "PUT",
@@ -241,12 +244,14 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         throw new Error("Failed to update about me");
       }
 
-      // Update the user object with the new about_me
       user.about_me = aboutMe;
       setIsEditing(false);
+      toast.success("About me updated successfully");
     } catch (error) {
       console.error("Error updating about me:", error);
-      // Handle error (e.g., show an error message to the user)
+      toast.error("Failed to update about me");
+    } finally {
+      setIsUpdatingAboutMe(false);
     }
   };
 
@@ -295,10 +300,16 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                           setAboutMe(user.about_me || "");
                         }}
                         variant="outline"
+                        disabled={isUpdatingAboutMe}
                       >
                         Cancel
                       </Button>
-                      <Button onClick={handleUpdateAboutMe}>Update</Button>
+                      <Button
+                        onClick={handleUpdateAboutMe}
+                        disabled={isUpdatingAboutMe}
+                      >
+                        {isUpdatingAboutMe ? "Updating..." : "Update"}
+                      </Button>
                     </div>
                   </div>
                 ) : (

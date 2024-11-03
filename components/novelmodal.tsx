@@ -301,6 +301,15 @@ export function NovelModal({
                     placeholder="Chapter progress"
                     value={chapterProgress}
                     onChange={(e) => setChapterProgress(e.target.value)}
+                    min="0"
+                    max="10000"
+                    onInput={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      if (parseInt(input.value) > 10000) {
+                        input.value = "10000";
+                        setChapterProgress("10000");
+                      }
+                    }}
                   />
                 </div>
               </div>

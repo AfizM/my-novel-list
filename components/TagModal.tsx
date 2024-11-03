@@ -25,6 +25,7 @@ export function TagModal({
   const [newTag, setNewTag] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -51,13 +52,16 @@ export function TagModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newTag.trim()) {
+    if (newTag.trim() && !isSubmitting) {
+      setIsSubmitting(true);
       try {
         await onAddTag(newTag.trim());
         setNewTag("");
         toast.success("Tag added successfully");
       } catch (error) {
         toast.error("Failed to add tag. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -82,6 +86,7 @@ export function TagModal({
                 setShowSuggestions(true);
               }}
               placeholder="Enter new tag"
+              disabled={isSubmitting}
             />
             {showSuggestions && suggestions.length > 0 && (
               <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1">
@@ -97,7 +102,9 @@ export function TagModal({
               </ul>
             )}
           </div>
-          <Button type="submit">Add Tag</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Adding..." : "Add Tag"}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
