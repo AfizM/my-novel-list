@@ -282,6 +282,7 @@ export function PostCard({
             setComment={setComment}
             handleComment={handleComment}
             setShowCommentsAndReply={setShowCommentsAndReply}
+            isLoading={isCommentLoading}
           />
         </div>
       )}
@@ -370,6 +371,12 @@ function CommentInput({
   handleComment,
   setShowCommentsAndReply,
   isLoading,
+}: {
+  comment: string;
+  setComment: (comment: string) => void;
+  handleComment: () => void;
+  setShowCommentsAndReply: (show: boolean) => void;
+  isLoading: boolean;
 }) {
   const handleCancel = () => {
     setComment("");
