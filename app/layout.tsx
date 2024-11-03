@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Footer } from "@/components/footer";
 import { Toaster } from "sonner";
+import { QueryProvider } from "./providers/QueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,17 +33,19 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <html lang="en" suppressHydrationWarning>
         <head />
         <body className="flex flex-col min-h-screen">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Navbar />
-            <div className="flex-grow mt-6">{children}</div>
-            <Footer />
-          </ThemeProvider>
-          <Toaster />
+          <QueryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Navbar />
+              <div className="flex-grow mt-6">{children}</div>
+              <Footer />
+            </ThemeProvider>
+            <Toaster />
+          </QueryProvider>
         </body>
       </html>
     </ClerkProvider>

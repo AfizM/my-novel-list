@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,11 +15,9 @@ import {
 } from "@/components/ui/select";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
-import { useInView } from "react-intersection-observer";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDebounce } from "@/hooks/useDebounce";
 import { NOVEL_GENRES } from "@/lib/constants";
 import { FiltersPanel } from "@/components/FiltersPanel";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,8 @@ interface Novel {
   updated_at: string;
 }
 
+const ITEMS_PER_PAGE = 20;
+
 export default function Home() {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [offset, setOffset] = useState(0);
@@ -56,7 +59,6 @@ export default function Home() {
   const [status, setStatus] = useState("Any");
   const [genre, setGenre] = useState("Any");
   const [search, setSearch] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -66,59 +68,67 @@ export default function Home() {
   const debouncedSearch = useDebounce(search, 300);
   const debouncedLoading = useDebounce(loading, 200);
 
-  const { ref, inView } = useInView({
-    threshold: 0,
-  });
+  const parentRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (inView && hasMore && !loading && !loadingMore) {
-      setOffset((prev) => prev + 20);
-      setLoadingMore(true);
-    }
-  }, [inView, hasMore, loading, loadingMore]);
-
-  useEffect(() => {
-    setNovels([]);
-    setOffset(0);
-    setHasMore(true);
-    fetchNovels(0);
-  }, [sort, status, genre, debouncedSearch, origin, chapterCount]);
-
-  useEffect(() => {
-    if (offset > 0 && loadingMore) {
-      fetchNovels(offset);
-    }
-  }, [offset]);
-
-  const fetchNovels = async (currentOffset: number) => {
-    if (currentOffset === 0) {
-      setLoading(true);
-    }
-    setError(null);
-
-    const params = new URLSearchParams({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isError,
+    error: queryError,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: [
+      "novels",
       sort,
-      status: status !== "Any" ? status : "",
-      genre: genre !== "Any" ? genre : "",
-      search: debouncedSearch,
-      offset: currentOffset.toString(),
-      limit: "20",
-      origin: origin !== "any" ? origin : "",
-      min_chapters: chapterCount > 0 ? chapterCount.toString() : "",
-    });
-    try {
+      status,
+      genre,
+      debouncedSearch,
+      origin,
+      chapterCount,
+    ],
+    queryFn: async ({ pageParam = 0 }) => {
+      const params = new URLSearchParams({
+        sort,
+        status: status !== "Any" ? status : "",
+        genre: genre !== "Any" ? genre : "",
+        search: debouncedSearch,
+        offset: pageParam.toString(),
+        limit: ITEMS_PER_PAGE.toString(),
+        origin: origin !== "any" ? origin : "",
+        min_chapters: chapterCount > 0 ? chapterCount.toString() : "",
+      });
+
       const response = await fetch(`/api/novels?${params}`);
       if (!response.ok) throw new Error("Failed to fetch novels");
-      const { data, count } = await response.json();
-      setNovels((prev) => (currentOffset === 0 ? data : [...prev, ...data]));
-      setHasMore(currentOffset + data.length < count);
-    } catch (err) {
-      setError("An error occurred while fetching novels. Please try again.");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      return response.json();
+    },
+    getNextPageParam: (lastPage, pages) => {
+      const totalFetched = pages.length * ITEMS_PER_PAGE;
+      return lastPage.count > totalFetched ? totalFetched : undefined;
+    },
+    initialPageParam: 0,
+  });
+
+  const allNovels = data?.pages.flatMap((page) => page.data) ?? [];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetching) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    if (parentRef.current) {
+      observer.observe(parentRef.current);
     }
-  };
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetching]);
 
   return (
     <div className="w-full max-w-7xl mx-auto my-0 px-9">
@@ -224,34 +234,34 @@ export default function Home() {
         }}
       >
         <AnimatePresence>
-          {novels.map((novel) => (
+          {allNovels.map((novel) => (
             <NovelCard key={novel.id} novel={novel} />
           ))}
         </AnimatePresence>
-        {(debouncedLoading || loadingMore) &&
-          Array(20)
-            .fill(0)
-            .map((_, index) => (
-              <motion.div
-                key={`skeleton-${index}`}
-                className="flex flex-col"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Skeleton height={278} className="w-full rounded-md" />
-                <Skeleton width={120} height={20} className="mt-2" />
-              </motion.div>
-            ))}
+
+        {isFetching && (
+          <>
+            {Array(6)
+              .fill(0)
+              .map((_, index) => (
+                <NovelCardSkeleton key={`skeleton-${index}`} />
+              ))}
+          </>
+        )}
       </motion.div>
-      {error && <div className="text-red-500 text-center mt-4">{error}</div>}
-      {!debouncedLoading && !loadingMore && !error && hasMore && (
-        <div ref={ref} className="h-10" />
+
+      {isError && (
+        <div className="text-red-500 text-center mt-4">
+          {queryError instanceof Error
+            ? queryError.message
+            : "An error occurred"}
+          <Button onClick={() => refetch()} className="ml-2">
+            Retry
+          </Button>
+        </div>
       )}
-      {!hasMore && (
-        <div className="text-center mt-4">No more novels to load</div>
-      )}
+
+      <div ref={parentRef} className="h-10" />
     </div>
   );
 }
@@ -283,5 +293,14 @@ const NovelCard = ({ novel }: { novel: Novel }) => {
         </div>
       </Link>
     </motion.div>
+  );
+};
+
+const NovelCardSkeleton = () => {
+  return (
+    <div className="flex flex-col">
+      <Skeleton height={278} className="w-full rounded-md" />
+      <Skeleton width={120} height={20} className="mt-2" />
+    </div>
   );
 };
