@@ -231,6 +231,7 @@ export function ReviewCard({
               <ReviewCommentCard
                 key={comment.id}
                 comment={comment}
+                reviewId={review.id}
                 onLike={(commentId, isLiked, likes) =>
                   onCommentLike(review.id, commentId, isLiked, likes)
                 }
@@ -254,15 +255,20 @@ export function ReviewCard({
 function ReviewCommentCard({
   comment,
   onLike,
+  reviewId,
 }: {
   comment: ReviewComment;
   onLike: (commentId: string, isLiked: boolean, likes: number) => Promise<void>;
+  reviewId: string;
 }) {
   const handleLike = useDebouncedCallback(async () => {
     try {
-      const response = await fetch(`/api/reviews/comments/${comment.id}/like`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `/api/reviews/${reviewId}/comments/${comment.id}/like`,
+        {
+          method: "POST",
+        },
+      );
       if (!response.ok) throw new Error("Failed to like comment");
       const { likes, action } = await response.json();
       await onLike(comment.id, action === "liked", likes);
