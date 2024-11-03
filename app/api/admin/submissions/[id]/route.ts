@@ -61,6 +61,7 @@ export async function PUT(
         description: submission.description,
         complete_original: submission.complete_original,
         cover_image_url: submission.cover_image_url,
+        rating: 0,
       };
 
       // Insert into novels table

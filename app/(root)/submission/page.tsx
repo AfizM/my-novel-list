@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NOVEL_GENRES } from "@/lib/constants";
+import { useUser } from "@clerk/nextjs";
 
 const novelSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -88,6 +89,7 @@ const isValidImageUrl = (url: string) => {
 export default function SubmissionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
+  const { user } = useUser();
 
   const form = useForm<NovelFormValues>({
     resolver: zodResolver(novelSchema),
@@ -353,8 +355,16 @@ export default function SubmissionPage() {
                 )}
               />
 
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit Novel"}
+              <Button
+                type="submit"
+                disabled={isSubmitting || !user}
+                className="relative"
+              >
+                {isSubmitting
+                  ? "Submitting..."
+                  : !user
+                  ? "Please log in to submit"
+                  : "Submit Novel"}
               </Button>
             </form>
           </Form>
