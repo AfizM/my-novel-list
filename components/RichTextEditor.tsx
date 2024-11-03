@@ -132,7 +132,7 @@ export function RichTextEditor({
       </div>
       <EditorContent
         editor={editor}
-        className="p-2 max-h-[150px] overflow-y-auto"
+        className="max-h-[200px] overflow-hidden"
       />
     </div>
   );

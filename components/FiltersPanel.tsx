@@ -18,7 +18,7 @@ interface FiltersPanelProps {
   origin: string;
 }
 
-const ORIGINS = ["Any", "Chinese", "Korean", "Japanese", "Malaysian"];
+const ORIGINS = ["Any", "Chinese", "Korean", "Japanese"];
 
 export function FiltersPanel({
   isOpen,

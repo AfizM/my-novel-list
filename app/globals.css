@@ -379,6 +379,7 @@ html body[data-scroll-locked] {
   font-size: 0.9rem !important;
   line-height: 1.5;
   margin-bottom: 0.5em;
+  margin-top: 0;
 }
 
 .ProseMirror.is-editor-empty:first-child::before {
@@ -395,9 +396,11 @@ html body[data-scroll-locked] {
 }
 
 .ProseMirror {
-  min-height: 80px;
-  max-height: 150px;
+  min-height: 100px;
+  max-height: 200px;
   overflow-y: auto;
+  padding: 0.5rem;
+  margin: 0;
 }
 
 .ProseMirror::-webkit-scrollbar {

@@ -278,11 +278,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             <div className="text-[1.24rem] font-semibold leading-none tracking-tight mb-2">
               About me
             </div>
-            <Card
-              className="pt-4 relative"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
+            <Card className="pt-4 relative">
               <CardContent>
                 {debouncedLoading ? (
                   <Skeleton className="h-[100px] w-full" />
@@ -313,25 +309,25 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                     </div>
                   </div>
                 ) : (
-                  <div
-                    className="prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: aboutMe || "No about me information provided.",
-                    }}
-                  />
+                  <div className="relative group">
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: aboutMe || "No about me information provided.",
+                      }}
+                    />
+                    {currentUser?.username === user.username && (
+                      <Button
+                        className="absolute top-[-8px] right-[-8px] p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        variant="ghost"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 )}
               </CardContent>
-              {currentUser?.username === user.username &&
-                isHovered &&
-                !isEditing && (
-                  <Button
-                    className="absolute top-2 right-2 p-2"
-                    variant="ghost"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                )}
             </Card>
           </div>
           <div className="text-[1.24rem] font-semibold leading-none tracking-tight mb-4">
