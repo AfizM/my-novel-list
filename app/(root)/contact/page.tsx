@@ -9,8 +9,8 @@ export default function ContactPage() {
           <div className="prose dark:prose-invert max-w-none space-y-8">
             <div className="bg-card rounded-lg p-6 shadow-sm">
               <p className="text-lg leading-relaxed">
-                Have questions, suggestions, or found a bug? We'd love to hear
-                from you! Choose the best way to reach us below.
+                Have questions, suggestions, or found a bug? We&apos;d love to
+                hear from you! Choose the best way to reach us below.
               </p>
             </div>
 

@@ -40,9 +40,9 @@ export default function FAQPage() {
                         How do I add a novel to my list?
                       </p>
                       <p className="text-muted-foreground">
-                        Simply navigate to a novel's page and click the "Add to
-                        List" button. You can then select your reading status
-                        and chapter progress.
+                        Simply navigate to a novel&apos;s page and click the
+                        &quot;Add to List&quot; button. You can then select your
+                        reading status and chapter progress.
                       </p>
                     </div>
                   </div>

@@ -99,7 +99,7 @@ export default function AboutPage() {
             <div className="bg-card rounded-lg p-6 shadow-sm">
               <h3 className="text-xl font-semibold mb-4">Join Us Today</h3>
               <p className="leading-relaxed">
-                Whether you're a casual reader or a dedicated web novel
+                Whether you&apos;re a casual reader or a dedicated web novel
                 enthusiast, MyNovelList is your home for discovering, tracking,
                 and discussing the latest and greatest in web novels. Join our
                 growing community and start your reading journey today!

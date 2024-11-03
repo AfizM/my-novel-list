@@ -20,7 +20,7 @@ export default function AnnouncementsPage() {
                   </div>
                   <div className="space-y-4">
                     <p className="leading-relaxed">
-                      We've added new features to enhance your MyNovelList
+                      We&apos;ve added new features to enhance your MyNovelList
                       experience:
                     </p>
                     <div className="grid md:grid-cols-2 gap-4">
@@ -61,7 +61,7 @@ export default function AnnouncementsPage() {
               </div>
               <div className="space-y-4">
                 <p className="leading-relaxed">
-                  We've updated our community guidelines to ensure a better
+                  We&apos;ve updated our community guidelines to ensure a better
                   experience for all users. The new guidelines focus on:
                 </p>
                 <ul className="list-none space-y-2">
