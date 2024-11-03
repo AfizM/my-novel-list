@@ -90,6 +90,7 @@ export function PostCard({
   const [comment, setComment] = useState("");
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [isCommentLoading, setIsCommentLoading] = useState(false);
 
   const formattedTime = useMemo(
     () => formatRelativeTime(post.created_at),
@@ -97,10 +98,19 @@ export function PostCard({
   );
 
   const handleComment = useDebouncedCallback(async () => {
-    if (comment.trim()) {
-      await onComment(post.id, comment);
-      setComment("");
-      setIsCommenting(false);
+    if (comment.trim() && !isCommentLoading) {
+      setIsCommentLoading(true);
+      try {
+        await onComment(post.id, comment);
+        setComment("");
+        setIsCommenting(false);
+        toast.success("Comment posted successfully");
+      } catch (error) {
+        console.error("Error posting comment:", error);
+        toast.error("Failed to post comment. Please try again.");
+      } finally {
+        setIsCommentLoading(false);
+      }
     }
   }, 300);
 
@@ -359,6 +369,7 @@ function CommentInput({
   setComment,
   handleComment,
   setShowCommentsAndReply,
+  isLoading,
 }) {
   const handleCancel = () => {
     setComment("");
@@ -373,6 +384,7 @@ function CommentInput({
         onChange={(e) => setComment(e.target.value)}
         placeholder="Write a reply..."
         rows={2}
+        disabled={isLoading}
       />
       <div className="flex justify-end mt-2">
         <Button
@@ -380,14 +392,16 @@ function CommentInput({
           onClick={handleComment}
           className="mr-2"
           style={{ fontSize: "0.8rem" }}
+          disabled={isLoading}
         >
-          Post
+          {isLoading ? "Posting..." : "Post"}
         </Button>
         <Button
           size="sm"
           variant="outline"
           onClick={handleCancel}
           style={{ fontSize: "0.8rem" }}
+          disabled={isLoading}
         >
           Cancel
         </Button>

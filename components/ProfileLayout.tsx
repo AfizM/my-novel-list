@@ -106,7 +106,7 @@ export default function ProfileLayout({ children, user }) {
       <div className="relative w-full h-72">
         <img
           key={bannerKey}
-          src={userData.banner_url}
+          src={`${userData.banner_url}?t=${Date.now()}`}
           alt="Profile banner"
           className="w-full h-full object-cover"
           loading="eager"

@@ -56,8 +56,6 @@ export async function GET(request: Request) {
 
   query = query.range(offset, offset + limit - 1);
 
-  console.log("Final query:", query);
-
   try {
     const { data, count, error } = await query;
 
