@@ -26,16 +26,44 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { NovelModal } from "@/components/novelmodal";
-import { MoreHorizontal, Star } from "lucide-react";
+import { MoreHorizontal, Star, MessageSquare } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { NovelListSkeleton } from "@/components/NovelListSkeleton";
 import { useDebounce } from "@/hooks/useDebounce";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Slider,
+  SliderTrack,
+  SliderRange,
+  SliderThumb,
+} from "@/components/ui/slider";
 
 interface NovelListLayoutProps {
   user: any; // Replace 'any' with a proper user type
 }
 
 const CACHE_TIME = 60000; // 1 minute cache
+
+interface Novel {
+  id: number;
+  name: string;
+  cover_image_url: string;
+  authors: string[];
+  rating: number;
+  chapters_original_current: string;
+  original_language: string;
+  status: string;
+  chapter_progress: number;
+  rating_votes: number;
+  notes?: string;
+  updated_at: string;
+  created_at: string;
+}
 
 const NovelItem = ({ novel, onSelect, isCurrentUser }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -46,7 +74,7 @@ const NovelItem = ({ novel, onSelect, isCurrentUser }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <TableCell className="w-[560px]">
-        <div className="grid grid-cols-[auto,1fr] gap-3 items-center">
+        <div className="grid grid-cols-[auto,1fr,auto] gap-3 items-center">
           <div
             className="relative cursor-pointer"
             onClick={() => isCurrentUser && onSelect(novel)}
@@ -61,6 +89,21 @@ const NovelItem = ({ novel, onSelect, isCurrentUser }) => {
             )}
           </div>
           <span>{novel.name}</span>
+          {novel.notes && (
+            <TooltipProvider>
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <MessageSquare className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors " />
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  className="max-w-[300px] p-4 text-sm break-words whitespace-pre-wrap"
+                >
+                  {novel.notes}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </TableCell>
       <TableCell className="text-center">
@@ -122,6 +165,9 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [ratingFilter, setRatingFilter] = useState<number>(0);
+  const [chapterFilter, setChapterFilter] = useState<number>(0);
+  const [sortBy, setSortBy] = useState<string>("score");
 
   const debouncedLoading = useDebounce(isLoading, 200);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -149,24 +195,58 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
   }, [fetchNovels]);
 
   const filteredNovels = useMemo(() => {
-    const filtered = novels.filter((novel) =>
-      novel.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
-    );
+    const filtered = novels.filter((novel) => {
+      const matchesSearch = novel.name
+        .toLowerCase()
+        .includes(debouncedSearchTerm.toLowerCase());
+      const matchesRating = novel.rating >= ratingFilter;
+      const matchesChapters = novel.chapter_progress >= chapterFilter;
+
+      return matchesSearch && matchesRating && matchesChapters;
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "score":
+          return b.rating - a.rating;
+        case "progress":
+          return b.chapter_progress - a.chapter_progress;
+        case "last_updated":
+          return (
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+          );
+        case "last_added":
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        case "title":
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
 
     if (selectedFilter === "All") {
       return {
-        reading: filtered.filter((novel) => novel.status === "reading"),
-        planning: filtered.filter((novel) => novel.status === "planning"),
-        completed: filtered.filter((novel) => novel.status === "completed"),
+        reading: sorted.filter((novel) => novel.status === "reading"),
+        planning: sorted.filter((novel) => novel.status === "planning"),
+        completed: sorted.filter((novel) => novel.status === "completed"),
       };
     } else {
       return {
-        [selectedFilter.toLowerCase()]: filtered.filter(
+        [selectedFilter.toLowerCase()]: sorted.filter(
           (novel) => novel.status === selectedFilter.toLowerCase(),
         ),
       };
     }
-  }, [novels, selectedFilter, debouncedSearchTerm]);
+  }, [
+    novels,
+    selectedFilter,
+    debouncedSearchTerm,
+    ratingFilter,
+    chapterFilter,
+    sortBy,
+  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
@@ -180,6 +260,25 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+
+            {/* Sort Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Sort By</label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="score">Score</SelectItem>
+                  <SelectItem value="progress">Progress</SelectItem>
+                  <SelectItem value="last_updated">Last Updated</SelectItem>
+                  <SelectItem value="last_added">Last Added</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status Filter Buttons */}
             <div className="space-y-2">
               {["All", "Reading", "Planning", "Completed"].map((filter) => (
                 <Button
@@ -192,6 +291,51 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
                 </Button>
               ))}
             </div>
+
+            {/* Rating Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Minimum Rating: {ratingFilter}★
+              </label>
+              <Slider
+                defaultValue={[0]}
+                max={5}
+                step={0.5}
+                value={[ratingFilter]}
+                onValueChange={(value) => setRatingFilter(value[0])}
+                className="w-full"
+              />
+            </div>
+
+            {/* Chapter Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Minimum Chapters: {chapterFilter}
+              </label>
+              <Slider
+                defaultValue={[0]}
+                max={1000}
+                step={10}
+                value={[chapterFilter]}
+                onValueChange={(value) => setChapterFilter(value[0])}
+                className="w-full"
+              />
+            </div>
+
+            {/* Reset Filters Button */}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setRatingFilter(0);
+                setChapterFilter(0);
+                setSearchTerm("");
+                setSelectedFilter("All");
+                setSortBy("score");
+              }}
+            >
+              Reset Filters
+            </Button>
           </div>
         </div>
 
