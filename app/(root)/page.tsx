@@ -13,6 +13,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { useActivityStore } from "@/lib/stores/activityStore";
 
 interface Post {
   id: string;
@@ -46,12 +47,9 @@ interface Comment {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"following" | "global">(
-    "following",
-  );
+  const { tab, setTab } = useActivityStore();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -60,7 +58,6 @@ export default function Home() {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
-
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isTabSwitching, setIsTabSwitching] = useState(false);
 
@@ -74,9 +71,7 @@ export default function Home() {
       }
 
       try {
-        const response = await fetch(
-          `/api/posts?page=${pageNum}&tab=${activeTab}`,
-        );
+        const response = await fetch(`/api/posts?page=${pageNum}&tab=${tab}`);
         if (!response.ok) throw new Error("Failed to fetch posts");
         const { posts: newPosts, hasMore: moreExists } = await response.json();
 
@@ -95,24 +90,23 @@ export default function Home() {
         setIsTabSwitching(false);
       }
     },
-    [activeTab],
+    [tab],
   );
 
-  const handleLoadMore = useCallback(() => {
-    if (!isLoadingMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      setIsLoadingMore(true);
-      fetchPosts(nextPage, true);
-    }
-  }, [page, isLoadingMore, fetchPosts]);
-
+  // Effect to handle initial load and tab changes
   useEffect(() => {
     setPage(1);
     setPosts([]);
     setHasMore(true);
     fetchPosts(1, false);
-  }, [activeTab, fetchPosts]);
+  }, [tab, fetchPosts]);
+
+  // Effect to force global tab for logged out users
+  useEffect(() => {
+    if (!currentUser) {
+      setTab("global");
+    }
+  }, [currentUser, setTab]);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -130,19 +124,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!currentUser) {
-      setActiveTab("global");
-      // Reset posts when logging out
-      setPosts([]);
-      setPage(1);
-      setHasMore(true);
-      fetchPosts(1, false);
+      setTab("global");
     }
-  }, [currentUser, fetchPosts]);
+  }, [currentUser, setTab]);
 
   useEffect(() => {
     // If user is logged out, force global tab
     if (!currentUser) {
-      setActiveTab("global");
+      setTab("global");
       return;
     }
 
@@ -151,21 +140,20 @@ export default function Home() {
 
     // If no saved preference or invalid value, default to following
     if (!savedTab || (savedTab !== "following" && savedTab !== "global")) {
-      setActiveTab("following");
+      setTab("following");
       localStorage.setItem("activity-tab", "following");
       return;
     }
 
     // Use saved preference
-    setActiveTab(savedTab as "following" | "global");
+    setTab(savedTab as "following" | "global");
   }, [currentUser]);
-
   useEffect(() => {
     // Only save tab preference if user is logged in
     if (currentUser) {
-      localStorage.setItem("activity-tab", activeTab);
+      localStorage.setItem("activity-tab", tab);
     }
-  }, [activeTab, currentUser]);
+  }, [tab, currentUser]);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
@@ -273,6 +261,14 @@ export default function Home() {
     setPosts(posts.filter((post) => post.id !== postId));
   };
 
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchPosts(nextPage, true);
+    }
+  }, [page, isLoadingMore, fetchPosts]);
+
   return (
     <div className="min-h-screen">
       <div className="w-full max-w-7xl mx-auto my-0 px-4 sm:px-6 lg:px-9">
@@ -283,8 +279,8 @@ export default function Home() {
               (isAdmin ? (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
                   <Tabs
-                    value={activeTab}
-                    onValueChange={setActiveTab}
+                    value={tab}
+                    onValueChange={setTab}
                     className="w-full sm:w-auto"
                   >
                     <TabsList className="w-full sm:w-auto">
@@ -315,7 +311,7 @@ export default function Home() {
                   </Button>
                 </div>
               ) : (
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <Tabs value={tab} onValueChange={setTab}>
                   <TabsList>
                     <TabsTrigger value="following">Following</TabsTrigger>
                     <TabsTrigger value="global">Global</TabsTrigger>
@@ -423,7 +419,7 @@ export default function Home() {
 
               {!isTabSwitching && posts.length === 0 && (
                 <div className="text-center text-gray-500 mt-6 mb-8">
-                  {activeTab === "following"
+                  {tab === "following"
                     ? "No posts from people you follow yet. Try following more people!"
                     : "No posts found."}
                 </div>
