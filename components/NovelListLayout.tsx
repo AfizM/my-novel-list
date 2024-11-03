@@ -42,6 +42,7 @@ import {
   SliderRange,
   SliderThumb,
 } from "@/components/ui/slider";
+import { useNovelListStore } from "@/lib/stores/novelListStore";
 
 interface NovelListLayoutProps {
   user: any; // Replace 'any' with a proper user type
@@ -159,18 +160,28 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
   const { user: currentUser } = useUser();
   const isCurrentUser = user.user_id === currentUser?.id;
 
-  const [selectedFilter, setSelectedFilter] = useState("All");
-  const [selectedNovel, setSelectedNovel] = useState(null);
+  const {
+    selectedFilter,
+    searchTerm,
+    ratingFilter,
+    chapterFilter,
+    sortBy,
+    setSelectedFilter,
+    setSearchTerm,
+    setRatingFilter,
+    setChapterFilter,
+    setSortBy,
+    resetFilters,
+  } = useNovelListStore();
+
   const [novels, setNovels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [ratingFilter, setRatingFilter] = useState<number>(0);
-  const [chapterFilter, setChapterFilter] = useState<number>(0);
-  const [sortBy, setSortBy] = useState<string>("score");
 
   const debouncedLoading = useDebounce(isLoading, 200);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const [selectedNovel, setSelectedNovel] = useState(null);
 
   const fetchNovels = useCallback(async () => {
     setIsLoading(true);
@@ -323,17 +334,7 @@ export default function NovelListLayout({ user }: NovelListLayoutProps) {
             </div>
 
             {/* Reset Filters Button */}
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setRatingFilter(0);
-                setChapterFilter(0);
-                setSearchTerm("");
-                setSelectedFilter("All");
-                setSortBy("score");
-              }}
-            >
+            <Button variant="outline" className="w-full" onClick={resetFilters}>
               Reset Filters
             </Button>
           </div>
