@@ -76,6 +76,8 @@ export default function ProfileContent({ user }: ProfileContentProps) {
 
   const [isUpdatingAboutMe, setIsUpdatingAboutMe] = useState(false);
 
+  const [pendingLikes, setPendingLikes] = useState<Set<string>>(new Set());
+
   const debouncedLoading = useDebounce(isLoading, 200);
 
   const fetchData = useCallback(
@@ -170,19 +172,57 @@ export default function ProfileContent({ user }: ProfileContentProps) {
   const handleLike = async (
     postId: string,
     isLiked: boolean,
-    newLikeCount: number,
+    likes: number,
   ) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              likes: newLikeCount,
-              is_liked: isLiked,
-            }
-          : post,
-      ),
-    );
+    if (pendingLikes.has(postId)) return;
+
+    try {
+      setPendingLikes((prev) => new Set(prev).add(postId));
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                is_liked: !post.is_liked,
+                likes: post.is_liked ? post.likes - 1 : post.likes + 1,
+              }
+            : post,
+        ),
+      );
+
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to update like");
+
+      const data = await response.json();
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, is_liked: data.action === "liked", likes: data.likes }
+            : post,
+        ),
+      );
+    } catch (error) {
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, is_liked: isLiked, likes: likes }
+            : post,
+        ),
+      );
+      toast.error("Failed to update like");
+    } finally {
+      setPendingLikes((prev) => {
+        const next = new Set(prev);
+        next.delete(postId);
+        return next;
+      });
+    }
   };
 
   const handleComment = async (postId: string, comment: string) => {

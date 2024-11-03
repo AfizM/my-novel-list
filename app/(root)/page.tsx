@@ -60,6 +60,7 @@ export default function Home() {
   const router = useRouter();
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isTabSwitching, setIsTabSwitching] = useState(false);
+  const [pendingLikes, setPendingLikes] = useState<Set<string>>(new Set());
 
   const fetchPosts = useCallback(
     async (pageNum: number, isLoadMore = false) => {
@@ -193,17 +194,59 @@ export default function Home() {
     isLiked: boolean,
     likes: number,
   ) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              likes,
-              is_liked: isLiked,
-            }
-          : post,
-      ),
-    );
+    // Prevent duplicate requests
+    if (pendingLikes.has(postId)) return;
+
+    try {
+      setPendingLikes((prev) => new Set(prev).add(postId));
+
+      // Optimistic update
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                is_liked: !post.is_liked,
+                likes: post.is_liked ? post.likes - 1 : post.likes + 1,
+              }
+            : post,
+        ),
+      );
+
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to update like");
+
+      const data = await response.json();
+
+      // Update with server response
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, is_liked: data.action === "liked", likes: data.likes }
+            : post,
+        ),
+      );
+    } catch (error) {
+      // Revert on error
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, is_liked: isLiked, likes: likes }
+            : post,
+        ),
+      );
+      toast.error("Failed to update like");
+    } finally {
+      setPendingLikes((prev) => {
+        const next = new Set(prev);
+        next.delete(postId);
+        return next;
+      });
+    }
   };
 
   const handleComment = async (postId: string, comment: string) => {

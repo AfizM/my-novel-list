@@ -115,13 +115,13 @@ export function PostCard({
   }, 300);
 
   const handleLike = useDebouncedCallback(async () => {
+    if (!currentUserId) {
+      toast.error("Please sign in to like posts");
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/posts/${post.id}/like`, {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Failed to like post");
-      const { likes, action } = await response.json();
-      onLike(post.id, action === "liked", likes);
+      await onLike(post.id, !post.is_liked, post.likes);
     } catch (error) {
       console.error("Error liking post:", error);
     }
