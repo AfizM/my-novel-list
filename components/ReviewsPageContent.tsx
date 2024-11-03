@@ -250,7 +250,6 @@ export default function ReviewsPageContent({ user }: ReviewsPageContentProps) {
                 onComment={handleComment}
                 onCommentLike={handleCommentLike}
                 showNovel={true}
-                currentUserId={user.user_id}
               />
             ))}
             {hasMore && (

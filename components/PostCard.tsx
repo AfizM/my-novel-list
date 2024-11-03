@@ -291,13 +291,23 @@ export function PostCard({
           ) : (
             <p className="text-gray-500 text-sm">No comments yet.</p>
           )}
-          <CommentInput
-            comment={comment}
-            setComment={setComment}
-            handleComment={handleComment}
-            setShowCommentsAndReply={setShowCommentsAndReply}
-            isLoading={isCommentLoading}
-          />
+          {currentUserId ? (
+            <CommentInput
+              comment={comment}
+              setComment={setComment}
+              handleComment={handleComment}
+              setShowCommentsAndReply={setShowCommentsAndReply}
+              isLoading={isCommentLoading}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">
+              Please{" "}
+              <Link href="/sign-in" className="text-primary hover:underline">
+                sign in
+              </Link>{" "}
+              to comment
+            </p>
+          )}
         </div>
       )}
     </>

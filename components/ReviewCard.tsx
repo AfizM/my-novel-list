@@ -8,6 +8,7 @@ import { Textarea } from "./ui/textarea";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
 
 interface Review {
   id: string;
@@ -60,8 +61,8 @@ export function ReviewCard({
   showNovel,
   showEditButton,
   onEdit,
-  currentUserId,
 }: ReviewCardProps) {
+  const { user, isLoaded } = useUser();
   const [isCommenting, setIsCommenting] = useState(false);
   const [comment, setComment] = useState("");
   const [showCommentsAndReply, setShowCommentsAndReply] = useState(false);
@@ -87,7 +88,9 @@ export function ReviewCard({
   }, 300);
 
   const handleLike = useDebouncedCallback(async () => {
-    if (!currentUserId) {
+    if (!isLoaded) return;
+
+    if (!user) {
       toast.error("Please sign in to like reviews");
       return;
     }
@@ -214,7 +217,10 @@ export function ReviewCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowCommentsAndReply(!showCommentsAndReply)}
+              onClick={() => {
+                if (!isLoaded) return;
+                setShowCommentsAndReply(!showCommentsAndReply);
+              }}
             >
               <MessageCircle className="w-4 h-4 mr-1" />
               <span>{review.review_comments?.length || 0}</span>
@@ -241,18 +247,29 @@ export function ReviewCard({
                 onLike={(commentId, isLiked, likes) =>
                   onCommentLike(review.id, commentId, isLiked, likes)
                 }
+                currentUser={user}
               />
             ))
           ) : (
             <p className="text-gray-500 text-sm">No comments yet.</p>
           )}
-          <CommentInput
-            comment={comment}
-            setComment={setComment}
-            handleComment={handleComment}
-            isLoading={isSubmittingComment}
-            setShowCommentsAndReply={setShowCommentsAndReply}
-          />
+          {user ? (
+            <CommentInput
+              comment={comment}
+              setComment={setComment}
+              handleComment={handleComment}
+              isLoading={isSubmittingComment}
+              setShowCommentsAndReply={setShowCommentsAndReply}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">
+              Please{" "}
+              <Link href="/sign-in" className="text-primary hover:underline">
+                sign in
+              </Link>{" "}
+              to comment
+            </p>
+          )}
         </div>
       )}
     </>
@@ -263,12 +280,19 @@ function ReviewCommentCard({
   comment,
   onLike,
   reviewId,
+  currentUser,
 }: {
   comment: ReviewComment;
   onLike: (commentId: string, isLiked: boolean, likes: number) => Promise<void>;
   reviewId: string;
+  currentUser: any;
 }) {
   const handleLike = useDebouncedCallback(async () => {
+    if (!currentUser) {
+      toast.error("Please sign in to like comments");
+      return;
+    }
+
     try {
       const response = await fetch(
         `/api/reviews/${reviewId}/comments/${comment.id}/like`,
