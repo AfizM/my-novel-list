@@ -191,7 +191,7 @@ export function ReviewCard({
         <div className="mb-4 whitespace-pre-wrap break-words">
           {review.review_description}
         </div>
-        <div className="flex justify-between items-center text-sm text-gray-500">
+        <div className="flex justify-between items-center text-sm ">
           <span></span>
           <div className="flex items-center space-x-4">
             <Button
@@ -245,6 +245,7 @@ export function ReviewCard({
             setComment={setComment}
             handleComment={handleComment}
             isLoading={isSubmittingComment}
+            setShowCommentsAndReply={setShowCommentsAndReply}
           />
         </div>
       )}
@@ -335,12 +336,19 @@ function CommentInput({
   setComment,
   handleComment,
   isLoading,
+  setShowCommentsAndReply,
 }: {
   comment: string;
   setComment: (comment: string) => void;
   handleComment: () => void;
   isLoading: boolean;
+  setShowCommentsAndReply: (show: boolean) => void;
 }) {
+  const handleCancel = () => {
+    setComment("");
+    setShowCommentsAndReply(false);
+  };
+
   return (
     <div className="w-11/12 mx-auto rounded" style={{ fontSize: "0.85rem" }}>
       <Textarea
@@ -364,7 +372,7 @@ function CommentInput({
         <Button
           size="sm"
           variant="outline"
-          onClick={() => setComment("")}
+          onClick={handleCancel}
           style={{ fontSize: "0.8rem" }}
           disabled={isLoading}
         >
