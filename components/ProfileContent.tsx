@@ -90,24 +90,33 @@ export default function ProfileContent({ user }: ProfileContentProps) {
       setError(null);
 
       try {
-        const [statsResponse, favoritesResponse] = await Promise.all([
-          fetch(`/api/users/${user.user_id}/stats`),
-          fetch(`/api/users/${user.user_id}/favorite-novels`),
-        ]);
+        const [statsResponse, favoritesResponse, userResponse] =
+          await Promise.all([
+            fetch(`/api/users/${user.user_id}/stats`),
+            fetch(`/api/users/${user.user_id}/favorite-novels`),
+            fetch(`/api/users/${user.username}/profile`),
+          ]);
 
         const postsResponse = await fetch(
           `/api/users/${user.username}/posts?page=${pageNum}`,
         );
 
-        if (!postsResponse.ok || !statsResponse.ok || !favoritesResponse.ok) {
+        if (
+          !postsResponse.ok ||
+          !statsResponse.ok ||
+          !favoritesResponse.ok ||
+          !userResponse.ok
+        ) {
           throw new Error("Failed to fetch data");
         }
 
-        const [postsData, statsData, favoritesData] = await Promise.all([
-          postsResponse.json(),
-          statsResponse.json(),
-          favoritesResponse.json(),
-        ]);
+        const [postsData, statsData, favoritesData, userData] =
+          await Promise.all([
+            postsResponse.json(),
+            statsResponse.json(),
+            favoritesResponse.json(),
+            userResponse.json(),
+          ]);
 
         if (isLoadMore) {
           setPosts((prev) => [...prev, ...postsData.posts]);
@@ -117,6 +126,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         setHasMore(postsData.hasMore);
         setUserStats(statsData);
         setFavoriteNovels(favoritesData);
+        setAboutMe(userData.about_me || "");
         setLastFetchTime(Date.now());
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -140,10 +150,22 @@ export default function ProfileContent({ user }: ProfileContentProps) {
 
   // Update the initial useEffect
   useEffect(() => {
-    setPage(1);
-    setPosts([]);
-    setHasMore(true);
-    fetchData(1, false);
+    let isMounted = true;
+
+    const fetchInitialData = async () => {
+      if (isMounted) {
+        setPage(1);
+        setPosts([]);
+        setHasMore(true);
+        await fetchData(1, false);
+      }
+    };
+
+    fetchInitialData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [fetchData]);
 
   const handleCreatePost = async () => {
@@ -279,18 +301,34 @@ export default function ProfileContent({ user }: ProfileContentProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ about_me: aboutMe }),
+        cache: "no-store",
       });
 
       if (!response.ok) {
         throw new Error("Failed to update about me");
       }
 
-      user.about_me = aboutMe;
+      // Fetch fresh data to ensure consistency
+      const freshDataResponse = await fetch(
+        `/api/users/${user.username}/profile`,
+        {
+          cache: "no-store",
+        },
+      );
+
+      if (!freshDataResponse.ok) {
+        throw new Error("Failed to fetch updated profile");
+      }
+
+      const freshData = await freshDataResponse.json();
+      setAboutMe(freshData.about_me || "");
       setIsEditing(false);
       toast.success("About me updated successfully");
     } catch (error) {
       console.error("Error updating about me:", error);
       toast.error("Failed to update about me");
+      // Revert to original about_me on error
+      setAboutMe(user.about_me || "");
     } finally {
       setIsUpdatingAboutMe(false);
     }
