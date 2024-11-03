@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
+import defaultBanner from "@/public/img/default_banner.png";
 
 const navItems = [
   { name: "Overview", href: "" },
@@ -107,7 +108,7 @@ export default function ProfileLayout({ children, user }) {
       <div className="relative w-full h-72">
         <img
           key={bannerKey}
-          src={`${userData.banner_url}?t=${Date.now()}`}
+          src={userData.banner_url || defaultBanner.src}
           alt="Profile banner"
           className="w-full h-full object-cover"
           loading="eager"
