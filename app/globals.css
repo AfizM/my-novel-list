@@ -432,3 +432,17 @@ html body[data-scroll-locked] {
 .cl-userButtonPopoverFooter {
   @apply z-[100];
 }
+
+/* Add this after your existing .ProseMirror u style (around line 343) */
+.ProseMirror u,
+.prose u {
+  text-decoration: none;
+  background-image: linear-gradient(
+    to bottom,
+    transparent 94%,
+    currentColor 94%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  padding-bottom: 0.1em;
+}

@@ -21,6 +21,17 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
+// Add this CSS class to your globals.css or a CSS module
+const customUnderlineStyles = `
+  .ProseMirror u {
+    text-decoration: none;
+    background-image: linear-gradient(to bottom, transparent 94%, currentColor 94%);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    padding-bottom: 0.1em;
+  }
+`;
+
 export function RichTextEditor({
   content,
   onChange,
@@ -32,7 +43,11 @@ export function RichTextEditor({
         heading: false,
         codeBlock: false,
       }),
-      Underline.configure({}),
+      Underline.configure({
+        HTMLAttributes: {
+          class: "custom-underline",
+        },
+      }),
       Image.configure({
         HTMLAttributes: {
           class: "rounded-md max-w-full h-auto",
@@ -47,7 +62,8 @@ export function RichTextEditor({
     content,
     editorProps: {
       attributes: {
-        class: "prose prose-sm dark:prose-invert max-w-none focus:outline-none",
+        class:
+          "prose prose-sm dark:prose-invert max-w-none focus:outline-none relative",
         style: "font-size: 0.9rem",
       },
     },
@@ -72,6 +88,7 @@ export function RichTextEditor({
 
   return (
     <div className="border rounded-md">
+      <style>{customUnderlineStyles}</style>
       <div className="flex items-center gap-1 p-2 border-b">
         <Button
           variant="ghost"
